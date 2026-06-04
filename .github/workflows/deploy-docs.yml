@@ -11,6 +11,10 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'requirements.txt'
 permissions:
   contents: read
 

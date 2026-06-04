@@ -52,17 +52,17 @@ The GridBank API consists of 4 core endpoints:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/search` | `GET` | Full-text video search with pagination |
-| `/videos/{id}` | `GET` | Fetch metadata for a single video |
-| `/videos/{id}/download` | `GET` | Generate signed download URL |
-| `/usage/me` | `GET` | Check subscription tier and usage |
+| `/external/v1/videos/search` | `GET` | Full-text video search with pagination |
+| `/external/v1/videos/{video_id}` | `GET` | Fetch metadata for a single video |
+| `/external/v1/videos/{video_id}/download` | `GET` | Generate signed download URL |
+| `/external/v1/usage/me` | `GET` | Check subscription tier and usage |
 
 ## Authentication
 
 All requests require a Bearer token in the `Authorization` header.
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/search?q=nature
+curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/external/v1/videos/search?q=nature
 ```
 
 ## SDKs
