@@ -292,7 +292,7 @@ While jumping to arbitrary pages (e.g., page 10) is technically supported, **res
 
 **Production:** `https://api.gridbank.io`
 
-Example: `GET https://api.gridbank.io/search?q=test`
+Example: `GET https://api.gridbank.io/external/v1/videos/search?q=test`
 
 ---
 
