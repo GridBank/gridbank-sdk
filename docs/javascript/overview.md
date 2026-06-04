@@ -8,7 +8,6 @@ The official GridBank JavaScript SDK provides a modern, async-first wrapper arou
 - **Promise-based** — Modern async/await syntax for clean, readable code
 - **Error handling** — Automatic exception throwing with detailed error information
 - **Tree-shakeable** — ESM modules for optimal bundle size in production
-- **Retry logic** — Built-in exponential backoff for handling rate limits automatically
 - **Browser & Node.js** — Works in browsers and Node.js environments
 
 ## Installation

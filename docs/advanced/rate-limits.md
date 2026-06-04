@@ -12,13 +12,20 @@ The GridBank API enforces rate limits based on your subscription tier. When you 
 
 ## Response Headers
 
-All responses include rate limit information in headers:
+Rate limit information is included on successful responses and rate limit errors:
 
 ```
-X-RateLimit-Limit: 60                    # Your limit this period
-X-RateLimit-Remaining: 45                # Requests remaining
+X-RateLimit-Limit: 60                    # Your request limit this period
+X-RateLimit-Remaining: 45                # Requests remaining in current period
 X-RateLimit-Reset: 1705330800            # Unix timestamp when limit resets
-Retry-After: 60                          # Seconds to wait before retrying (on 429)
+```
+
+**On 429 (rate limit exceeded):**
+```
+Retry-After: 60                          # Seconds to wait before retrying
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1705330800
 ```
 
 ## Handling 429 Responses

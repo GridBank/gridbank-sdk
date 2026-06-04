@@ -7,7 +7,6 @@ The official GridBank Python SDK provides a type-safe, Pythonic wrapper around t
 - **Type hints** — Full type annotations for IDE autocomplete and better development experience
 - **Error handling** — Automatic exception raising with detailed error messages and status codes
 - **Pydantic models** — Strongly-typed request/response objects with validation
-- **Retry logic** — Built-in exponential backoff for handling rate limits gracefully
 - **Zero friction** — No manual header management, authentication, or JSON parsing
 
 ## Installation

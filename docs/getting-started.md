@@ -119,18 +119,18 @@ Monitor your subscription tier and remaining quota:
 
 ## Subscription Tiers
 
-| Tier | Monthly Limit | Rate Limit | Support |
-|------|---------------|-----------|---------|
-| **Starter** | 100 downloads | 10 req/min | Community |
-| **Pro** | 1,000 downloads | 60 req/min | Email |
-| **Enterprise** | Unlimited | Custom | Priority |
+| Tier | Description |
+|------|-------------|
+| **Starter** | Entry-level tier for development and testing |
+| **Growth** | Mid-tier for scaling applications |
+| **Scale** | High-volume tier for production use |
+| **Enterprise** | Custom limits and dedicated support |
 
 ## Next Steps
 
 - Explore the [Python SDK](python/overview.md) or [JavaScript SDK](javascript/overview.md)
 - Check the [API Reference](api-reference.md) for endpoint details
 - Review [Error Handling](errors.md) for common issues
-- See [Rate Limits](advanced/rate-limits.md) for quota information
 
 ## Support
 
