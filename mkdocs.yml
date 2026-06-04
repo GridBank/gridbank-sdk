@@ -29,7 +29,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
   - API Reference: api-reference.md
+  - Errors: errors.md
   - OpenAPI Explorer: openapi-viewer.html
   - Python SDK:
     - Overview: python/overview.md
@@ -43,6 +45,9 @@ nav:
     - Client: javascript/client.md
     - Methods: javascript/methods.md
     - Examples: javascript/examples.md
+  - Advanced:
+    - Pagination: advanced/pagination.md
+    - Rate Limits: advanced/rate-limits.md
 
 plugins:
   - search

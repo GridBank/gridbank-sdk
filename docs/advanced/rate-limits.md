@@ -7,7 +7,7 @@ The GridBank API enforces rate limits based on your subscription tier. When you 
 | Tier | Requests/Minute | Concurrent | Burst | Notes |
 |------|-----------------|-----------|-------|-------|
 | **Starter** | 10 | 2 | 15 | For development and testing |
-| **Pro** | 60 | 5 | 80 | For production applications |
+| **Growth** | 60 | 5 | 80 | For production applications |
 | **Enterprise** | Custom | Custom | Custom | Contact sales@gridbank.io |
 
 ## Response Headers
@@ -152,7 +152,7 @@ Check your rate limit usage before making large requests:
     
     tier_limits = {
         "starter": 10,
-        "pro": 60,
+        "growth": 60,
         "enterprise": float('inf')
     }
     
@@ -168,7 +168,7 @@ Check your rate limit usage before making large requests:
     
     const tierLimits = {
       'starter': 10,
-      'pro': 60,
+      'growth': 60,
       'enterprise': Infinity
     };
     
@@ -189,8 +189,8 @@ Check your rate limit usage before making large requests:
 
 Rate limit too low? Upgrade your subscription:
 
-- **Starter** (10 req/min) → **Pro** (60 req/min)
-- **Pro** (60 req/min) → **Enterprise** (custom)
+- **Starter** (10 req/min) → **Growth** (60 req/min)
+- **Growth** (60 req/min) → **Enterprise** (custom)
 
 Upgrade at [gridbank.io/billing](https://gridbank.io/billing) or contact sales@gridbank.io for enterprise plans.
 
