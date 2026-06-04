@@ -53,4 +53,4 @@ pip install -r requirements.txt
 mkdocs serve
 ```
 
-**Auto-deployment:** Push to `main` or `master` → GitHub Actions builds and deploys to GitHub Pages automatically.
+**Auto-deployment:** Push to `master` → GitHub Actions builds and deploys to GitHub Pages automatically.
