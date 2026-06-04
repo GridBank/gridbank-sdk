@@ -27,6 +27,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - API Reference: api-reference.md
+  - OpenAPI Explorer: openapi-viewer.html
   - Python SDK:
     - Overview: python/overview.md
     - Installation: python/installation.md
