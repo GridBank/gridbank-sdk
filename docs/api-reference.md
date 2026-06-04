@@ -7,7 +7,7 @@ The GridBank API provides 4 core endpoints for video search, metadata retrieval,
 ### Search Videos
 
 ```
-GET /search
+GET /external/v1/videos/search
 ```
 
 Query the GridBank video library with full-text search. Returns paginated results with relevance scoring.
@@ -50,7 +50,7 @@ Query the GridBank video library with full-text search. Returns paginated result
 ### Get Video Metadata
 
 ```
-GET /videos/{id}
+GET /external/v1/videos/{video_id}
 ```
 
 Fetch complete metadata for a single video by ID. Includes creator info, thumbnail, and content details. **Requires active subscription.**
@@ -97,7 +97,7 @@ Fetch complete metadata for a single video by ID. Includes creator info, thumbna
 ### Download Video
 
 ```
-GET /videos/{id}/download
+GET /external/v1/videos/{video_id}/download
 ```
 
 Generate a time-limited, signed download URL for the original video file. **Requires active subscription.**
@@ -131,7 +131,7 @@ Generate a time-limited, signed download URL for the original video file. **Requ
 ### Check Usage & Subscription
 
 ```
-GET /usage/me
+GET /external/v1/usage/me
 ```
 
 Fetch your account's current usage metrics and subscription details.
@@ -202,7 +202,7 @@ All API errors follow this pattern:
 All requests require a Bearer token in the `Authorization` header:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/search?q=nature
+curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/external/v1/videos/search?q=nature
 ```
 
 ---
@@ -216,9 +216,9 @@ curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/search?q=
 **Always navigate sequentially** through results (page 1 → 2 → 3 → etc.). This ensures consistency and accuracy.
 
 ```
-GET /search?q=nature&page=1&per_page=50
-GET /search?q=nature&page=2&per_page=50
-GET /search?q=nature&page=3&per_page=50
+GET /external/v1/videos/search?q=nature&page=1&per_page=50
+GET /external/v1/videos/search?q=nature&page=2&per_page=50
+GET /external/v1/videos/search?q=nature&page=3&per_page=50
 ```
 
 Use the `has_more` flag to know when to stop fetching:
