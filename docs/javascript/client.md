@@ -23,7 +23,6 @@ const client = new GridbankClient({
   apiKey: 'apik_your_key_here',
   baseUrl: 'https://api.gridbank.io',  // Default API endpoint
   timeout: 30000,                       // Request timeout in milliseconds (default: 30000)
-  maxRetries: 3,                        // Auto-retry on rate limits (default: 3)
 });
 ```
 
@@ -111,4 +110,3 @@ results.videos.forEach((video: Video) => {
 - [Method Reference](methods.md) — Complete method documentation
 - [Code Examples](examples.md) — Real-world usage patterns
 - [Error Handling](../api-reference.md#error-codes) — Learn error codes
-- [Rate Limiting](../api-reference.md#rate-limiting) — Handle rate limits

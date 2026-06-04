@@ -23,7 +23,6 @@ client = GridbankClient(
     api_key="apik_your_key_here",
     base_url="https://api.gridbank.io",  # Default API endpoint
     timeout=30,                            # Request timeout in seconds (default: 30)
-    max_retries=3,                         # Auto-retry on rate limits (default: 3)
 )
 ```
 
@@ -91,4 +90,3 @@ for video in results.videos:
 - [Method Reference](methods.md) — Complete method documentation
 - [Code Examples](examples.md) — Real-world usage patterns
 - [Error Handling](../api-reference.md#error-codes) — Learn error codes
-- [Rate Limiting](../api-reference.md#rate-limiting) — Handle rate limits

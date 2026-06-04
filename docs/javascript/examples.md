@@ -111,30 +111,6 @@ for (const video of results.videos) {
 }
 ```
 
-## Handle Rate Limiting
-
-Implement retry logic for rate-limited requests:
-
-```javascript
-async function searchWithRetry(query, maxRetries = 3) {
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await client.searchVideos({ q: query, perPage: 50 });
-    } catch (error) {
-      if (error instanceof GridbankAPIError && error.code === 'rate_limited' && attempt < maxRetries - 1) {
-        const waitTime = Math.pow(2, attempt) * 1000;  // exponential backoff: 1s, 2s, 4s
-        console.log(`Rate limited. Waiting ${waitTime}ms before retry...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      } else {
-        throw error;
-      }
-    }
-  }
-}
-
-const results = await searchWithRetry('nature');
-```
-
 ## Check Quota Before Downloading
 
 Verify you have remaining quota before large downloads:
@@ -164,7 +140,7 @@ if (remaining < 10) {
 
 ## Pagination Example
 
-Iterate through all search results:
+Iterate through all search results **sequentially** (page 1 → 2 → 3, etc.) for consistent results:
 
 ```javascript
 let page = 1;
@@ -180,15 +156,19 @@ while (true) {
   allVideos.push(...results.videos);
   console.log(`Fetched ${results.videos.length} videos from page ${page}`);
   
+  // Always check hasMore before requesting next page
   if (!results.hasMore) {
     break;
   }
   
+  // Move to next page sequentially
   page++;
 }
 
 console.log(`Total videos collected: ${allVideos.length}`);
 ```
+
+**Important:** Always iterate sequentially from page 1. Jumping to arbitrary pages may return inconsistent results.
 
 ## Error Handling Best Practices
 
@@ -306,4 +286,3 @@ For more details, see:
 - [Client Setup](client.md)
 - [Method Reference](methods.md)
 - [Error Handling](../errors.md)
-- [Rate Limits](../advanced/rate-limits.md)

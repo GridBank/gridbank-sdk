@@ -104,28 +104,6 @@ for video in results.videos:
         print(f"✗ {video.title} failed: {e.message}")
 ```
 
-## Handle Rate Limiting
-
-Implement retry logic for rate-limited requests:
-
-```python
-import time
-from gridbank_api import GridbankAPIError
-
-max_retries = 3
-for attempt in range(max_retries):
-    try:
-        results = client.search_videos(q="nature", per_page=50)
-        break
-    except GridbankAPIError as e:
-        if e.code == "rate_limited" and attempt < max_retries - 1:
-            wait_time = 2 ** attempt  # exponential backoff: 1s, 2s, 4s
-            print(f"Rate limited. Waiting {wait_time}s before retry...")
-            time.sleep(wait_time)
-        else:
-            raise
-```
-
 ## Check Quota Before Downloading
 
 Verify you have remaining quota before large downloads:
@@ -154,7 +132,7 @@ if remaining < 10:
 
 ## Pagination Example
 
-Iterate through all search results:
+Iterate through all search results **sequentially** (page 1 → 2 → 3, etc.) for consistent results:
 
 ```python
 page = 1
@@ -170,13 +148,17 @@ while True:
     all_videos.extend(results.videos)
     print(f"Fetched {len(results.videos)} videos from page {page}")
     
+    # Always check has_more before requesting next page
     if not results.has_more:
         break
     
+    # Move to next page sequentially
     page += 1
 
 print(f"Total videos collected: {len(all_videos)}")
 ```
+
+**Important:** Always iterate sequentially from page 1. Jumping to arbitrary pages may return inconsistent results.
 
 ## Error Handling Best Practices
 
@@ -235,4 +217,3 @@ For more details, see:
 - [Client Setup](client.md)
 - [Method Reference](methods.md)
 - [Error Handling](../errors.md)
-- [Rate Limits](../advanced/rate-limits.md)

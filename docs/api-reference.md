@@ -207,32 +207,38 @@ curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/search?q=
 
 ---
 
-## Rate Limiting
-
-All responses include rate limit headers:
-
-```
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 45
-X-RateLimit-Reset: 1705330800
-Retry-After: 60
-```
-
-When rate limited (429), respect the `Retry-After` header before retrying.
-
 ---
 
 ## Pagination
 
-When retrieving paginated results, always navigate sequentially (page 1, then 2, 3, etc.). Jumping to arbitrary pages may return inconsistent results.
+### Sequential Pagination (Recommended)
 
-Use the `has_more` flag to know when to stop:
+**Always navigate sequentially** through results (page 1 → 2 → 3 → etc.). This ensures consistency and accuracy.
 
 ```
 GET /search?q=nature&page=1&per_page=50
 GET /search?q=nature&page=2&per_page=50
 GET /search?q=nature&page=3&per_page=50
 ```
+
+Use the `has_more` flag to know when to stop fetching:
+
+```json
+{
+  "videos": [...],
+  "has_more": true,      // More pages exist
+  "search_id": "search_xyz789"
+}
+```
+
+### Non-Sequential Pagination (Not Recommended)
+
+While jumping to arbitrary pages (e.g., page 10) is technically supported, **results may be inconsistent** because:
+- Search index changes between requests
+- Sorting order may shift
+- New videos may be added/removed from the result set
+
+**Best practice:** Always iterate sequentially from page 1.
 
 ---
 
