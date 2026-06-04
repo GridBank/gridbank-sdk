@@ -136,6 +136,6 @@ Monitor your subscription tier and remaining quota:
 
 Stuck? Reach out:
 
-- **Email:** support@gridbank.io
-- **Status Page:** [status.gridbank.io](https://status.gridbank.io)
+- **Email:** hello@gridbank.io
+- **Status Page:** [gridbank.io](https://gridbank.io)
 - **GitHub Issues:** [gridbank/gridbank-external-api/issues](https://github.com/gridbank/gridbank-external-api/issues)

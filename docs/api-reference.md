@@ -318,5 +318,5 @@ Use the specification with:
 ## Support
 
 - **Documentation:** [api.gridbank.io/docs](https://api.gridbank.io/docs)
-- **Email:** support@gridbank.io
-- **Status:** [status.gridbank.io](https://status.gridbank.io)
+- **Email:** hello@gridbank.io
+- **Status:** [gridbank.io](https://gridbank.io)

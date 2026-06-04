@@ -237,8 +237,8 @@ All GridBank API responses use standard HTTP status codes. Non-2xx responses inc
 
 **Solution:**
 - Retry the request after a short delay
-- Check [status.gridbank.io](https://status.gridbank.io) for incidents
-- Contact support@gridbank.io if errors persist
+- Check [gridbank.io](https://gridbank.io) for incidents
+- Contact hello@gridbank.io if errors persist
 
 ## Error Class Reference
 
@@ -265,7 +265,7 @@ class GridbankAPIError extends Error {
 
 ## Support
 
-Need help? Contact support@gridbank.io with:
+Need help? Contact hello@gridbank.io with:
 - Error code and message
 - API key prefix (apik_xxxx)
 - Request details (endpoint, parameters)
