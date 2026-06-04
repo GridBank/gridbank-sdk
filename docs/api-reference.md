@@ -81,7 +81,7 @@ Fetch complete metadata for a single video by ID. Includes creator info, thumbna
   "location": {
     "city": "San Francisco",
     "region": "CA",
-    "country_code": "US"
+    "country": "United States"
   },
   "content_tier": "base",
   "created_at": "2024-01-15T10:30:00Z",
@@ -282,7 +282,7 @@ While jumping to arbitrary pages (e.g., page 10) is technically supported, **res
 {
   city: string;                  // City name
   region: string;                // State/province code
-  country_code: string;          // ISO 3166-1 alpha-2 code
+  country: string;               // Country name
 }
 ```
 
