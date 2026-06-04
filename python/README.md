@@ -90,5 +90,5 @@ print(f"Downloads used: {usage.downloads_this_period}")
 ## Need Help?
 
 - Email: hello@gridbank.io
-- [API Status](to be added)
+- [API Status](https://gridbank.io)
 - [Full API Reference](../api-reference.md)
