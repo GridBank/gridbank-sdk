@@ -106,5 +106,5 @@ const results: SearchResult = await client.searchVideos({ q: 'nature' });
 ## Need Help?
 
 - Email: hello@gridbank.io
-- [API Status](to be added)
+- [API Status](https://gridbank.io)
 - [Full API Reference](../api-reference.md)

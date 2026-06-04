@@ -97,7 +97,7 @@ Fetch complete metadata for a single video by ID. Includes creator info, thumbna
 ### Download Video
 
 ```
-POST /videos/{id}/download
+GET /videos/{id}/download
 ```
 
 Generate a time-limited, signed download URL for the original video file. **Requires active subscription.**
@@ -165,7 +165,7 @@ All API errors follow this pattern:
 | Code | Name | Meaning | What to do |
 |------|------|---------|-----------|
 | **401** | Unauthorized | Missing or invalid Bearer token | Check your API token is correct and hasn't expired |
-| **403** | Forbidden | No active subscription for this operation | Upgrade your subscription plan at [YOUR_DASHBOARD_URL] |
+| **403** | Forbidden | No active subscription for this operation | Upgrade your subscription plan at [gridbank.io/billing](https://gridbank.io/billing) |
 | **404** | Not Found | Video ID doesn't exist or resource not found | Verify the video ID exists by searching first |
 | **429** | Too Many Requests | Rate limit exceeded | Wait before retrying (see `Retry-After` header) |
 | **500** | Server Error | Temporary server issue | Retry the request after a short delay |

@@ -23,6 +23,8 @@ theme:
 markdown_extensions:
   - tables
   - admonition
+  - pymdownx.tabbed:
+      alternate_style: true
 
 nav:
   - Home: index.md
