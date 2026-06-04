@@ -54,7 +54,7 @@ The GridBank API consists of 4 core endpoints:
 |----------|--------|---------|
 | `/search` | `GET` | Full-text video search with pagination |
 | `/videos/{id}` | `GET` | Fetch metadata for a single video |
-| `/videos/{id}/download` | `POST` | Generate signed download URL |
+| `/videos/{id}/download` | `GET` | Generate signed download URL |
 | `/usage/me` | `GET` | Check subscription tier and usage |
 
 ## Authentication
