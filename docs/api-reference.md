@@ -292,15 +292,26 @@ Example: `GET https://api.gridbank.io/search?q=test`
 
 ## OpenAPI Specification
 
-The full OpenAPI 3.1.0 specification is available at:
+The full OpenAPI 3.0.3 specification is available in multiple formats:
 
-```
-https://api.gridbank.io/openapi.json
-```
+### Interactive Explorer
 
-You can also download the specification file directly: [`openapi.yaml`](assets/openapi.yaml)
+[**Open OpenAPI Explorer →**](openapi-viewer.html) — Explore endpoints, view schemas, and test requests in your browser.
 
-Import this into tools like Postman, Insomnia, or APIdog for interactive API exploration.
+### Download Specification
+
+Download the specification file to import into other tools:
+
+- [openapi.yaml](assets/openapi.yaml) — YAML format
+- Production URL: `https://api.gridbank.io/openapi.json`
+
+### Import Into Tools
+
+Use the specification with:
+- **Postman** — Import the YAML file to create a collection
+- **Insomnia** — Import as OpenAPI 3.0.3
+- **APIdog** — Import for interactive testing
+- **Thunder Client** — Import as OpenAPI spec
 
 ---
 

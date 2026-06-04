@@ -1,11 +1,15 @@
 # Python SDK Installation
 
+Get the GridBank Python SDK installed and ready to use in just a few minutes.
+
 ## Requirements
 
-- Python 3.8 or later
-- pip package manager
+- **Python:** 3.8 or later
+- **pip:** Python package manager (included with Python)
 
-## Install from PyPI
+## Quick Install
+
+Install the SDK from PyPI with a single command:
 
 ```bash
 pip install gridbank-api
@@ -13,11 +17,15 @@ pip install gridbank-api
 
 ## Verify Installation
 
+Confirm the SDK is installed correctly:
+
 ```bash
 python -c "from gridbank_api import GridbankClient; print('✓ gridbank-api installed')"
 ```
 
 ## Using with Virtual Environment (Recommended)
+
+Keep your project dependencies isolated with a virtual environment:
 
 ```bash
 # Create a new virtual environment
@@ -30,21 +38,21 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install gridbank-api
 ```
 
-## Using with Poetry
+## Alternative Installation Methods
 
+**Poetry:**
 ```bash
 poetry add gridbank-api
 ```
 
-## Using with Conda
-
+**Conda:**
 ```bash
 conda install -c conda-forge gridbank-api
 ```
 
 ## Development Installation
 
-To contribute to the SDK, clone the repository and install in development mode:
+To contribute or modify the SDK, clone and install in development mode:
 
 ```bash
 git clone https://github.com/gridbank/gridbank-api-python.git
@@ -52,6 +60,15 @@ cd gridbank-api-python
 pip install -e ".[dev]"
 ```
 
-## Next Step
+## Troubleshooting
 
-Once installed, proceed to [Client Setup](client.md).
+**ModuleNotFoundError:** Make sure you're using the same Python environment where you installed `gridbank-api`. Activate your virtual environment if using one.
+
+**Permission denied:** Try using `pip install --user gridbank-api` or use a virtual environment.
+
+## Next Steps
+
+- [Client Setup](client.md) — Initialize your first client
+- [Method Reference](methods.md) — Explore available methods
+- [Code Examples](examples.md) — Learn by example
+- [Error Handling](../api-reference.md#error-codes) — Handle errors gracefully

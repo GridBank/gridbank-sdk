@@ -1,6 +1,10 @@
-# Python SDK Client
+# Python SDK Client Setup
 
-## Initializing the Client
+Initialize and configure the GridBank API client for your Python application.
+
+## Basic Initialization
+
+Create a client with just your API key:
 
 ```python
 from gridbank_api import GridbankClient
@@ -8,40 +12,46 @@ from gridbank_api import GridbankClient
 client = GridbankClient(api_key="apik_your_key_here")
 ```
 
-The `api_key` is required. Get your key from the [GridBank dashboard](https://gridbank.io/dashboard).
+**Get your API key:** [GridBank Dashboard](https://gridbank.io/dashboard)
 
 ## Configuration Options
+
+Customize client behavior with advanced options:
 
 ```python
 client = GridbankClient(
     api_key="apik_your_key_here",
-    base_url="https://api.gridbank.io",  # Default
-    timeout=30,                            # Default timeout in seconds
-    max_retries=3,                         # Retries for 429 rate limits
+    base_url="https://api.gridbank.io",  # Default API endpoint
+    timeout=30,                            # Request timeout in seconds (default: 30)
+    max_retries=3,                         # Auto-retry on rate limits (default: 3)
 )
 ```
 
-## Using Environment Variables
+## Secure API Key Management (Recommended)
 
-For security, store your API key in an environment variable:
+Never hardcode API keys. Store them in environment variables:
 
 ```bash
+# .env file or export in terminal
 export GRIDBANK_API_KEY="apik_your_key_here"
 ```
 
-Then load it in your code:
+Load from environment:
 
 ```python
 import os
 from gridbank_api import GridbankClient
 
 api_key = os.getenv("GRIDBANK_API_KEY")
+if not api_key:
+    raise ValueError("GRIDBANK_API_KEY environment variable not set")
+
 client = GridbankClient(api_key=api_key)
 ```
 
 ## Error Handling
 
-All methods raise `GridbankAPIError` on non-2xx responses:
+All SDK methods raise `GridbankAPIError` on API errors. Handle them gracefully:
 
 ```python
 from gridbank_api import GridbankClient, GridbankAPIError
@@ -57,23 +67,28 @@ except GridbankAPIError as e:
         print(f"Details: {e.details}")
 ```
 
-## Type Hints
+See [Error Handling Guide](../api-reference.md#error-codes) for detailed error information.
 
-The SDK includes full type hints:
+## Type Hints & IDE Support
+
+The SDK provides full type hints for excellent IDE autocomplete:
 
 ```python
-from gridbank_api import GridbankClient, SearchResult
+from gridbank_api import GridbankClient, SearchResult, Video
 
 client = GridbankClient(api_key="apik_...")
 
-# IDE autocomplete works here
+# Full type support
 results: SearchResult = client.search_videos(q="nature", per_page=5)
 
-# videos is a list of Video objects
+# IDE knows about all Video properties
 for video in results.videos:
-    print(video.title)  # IDE knows about Video properties
+    print(f"{video.title} by {video.creator.name}")
 ```
 
-## Next Step
+## Next Steps
 
-Explore all available [methods](methods.md).
+- [Method Reference](methods.md) — Complete method documentation
+- [Code Examples](examples.md) — Real-world usage patterns
+- [Error Handling](../api-reference.md#error-codes) — Learn error codes
+- [Rate Limiting](../api-reference.md#rate-limiting) — Handle rate limits

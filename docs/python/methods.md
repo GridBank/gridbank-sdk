@@ -1,8 +1,10 @@
 # Python SDK Methods
 
+All GridBank API methods are available through the `GridbankClient` instance. Methods use Python naming conventions (snake_case) and return type-safe Pydantic models.
+
 ## search_videos()
 
-Query the GridBank video library with full-text search.
+Query the GridBank video library with full-text search. Supports filtering by duration and category, with multiple sort options for relevance, popularity, and recency.
 
 ```python
 result = client.search_videos(
@@ -50,7 +52,7 @@ for video in result.videos:
 
 ## get_video()
 
-Fetch complete metadata for a single video by ID. **Requires active subscription.**
+Fetch complete metadata for a single video by ID, including creator details, dimensions, and licensing information. **Requires active subscription.**
 
 ```python
 video = client.get_video(video_id="video_abc123")
@@ -95,7 +97,7 @@ print(f"Keywords: {', '.join(video.keywords)}")
 
 ## download_video()
 
-Generate a time-limited, signed download URL. **Requires active subscription.**
+Generate a time-limited, signed download URL for the original video file. Perfect for integrating video downloads into your application. **Requires active subscription.**
 
 ```python
 download = client.download_video(
@@ -137,7 +139,7 @@ print(f"URL: {download.url}")
 
 ## usage_summary()
 
-Fetch your account's current usage metrics and subscription details.
+Check your account's current subscription tier, download quota, and billing period. Use this to monitor your usage and determine when to upgrade your plan.
 
 ```python
 usage = client.usage_summary()
@@ -163,37 +165,6 @@ usage = client.usage_summary()
 print(f"Tier: {usage.tier}")
 print(f"Downloads this period: {usage.downloads_this_period}")
 print(f"Period ends: {usage.lease_period_end}")
-```
-
----
-
-## health()
-
-Check API availability.
-
-```python
-health = client.health()
-```
-
-**Parameters:** None
-
-**Returns:**
-
-```python
-class Health:
-    status: str                    # "healthy" or "unhealthy"
-    version: str                   # API version
-    timestamp: datetime            # Current server time
-```
-
-**Errors:** None (always 200)
-
-**Example:**
-
-```python
-health = client.health()
-print(f"API Status: {health.status}")
-print(f"Version: {health.version}")
 ```
 
 ---

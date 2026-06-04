@@ -1,8 +1,10 @@
 # JavaScript SDK Methods
 
+All GridBank API methods are available through the `GridbankClient` instance. Methods use JavaScript naming conventions (camelCase) and return fully-typed objects for TypeScript support.
+
 ## searchVideos()
 
-Query the GridBank video library with full-text search.
+Query the GridBank video library with full-text search. Supports filtering by duration and category, with multiple sort options for relevance, popularity, and recency.
 
 ```javascript
 const results = await client.searchVideos({
@@ -52,7 +54,7 @@ results.videos.forEach(video => {
 
 ## getVideo()
 
-Fetch complete metadata for a single video by ID. **Requires active subscription.**
+Fetch complete metadata for a single video by ID, including creator details, dimensions, and licensing information. **Requires active subscription.**
 
 ```javascript
 const video = await client.getVideo('video_abc123');
@@ -98,7 +100,7 @@ console.log(`Keywords: ${video.keywords.join(', ')}`);
 
 ## downloadVideo()
 
-Generate a time-limited, signed download URL. **Requires active subscription.**
+Generate a time-limited, signed download URL for the original video file. Perfect for integrating video downloads into your application. **Requires active subscription.**
 
 ```javascript
 const download = await client.downloadVideo('video_abc123', {
@@ -139,7 +141,7 @@ console.log(`URL: ${download.url}`);
 
 ## usageSummary()
 
-Fetch your account's current usage metrics and subscription details.
+Check your account's current subscription tier, download quota, and billing period. Use this to monitor your usage and determine when to upgrade your plan.
 
 ```javascript
 const usage = await client.usageSummary();
@@ -166,38 +168,6 @@ const usage = await client.usageSummary();
 console.log(`Tier: ${usage.tier}`);
 console.log(`Downloads this period: ${usage.downloadsThisPeriod}`);
 console.log(`Period ends: ${usage.leasePeriodEnd}`);
-```
-
----
-
-## health()
-
-Check API availability.
-
-```javascript
-const health = await client.health();
-```
-
-**Parameters:** None
-
-**Returns:**
-
-```typescript
-interface Health {
-  status: string;           // "healthy" or "unhealthy"
-  version: string;          // API version
-  timestamp: string;        // Current server time (ISO 8601)
-}
-```
-
-**Errors:** None (always 200)
-
-**Example:**
-
-```javascript
-const health = await client.health();
-console.log(`API Status: ${health.status}`);
-console.log(`Version: ${health.version}`);
 ```
 
 ---
