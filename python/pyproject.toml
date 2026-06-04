@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gridbank-api"
+version = "0.1.0"
+description = "Official Python SDK for the GridBank API"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/GridBank/gridbank-sdk"
+Documentation = "https://gridbank.github.io/gridbank-sdk"
+"Bug Tracker" = "https://github.com/GridBank/gridbank-sdk/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gridbank_api"]

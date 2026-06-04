@@ -1,0 +1,24 @@
+{
+  "name": "@gridbank/api-js",
+  "version": "0.1.0",
+  "description": "Official JavaScript/TypeScript SDK for the GridBank API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GridBank/gridbank-sdk.git",
+    "directory": "js"
+  },
+  "homepage": "https://gridbank.github.io/gridbank-sdk",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
