@@ -25,15 +25,15 @@ jobs:
           pip install build twine
 
       - name: Build Python SDK
-        working-directory: ./gridbank-api-python
+        working-directory: ./python
         run: python -m build
 
       - name: Check distribution
-        working-directory: ./gridbank-api-python
+        working-directory: ./python
         run: twine check dist/*
 
       - name: Publish to PyPI
-        working-directory: ./gridbank-api-python
+        working-directory: ./python
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
