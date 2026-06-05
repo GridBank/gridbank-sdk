@@ -46,12 +46,15 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Copy spec
-        run: cp _external_api/docs/openapi.yaml docs/assets/openapi.yaml
+        run: |
+          mkdir -p docs/assets
+          cp _external_api/docs/openapi.yaml docs/assets/openapi.yaml
 
       - name: Check for changes
         id: diff
         run: |
-          if git diff --quiet docs/assets/openapi.yaml; then
+          # git diff only sees tracked changes; git status catches untracked (first run)
+          if git diff --quiet docs/assets/openapi.yaml && ! git status --porcelain docs/assets/openapi.yaml | grep -q '?'; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
