@@ -62,7 +62,7 @@ The GridBank API consists of 4 core endpoints:
 All requests require a Bearer token in the `Authorization` header.
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/external/v1/videos/search?q=nature
+curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api2.gridbank.io/external/v1/videos/search?q=nature
 ```
 
 ## SDKs

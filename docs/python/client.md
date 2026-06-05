@@ -21,7 +21,7 @@ Customize client behavior with advanced options:
 ```python
 client = GridbankClient(
     api_key="apik_your_key_here",
-    base_url="https://api.gridbank.io",  # Default API endpoint
+    base_url="https://api2.gridbank.io",  # Default API endpoint
     timeout=30,                            # Request timeout in seconds (default: 30)
 )
 ```
