@@ -1,4 +1,4 @@
-const _BASE_URL = "https://api.gridbank.io";
+const _BASE_URL = "https://api2.gridbank.io";
 
 // ---------------------------------------------------------------------------
 // Response types
