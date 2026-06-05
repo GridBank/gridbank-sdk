@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GridBank API - Interactive API Explorer</title>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css">
+  <link rel="icon" type="image/png" href="https://fastapi.tiangolo.com/img/favicon.png" sizes="32x32">
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *,
+    *:before,
+    *:after {
+      box-sizing: inherit;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fafafa;
+    }
+    .topbar {
+      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      padding: 1.5rem 2rem;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .topbar p {
+      margin: 0.5rem 0 0 0;
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>GridBank API - Interactive Explorer (OpenAPI 3.0.3)</h1>
+    <p>Test endpoints • View schemas • Try requests live</p>
+  </div>
+  <div id="swagger-ui"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-standalone-preset.js"></script>
+  <script>
+    const ui = SwaggerUIBundle({
+      url: './assets/openapi.yaml',
+      dom_id: '#swagger-ui',
+      deepLinking: true,
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      plugins: [
+        SwaggerUIBundle.plugins.DownloadUrl
+      ],
+      layout: "StandaloneLayout",
+      defaultModelsExpandDepth: 2,
+      defaultModelExpandDepth: 2,
+      tryItOutEnabled: true,
+      persistAuthorization: true,
+      filter: true,
+      showOperationFilterTag: true,
+    })
+    window.ui = ui
+  </script>
+</body>
+</html>

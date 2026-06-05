@@ -1,0 +1,628 @@
+openapi: 3.0.3
+info:
+  title: GridBank External API
+  description: RESTful API for third-party access to GridBank's video library
+  version: 1.0.0
+servers:
+  - url: https://api.gridbank.io
+    description: Production API
+  - url: https://staging-api.gridbank.io
+    description: Staging API
+paths:
+  /external/ping:
+    get:
+      tags:
+      - Health
+      summary: Ping
+      description: Connectivity probe — no auth required.
+      operationId: ping_external_ping_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+  /external/v1/videos/search:
+    get:
+      tags:
+      - Videos
+      summary: Search Customer's Leased Videos
+      description: Search videos from the customer's leased bucket with pagination, sorting, and filtering
+      operationId: get_search_videos
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Search query (1–200 chars)
+          title: Q
+        description: Search query (1–200 chars)
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Page number (1-based, max 100)
+          default: 1
+          title: Page
+        description: Page number (1-based, max 100)
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 80
+          minimum: 1
+          description: Results per page
+          default: 15
+          title: Per Page
+        description: Results per page
+      - name: sort
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            pattern: ^(relevant|popular|recent)$
+          - type: 'null'
+          description: 'Sort order: relevant, popular, or recent'
+          default: relevant
+          title: Sort
+        description: 'Sort order: relevant, popular, or recent'
+      - name: duration_min
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          description: Minimum video duration in seconds
+          title: Duration Min
+        description: Minimum video duration in seconds
+      - name: duration_max
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          description: Maximum video duration in seconds
+          title: Duration Max
+        description: Maximum video duration in seconds
+      - name: theme
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter to videos in curated collections with this theme
+          title: Theme
+        description: Filter to videos in curated collections with this theme
+      - name: search_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: UUID to track search funnel (auto-generated if not provided)
+          title: Search Id
+        description: UUID to track search funnel (auto-generated if not provided)
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '401':
+          description: Unauthorized - API key missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+      security:
+      - BearerAuth: []
+  /external/v1/videos/{video_id}:
+    get:
+      tags:
+      - Videos
+      summary: Get Single Video Metadata
+      description: Retrieve metadata for a single video accessible to the customer
+      operationId: get_get_video_metadata
+      parameters:
+      - name: video_id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[a-zA-Z0-9/_-]+$
+          description: Video identifier (1–50 chars, alphanumeric/-/_)
+          title: Video Id
+        description: Video identifier (1–50 chars, alphanumeric/-/_)
+      responses:
+        '200':
+          description: Video metadata retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoResponse'
+        '404':
+          description: Video not found or not accessible
+        '422':
+          description: Invalid video ID format
+        '401':
+          description: Unauthorized - API key missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+      security:
+      - BearerAuth: []
+  /external/v1/videos/{video_id}/download:
+    get:
+      tags:
+      - Videos
+      summary: Get Signed Download URL
+      description: Issue a signed, time-limited download URL for a video in the customer's bucket
+      operationId: get_download_video
+      parameters:
+      - name: video_id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[a-zA-Z0-9/_-]+$
+          description: Video identifier (1–50 chars, alphanumeric/-/_)
+          title: Video Id
+        description: Video identifier (1–50 chars, alphanumeric/-/_)
+      - name: expires_in
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5
+          minimum: 1
+          description: 'TTL in minutes (1–5). Default: 5.'
+          default: 5
+          title: Expires In
+        description: 'TTL in minutes (1–5). Default: 5.'
+      - name: search_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optional search session ID for analytics funnel
+          title: Search Id
+        description: Optional search session ID for analytics funnel
+      responses:
+        '200':
+          description: Signed download URL returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoDownloadResponse'
+        '403':
+          description: Access denied (IP not in allowlist, or lease suspended)
+        '404':
+          description: Video not found or not accessible
+        '422':
+          description: Invalid video ID or parameters
+        '401':
+          description: Unauthorized - API key missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+      security:
+      - BearerAuth: []
+  /external/v1/usage/me:
+    get:
+      tags:
+      - Usage
+      summary: Get Customer Usage Summary
+      description: Returns customer's own usage summary for the current billing period
+      operationId: get_get_usage_summary
+      responses:
+        '200':
+          description: Usage summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummaryResponse'
+        '403':
+          description: No active lease (lease ended)
+        '500':
+          description: Internal server error
+        '502':
+          description: Usage data unavailable in this environment
+        '401':
+          description: Unauthorized - API key missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+      security:
+      - BearerAuth: []
+components:
+  schemas:
+    CreatorResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Unique creator identifier
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Creator display name
+        username:
+          type: string
+          title: Username
+          description: Creator username
+        bio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bio
+          description: Creator biography
+        profile_image:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profile Image
+          description: Creator profile image URL
+      type: object
+      required:
+      - id
+      - username
+      title: CreatorResponse
+      description: Creator information in API responses.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LocationResponse:
+      properties:
+        city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: City
+          description: City name
+        region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Region
+          description: Region/state name
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+          description: Country name
+      type: object
+      title: LocationResponse
+      description: Location information in API responses.
+    PingResponse:
+      properties:
+        ping:
+          type: string
+          title: Ping
+          description: Ping response message
+        timestamp:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Timestamp
+          description: Response timestamp
+      type: object
+      required:
+      - ping
+      title: PingResponse
+      description: Simple ping response for testing.
+    TopVideoResult:
+      properties:
+        video_id:
+          type: string
+          title: Video Id
+          description: Video identifier
+        download_count:
+          type: integer
+          title: Download Count
+          description: Number of downloads this period
+        thumbnail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Thumbnail
+          description: Thumbnail URL
+      type: object
+      required:
+      - video_id
+      - download_count
+      title: TopVideoResult
+      description: Top-performing video summary for usage report.
+    UsageSummaryResponse:
+      properties:
+        customer_id:
+          type: string
+          title: Customer Id
+          description: Customer identifier
+        tier:
+          type: string
+          title: Tier
+          description: Subscription tier (starter, growth, scale, enterprise)
+        lease_period_start:
+          type: string
+          format: date-time
+          title: Lease Period Start
+          description: Lease period start (ISO8601 UTC)
+        lease_period_end:
+          type: string
+          format: date-time
+          title: Lease Period End
+          description: Lease period end (ISO8601 UTC)
+        downloads_this_period:
+          type: integer
+          title: Downloads This Period
+          description: Total downloads this period
+        active_collections_count:
+          type: integer
+          title: Active Collections Count
+          description: Number of active collections in lease
+        wildcard_enabled:
+          type: boolean
+          title: Wildcard Enabled
+          description: Whether wildcard collection is enabled
+        top_videos:
+          items:
+            $ref: '#/components/schemas/TopVideoResult'
+          type: array
+          title: Top Videos
+          description: Top N videos by download count this period
+      type: object
+      required:
+      - customer_id
+      - tier
+      - lease_period_start
+      - lease_period_end
+      - downloads_this_period
+      - active_collections_count
+      - wildcard_enabled
+      - top_videos
+      title: UsageSummaryResponse
+      description: |-
+        Customer's usage summary for the current billing period per technical-design §3.4.
+
+        Backs GET /v1/usage/me endpoint. Shows download activity and top-performing
+        videos within the customer's lease period.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VideoDownloadResponse:
+      properties:
+        video_id:
+          type: string
+          title: Video Id
+          description: Video identifier
+        url:
+          type: string
+          title: Url
+          description: Presigned S3 download URL
+        expires_at:
+          type: string
+          format: date-time
+          title: Expires At
+          description: Expiration time in ISO8601 UTC
+        file_size:
+          type: integer
+          title: File Size
+          description: File size in bytes
+        format:
+          type: string
+          title: Format
+          description: File format (e.g. 'mp4')
+      type: object
+      required:
+      - video_id
+      - url
+      - expires_at
+      - file_size
+      - format
+      title: VideoDownloadResponse
+      description: |-
+        Signed download URL response per technical-design §3.3.
+
+        Returns a short-lived presigned S3 URL for direct binary download.
+    VideoListResponse:
+      properties:
+        search_id:
+          type: string
+          title: Search Id
+          description: Search session ID for funnel tracking
+        page:
+          type: integer
+          title: Page
+          description: Current page number (1-based)
+        per_page:
+          type: integer
+          title: Per Page
+          description: Number of results per page
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether there are more results
+        videos:
+          items:
+            $ref: '#/components/schemas/VideoResponse'
+          type: array
+          title: Videos
+          description: List of videos on this page
+      type: object
+      required:
+      - search_id
+      - page
+      - per_page
+      - has_more
+      - videos
+      title: VideoListResponse
+      description: |-
+        Paginated video search/list response.
+
+        Response format per technical-design.v2.md §3.1 specification.
+    VideoResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Unique video identifier
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+          description: Video title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Video description
+        duration:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Duration
+          description: Video duration in seconds
+        width:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Width
+          description: Video width in pixels
+        height:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Height
+          description: Video height in pixels
+        content_tier:
+          type: string
+          title: Content Tier
+          description: Content tier (e.g., premium, standard)
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: Video creation timestamp
+        is_featured:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Featured
+          description: Whether video is featured
+        keywords:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Keywords
+          description: Video keywords/tags
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url
+          description: Watermarked preview video URL
+        thumbnail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Thumbnail
+          description: Watermarked thumbnail URL
+        creator:
+          $ref: '#/components/schemas/CreatorResponse'
+          description: Video creator information
+        location:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Video location information
+      type: object
+      required:
+      - id
+      - content_tier
+      - created_at
+      - creator
+      title: VideoResponse
+      description: Video information for browse/search responses (watermarked content only).
+    UnauthorizedError:
+      type: object
+      required:
+      - detail
+      properties:
+        detail:
+          type: string
+          description: Error message indicating missing or invalid API key
+      title: UnauthorizedError
+      description: Returned when API key is missing or invalid (401 Unauthorized)
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token authentication (obtain from GridBank dashboard)

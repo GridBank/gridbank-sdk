@@ -1,80 +1,80 @@
----
-title: GridBank SDK
----
+# GridBank API
 
-# GridBank SDK
+Access premium video content with powerful search, metadata retrieval, and download capabilities.
 
-Official Python and JavaScript SDKs for the [GridBank External API](https://api2.gridbank.io/external/v1). Thin typed wrappers over the REST endpoints — types generated from the OpenAPI spec.
+## Quick Start
 
-> **Preview:** SDKs launch with the API. Package names below are locked for release.
+Choose your SDK and get started in minutes.
 
-## Installation
+### Python SDK
 
-**Python**
 ```bash
 pip install gridbank-api
 ```
 
-**JavaScript / TypeScript**
-```bash
-npm install @gridbank/api-js
-```
-
----
-
-## Authentication
-
-Both SDKs require an API key passed at client initialization. The key is sent automatically via `X-API-Key` on every request.
-
-**Python**
 ```python
 from gridbank_api import GridbankClient
 
 client = GridbankClient(api_key="apik_...")
+results = client.search_videos(q="nature", per_page=5)
+print(f"Found {len(results.videos)} videos")
 ```
 
-**JavaScript**
+[View Python Documentation](python/overview.md)
+
+### JavaScript SDK
+
+```bash
+npm install @gridbank/api-js
+```
+
 ```javascript
 import { GridbankClient } from '@gridbank/api-js';
 
 const client = new GridbankClient({ apiKey: 'apik_...' });
+const results = await client.searchVideos({ q: 'nature', perPage: 5 });
+console.log(`Found ${results.videos.length} videos`);
 ```
 
-If you receive a `401 Unauthorized`, verify your key is correct and has not expired.
+[View JavaScript Documentation](javascript/overview.md)
 
----
+## Features
 
-## Error Codes
+- **Full-text video search** with relevance, popularity, and recency sorting
+- **Video metadata** including creator info, dimensions, and licensing tiers
+- **Signed download URLs** with configurable expiration (1–5 minutes)
+- **Usage tracking** to monitor subscription tier and download quota
+- **Rate limiting** based on your tier (starter, pro, enterprise)
 
-All SDK methods raise/throw on non-2xx responses.
+## API Endpoints
 
-| HTTP | Code | Meaning |
-|------|------|---------|
-| 400 | `invalid_request` | Malformed query or invalid parameters |
-| 401 | `unauthorized` | Missing or invalid API key |
-| 403 | `forbidden` | No active subscription |
-| 404 | `not_found` | Resource does not exist |
-| 422 | — | Invalid input data (see `detail` array for field errors) |
-| 429 | `rate_limited` | Rate limit exceeded — retry after delay |
-| 500 | `internal_error` | Server error — retry the request |
+The GridBank API consists of 4 core endpoints:
 
-**Error envelope (non-422):**
-```json
-{ "detail": "Human readable error message" }
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/external/v1/videos/search` | `GET` | Full-text video search with pagination |
+| `/external/v1/videos/{video_id}` | `GET` | Fetch metadata for a single video |
+| `/external/v1/videos/{video_id}/download` | `GET` | Generate signed download URL |
+| `/external/v1/usage/me` | `GET` | Check subscription tier and usage |
+
+## Authentication
+
+All requests require a Bearer token in the `Authorization` header.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/external/v1/videos/search?q=nature
 ```
 
-**422 envelope:**
-```json
-{
-  "detail": [
-    { "loc": ["query", "expires_in"], "msg": "Input should be less than or equal to 5", "type": "less_than_equal" }
-  ]
-}
-```
+## SDKs
 
----
+We provide official SDKs for Python and JavaScript to make integration simple:
 
-## SDK Reference
+- **[Python SDK](python/overview.md)** — Type-safe, Pythonic API wrapper
+- **[JavaScript SDK](javascript/overview.md)** — ESM modules with TypeScript support
 
-- [Python SDK →](python.html)
-- [JavaScript SDK →](javascript.html)
+## Support
+
+- **[API Reference](api-reference.md)** — Complete endpoint documentation
+- **[Python SDK](python/overview.md)** — Python SDK guide
+- **[JavaScript SDK](javascript/overview.md)** — JavaScript SDK guide
+- **Email:** hello@gridbank.io
