@@ -159,7 +159,10 @@ class GridbankClient:
 
     def _get(self, path: str, params: Optional[dict] = None) -> Any:
         filtered = {k: v for k, v in (params or {}).items() if v is not None}
-        response = self._http.get(path, params=filtered)
+        try:
+            response = self._http.get(path, params=filtered)
+        except httpx.RequestError as exc:
+            raise GridbankAPIError(0, str(exc)) from exc
         if not response.is_success:
             body = response.json() if "application/json" in response.headers.get("content-type", "") else {}
             detail = body.get("detail", response.text) if isinstance(body, dict) else response.text
