@@ -3,14 +3,14 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
       - 'requirements.txt'
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
