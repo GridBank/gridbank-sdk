@@ -139,7 +139,18 @@ export class GridbankClient {
     const response = await fetch(url.toString(), {
       headers: { "X-API-Key": this.apiKey },
     });
-    const body = await response.json().catch(() => null);
+    let body: unknown = null;
+    try {
+      body = await response.json();
+    } catch {
+      if (response.ok) {
+        throw new GridbankAPIError(
+          response.status,
+          `Server returned a non-JSON response (${response.status} ${response.statusText})`,
+          null
+        );
+      }
+    }
     if (!response.ok) {
       const message =
         body != null && typeof body === "object" && "detail" in body
