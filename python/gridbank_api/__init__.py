@@ -164,7 +164,13 @@ class GridbankClient:
             body = response.json() if "application/json" in response.headers.get("content-type", "") else {}
             detail = body.get("detail", response.text) if isinstance(body, dict) else response.text
             raise GridbankAPIError(response.status_code, detail, body)
-        return response.json()
+        try:
+            return response.json()
+        except Exception as exc:
+            raise GridbankAPIError(
+                response.status_code,
+                f"Server returned a non-JSON response: {exc}",
+            ) from exc
 
     def ping(self) -> PingResponse:
         data = self._get("/external/ping")
