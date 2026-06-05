@@ -3,14 +3,14 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
       - 'requirements.txt'
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
@@ -45,13 +45,13 @@ jobs:
         run: mkdocs build
 
       - name: Upload artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'site'
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
