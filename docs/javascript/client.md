@@ -21,7 +21,7 @@ Customize client behavior with advanced options:
 ```javascript
 const client = new GridbankClient({
   apiKey: 'apik_your_key_here',
-  baseUrl: 'https://api.gridbank.io',  // Default API endpoint
+  baseUrl: 'https://api2.gridbank.io',  // Default API endpoint
   timeout: 30000,                       // Request timeout in milliseconds (default: 30000)
 });
 ```

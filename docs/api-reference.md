@@ -202,7 +202,7 @@ All API errors follow this pattern:
 All requests require a Bearer token in the `Authorization` header:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api.gridbank.io/external/v1/videos/search?q=nature
+curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api2.gridbank.io/external/v1/videos/search?q=nature
 ```
 
 ---
@@ -290,15 +290,15 @@ While jumping to arbitrary pages (e.g., page 10) is technically supported, **res
 
 ## API Base URL
 
-**Production:** `https://api.gridbank.io`
+**Production:** `https://api2.gridbank.io`
 
-Example: `GET https://api.gridbank.io/external/v1/videos/search?q=test`
+Example: `GET https://api2.gridbank.io/external/v1/videos/search?q=test`
 
 ---
 
 ## OpenAPI Specification
 
-The full OpenAPI 3.0.3 specification is available in multiple formats:
+The full OpenAPI 3.1.0 specification is available in multiple formats:
 
 ### Interactive Explorer
 
@@ -309,13 +309,13 @@ The full OpenAPI 3.0.3 specification is available in multiple formats:
 Download the specification file to import into other tools:
 
 - [openapi.yaml](assets/openapi.yaml) — YAML format
-- Production URL: `https://api.gridbank.io/openapi.json`
+- Production URL: `https://api2.gridbank.io/openapi.json`
 
 ### Import Into Tools
 
 Use the specification with:
 - **Postman** — Import the YAML file to create a collection
-- **Insomnia** — Import as OpenAPI 3.0.3
+- **Insomnia** — Import as OpenAPI 3.1.0
 - **APIdog** — Import for interactive testing
 - **Thunder Client** — Import as OpenAPI spec
 
@@ -323,6 +323,6 @@ Use the specification with:
 
 ## Support
 
-- **Documentation:** [api.gridbank.io/docs](https://api.gridbank.io/docs)
+- **Documentation:** [gridbank.github.io/gridbank-sdk](https://gridbank.github.io/gridbank-sdk)
 - **Email:** hello@gridbank.io
 - **Status:** [gridbank.io](https://gridbank.io)
