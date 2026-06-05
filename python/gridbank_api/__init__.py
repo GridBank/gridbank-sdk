@@ -7,7 +7,7 @@ from typing import Any, List, Optional
 
 import httpx
 
-_BASE_URL = "https://api.gridbank.io"
+_BASE_URL = "https://api2.gridbank.io"
 
 
 # ---------------------------------------------------------------------------
