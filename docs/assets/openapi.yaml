@@ -1,10 +1,10 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: GridBank External API
-  description: RESTful API for third-party access to GridBank's video library
+  description: RESTful API for third-party access to GridBank's video library.
   version: 1.0.0
 servers:
-  - url: https://api.gridbank.io
+  - url: https://api2.gridbank.io
     description: Production API
   - url: https://staging-api.gridbank.io
     description: Staging API
@@ -131,7 +131,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
         '401':
-          description: Unauthorized - API key missing or invalid
+          description: Unauthorized - Bearer token missing or invalid
           content:
             application/json:
               schema:
@@ -169,7 +169,7 @@ paths:
         '422':
           description: Invalid video ID format
         '401':
-          description: Unauthorized - API key missing or invalid
+          description: Unauthorized - Bearer token missing or invalid
           content:
             application/json:
               schema:
@@ -230,7 +230,7 @@ paths:
         '422':
           description: Invalid video ID or parameters
         '401':
-          description: Unauthorized - API key missing or invalid
+          description: Unauthorized - Bearer token missing or invalid
           content:
             application/json:
               schema:
@@ -258,7 +258,7 @@ paths:
         '502':
           description: Usage data unavailable in this environment
         '401':
-          description: Unauthorized - API key missing or invalid
+          description: Unauthorized - Bearer token missing or invalid
           content:
             application/json:
               schema:
@@ -618,9 +618,9 @@ components:
       properties:
         detail:
           type: string
-          description: Error message indicating missing or invalid API key
+          description: Error message indicating missing or invalid Bearer token
       title: UnauthorizedError
-      description: Returned when API key is missing or invalid (401 Unauthorized)
+      description: Returned when Bearer token is missing or invalid (401 Unauthorized)
   securitySchemes:
     BearerAuth:
       type: http
