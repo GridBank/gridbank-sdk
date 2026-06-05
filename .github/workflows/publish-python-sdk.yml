@@ -1,0 +1,56 @@
+name: Publish Python SDK
+
+on:
+  push:
+    tags:
+      - 'python-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build Python SDK
+        working-directory: ./python
+        run: python -m build
+
+      - name: Check distribution
+        working-directory: ./python
+        run: twine check dist/*
+
+      - name: Publish to PyPI
+        working-directory: ./python
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: twine upload dist/*
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Python SDK ${{ github.ref }}
+          body: |
+            Published to PyPI
+
+            Install with: `pip install gridbank-api`
+
+            Verify: https://pypi.org/project/gridbank-api/
+          draft: false
+          prerelease: false

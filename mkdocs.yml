@@ -1,0 +1,56 @@
+site_name: GridBank SDK
+site_description: Official API documentation and SDK reference for GridBank
+repo_url: https://github.com/gridbank/gridbank-sdk
+repo_name: gridbank/gridbank-sdk
+edit_uri: ""
+
+theme:
+  name: material
+  logo: assets/images/logo.png
+  palette:
+    - scheme: light
+      primary: custom
+      accent: custom
+  features:
+    - content.code.copy
+    - navigation.tabs
+    - navigation.sections
+    - toc.follow
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference: api-reference.md
+  - Errors: errors.md
+  - OpenAPI Explorer: openapi-viewer.html
+  - Python SDK:
+    - Overview: python/overview.md
+    - Installation: python/installation.md
+    - Client: python/client.md
+    - Methods: python/methods.md
+    - Examples: python/examples.md
+  - JavaScript SDK:
+    - Overview: javascript/overview.md
+    - Installation: javascript/installation.md
+    - Client: javascript/client.md
+    - Methods: javascript/methods.md
+    - Examples: javascript/examples.md
+  - Advanced:
+    - Pagination: advanced/pagination.md
+    - Rate Limits: advanced/rate-limits.md
+
+plugins:
+  - search
+
+extra_css:
+  - assets/extra.css
