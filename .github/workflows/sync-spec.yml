@@ -59,7 +59,12 @@ jobs:
           else
             echo "changed=true" >> $GITHUB_OUTPUT
             echo "## Spec diff" >> $GITHUB_STEP_SUMMARY
-            git diff docs/assets/openapi.yaml >> $GITHUB_STEP_SUMMARY
+            if git status --porcelain docs/assets/openapi.yaml | grep -q '?'; then
+              echo "(new file)" >> $GITHUB_STEP_SUMMARY
+              cat docs/assets/openapi.yaml >> $GITHUB_STEP_SUMMARY
+            else
+              git diff docs/assets/openapi.yaml >> $GITHUB_STEP_SUMMARY
+            fi
           fi
 
       - name: Open PR with updated spec

@@ -136,9 +136,19 @@ export class GridbankClient {
         if (value != null) url.searchParams.set(key, String(value));
       }
     }
-    const response = await fetch(url.toString(), {
-      headers: { "X-API-Key": this.apiKey },
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), {
+        headers: { "X-API-Key": this.apiKey },
+        signal: controller.signal,
+      });
+    } catch (err) {
+      throw new GridbankAPIError(0, err instanceof Error ? err.message : "Request failed", err);
+    } finally {
+      clearTimeout(timeout);
+    }
     let body: unknown = null;
     try {
       body = await response.json();
