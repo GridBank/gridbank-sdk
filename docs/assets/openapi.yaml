@@ -1,13 +1,8 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: GridBank External API
-  description: RESTful API for third-party access to GridBank's video library
+  description: RESTful API for third-party access to GridBank's video library.
   version: 1.0.0
-servers:
-  - url: https://api.gridbank.io
-    description: Production API
-  - url: https://staging-api.gridbank.io
-    description: Staging API
 paths:
   /external/ping:
     get:
@@ -137,7 +132,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
       security:
-      - BearerAuth: []
+      - ApiKeyAuth: []
   /external/v1/videos/{video_id}:
     get:
       tags:
@@ -175,7 +170,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
       security:
-      - BearerAuth: []
+      - ApiKeyAuth: []
   /external/v1/videos/{video_id}/download:
     get:
       tags:
@@ -236,7 +231,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
       security:
-      - BearerAuth: []
+      - ApiKeyAuth: []
   /external/v1/usage/me:
     get:
       tags:
@@ -264,7 +259,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
       security:
-      - BearerAuth: []
+      - ApiKeyAuth: []
 components:
   schemas:
     CreatorResponse:
@@ -622,7 +617,8 @@ components:
       title: UnauthorizedError
       description: Returned when API key is missing or invalid (401 Unauthorized)
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      description: Bearer token authentication (obtain from GridBank dashboard)
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (obtain from GridBank dashboard)
