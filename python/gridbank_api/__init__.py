@@ -154,7 +154,7 @@ class GridbankClient:
     def __init__(self, api_key: str, *, base_url: str = _BASE_URL) -> None:
         self._http = httpx.Client(
             base_url=base_url,
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers={"X-API-Key": api_key},
         )
 
     def _get(self, path: str, params: Optional[dict] = None) -> Any:

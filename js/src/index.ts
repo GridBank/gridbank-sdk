@@ -137,7 +137,7 @@ export class GridbankClient {
       }
     }
     const response = await fetch(url.toString(), {
-      headers: { Authorization: `Bearer ${this.apiKey}` },
+      headers: { "X-API-Key": this.apiKey },
     });
     const body = await response.json().catch(() => null);
     if (!response.ok) {
@@ -168,12 +168,12 @@ export class GridbankClient {
   }
 
   getVideo(videoId: string): Promise<Video> {
-    return this.request<Video>(`/external/v1/videos/${encodeURIComponent(videoId)}`);
+    return this.request<Video>(`/external/v1/videos/${videoId}`);
   }
 
   downloadVideo(videoId: string, options?: DownloadVideoOptions): Promise<DownloadResult> {
     return this.request<DownloadResult>(
-      `/external/v1/videos/${encodeURIComponent(videoId)}/download`,
+      `/external/v1/videos/${videoId}/download`,
       { expires_in: options?.expires_in, search_id: options?.search_id }
     );
   }
