@@ -1,0 +1,78 @@
+name: Sync OpenAPI Spec
+
+# Triggered by gridbank-external-api via repository_dispatch when docs/openapi.yaml changes.
+# Also runnable manually for one-off syncs.
+on:
+  repository_dispatch:
+    types: [openapi-spec-updated]
+
+  workflow_dispatch:
+    inputs:
+      external_api_ref:
+        description: 'Branch or tag to pull spec from'
+        required: false
+        default: main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.CI_BOT_APP_ID }}
+          private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: gridbank-sdk,gridbank-external-api
+
+      - name: Checkout SDK
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout external-api spec
+        uses: actions/checkout@v4
+        with:
+          repository: GridBank/gridbank-external-api
+          ref: ${{ github.event.client_payload.sha || github.event.inputs.external_api_ref || 'main' }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: _external_api
+          sparse-checkout: docs/openapi.yaml
+          sparse-checkout-cone-mode: false
+
+      - name: Copy spec
+        run: cp _external_api/docs/openapi.yaml docs/assets/openapi.yaml
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet docs/assets/openapi.yaml; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "## Spec diff" >> $GITHUB_STEP_SUMMARY
+            git diff docs/assets/openapi.yaml >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Open PR with updated spec
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: sync/openapi-spec
+          commit-message: 'chore: sync OpenAPI spec from external-api'
+          title: 'chore: sync OpenAPI spec'
+          body: |
+            Automated spec sync triggered by a change in `gridbank-external-api`.
+
+            **Review checklist:**
+            - [ ] Review the spec diff in the Files Changed tab
+            - [ ] Update `python/gridbank_api/__init__.py` for any new/changed endpoints or models
+            - [ ] Update `js/src/index.ts` for any new/changed endpoints or models
+            - [ ] Bump the SDK version in `python/pyproject.toml` and `js/package.json`
+          labels: 'spec-sync'
