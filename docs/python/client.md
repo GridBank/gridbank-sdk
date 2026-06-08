@@ -22,8 +22,15 @@ Customize client behavior with advanced options:
 client = GridbankClient(
     api_key="apik_your_key_here",
     base_url="https://api2.gridbank.io",  # Default API endpoint
+    max_retries=3,                         # Retry on 429 (default: 3, set 0 to disable)
 )
 ```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `api_key` | `str` | required | Your GridBank API key |
+| `base_url` | `str` | `https://api2.gridbank.io` | API base URL |
+| `max_retries` | `int` | `3` | Max retries on rate limit (429). Uses `Retry-After` header if present, otherwise exponential backoff. |
 
 ## Secure API Key Management (Recommended)
 

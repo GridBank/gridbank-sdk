@@ -22,8 +22,15 @@ Customize client behavior with advanced options:
 const client = new GridbankClient({
   apiKey: 'apik_your_key_here',
   baseUrl: 'https://api2.gridbank.io',  // Default API endpoint
+  maxRetries: 3,                        // Retry on 429 (default: 3, set 0 to disable)
 });
 ```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `apiKey` | `string` | required | Your GridBank API key |
+| `baseUrl` | `string` | `https://api2.gridbank.io` | API base URL |
+| `maxRetries` | `number` | `3` | Max retries on rate limit (429). Uses `Retry-After` header if present, otherwise exponential backoff. |
 
 ## Secure API Key Management (Recommended)
 

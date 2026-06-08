@@ -1,6 +1,7 @@
 """GridBank API Python SDK."""
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, List, Optional
@@ -143,29 +144,37 @@ def _video(data: dict) -> Video:
 # ---------------------------------------------------------------------------
 
 class GridbankClient:
-    def __init__(self, api_key: str, *, base_url: str = _BASE_URL) -> None:
+    def __init__(self, api_key: str, *, base_url: str = _BASE_URL, max_retries: int = 3) -> None:
         self._http = httpx.Client(
             base_url=base_url,
             headers={"X-API-Key": api_key},
         )
+        self._max_retries = max_retries
 
     def _get(self, path: str, params: Optional[dict] = None) -> Any:
         filtered = {k: v for k, v in (params or {}).items() if v is not None}
-        try:
-            response = self._http.get(path, params=filtered)
-        except httpx.RequestError as exc:
-            raise GridbankAPIError(0, str(exc)) from exc
-        if not response.is_success:
-            body = response.json() if "application/json" in response.headers.get("content-type", "") else {}
-            detail = body.get("detail", response.text) if isinstance(body, dict) else response.text
-            raise GridbankAPIError(response.status_code, detail, body)
-        try:
-            return response.json()
-        except Exception as exc:
-            raise GridbankAPIError(
-                response.status_code,
-                f"Server returned a non-JSON response: {exc}",
-            ) from exc
+        for attempt in range(self._max_retries + 1):
+            try:
+                response = self._http.get(path, params=filtered)
+            except httpx.RequestError as exc:
+                raise GridbankAPIError(0, str(exc)) from exc
+            if response.status_code == 429 and attempt < self._max_retries:
+                retry_after = float(response.headers.get("Retry-After", 2 ** attempt))
+                time.sleep(retry_after)
+                continue
+            if not response.is_success:
+                body = response.json() if "application/json" in response.headers.get("content-type", "") else {}
+                detail = body.get("detail", response.text) if isinstance(body, dict) else response.text
+                raise GridbankAPIError(response.status_code, detail, body)
+            try:
+                return response.json()
+            except Exception as exc:
+                raise GridbankAPIError(
+                    response.status_code,
+                    f"Server returned a non-JSON response: {exc}",
+                ) from exc
+        # unreachable, but satisfies type checkers
+        raise GridbankAPIError(429, "Rate limit exceeded after retries")
 
     def ping(self) -> PingResponse:
         data = self._get("/external/ping")

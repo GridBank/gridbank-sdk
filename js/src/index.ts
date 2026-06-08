@@ -76,6 +76,7 @@ export interface PingResponse {
 export interface GridbankClientOptions {
   apiKey: string;
   baseUrl?: string;
+  maxRetries?: number;
 }
 
 export interface SearchVideosOptions {
@@ -119,10 +120,12 @@ type Params = Record<string, string | number | boolean | null | undefined>;
 export class GridbankClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
+  private readonly maxRetries: number;
 
   constructor(options: GridbankClientOptions) {
     this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? _BASE_URL).replace(/\/$/, "");
+    this.maxRetries = options.maxRetries ?? 3;
   }
 
   private async request<T>(path: string, params?: Params): Promise<T> {
@@ -132,39 +135,50 @@ export class GridbankClient {
         if (value != null) url.searchParams.set(key, String(value));
       }
     }
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
-    let response: Response;
-    try {
-      response = await fetch(url.toString(), {
-        headers: { "X-API-Key": this.apiKey },
-        signal: controller.signal,
-      });
-    } catch (err) {
-      throw new GridbankAPIError(0, err instanceof Error ? err.message : "Request failed", err);
-    } finally {
-      clearTimeout(timeout);
-    }
-    let body: unknown = null;
-    try {
-      body = await response.json();
-    } catch {
-      if (response.ok) {
-        throw new GridbankAPIError(
-          response.status,
-          `Server returned a non-JSON response (${response.status} ${response.statusText})`,
-          null
-        );
+
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      let response: Response;
+      try {
+        response = await fetch(url.toString(), {
+          headers: { "X-API-Key": this.apiKey },
+          signal: controller.signal,
+        });
+      } catch (err) {
+        throw new GridbankAPIError(0, err instanceof Error ? err.message : "Request failed", err);
+      } finally {
+        clearTimeout(timeout);
       }
+
+      if (response.status === 429 && attempt < this.maxRetries) {
+        const retryAfter = parseFloat(response.headers.get("Retry-After") ?? String(Math.pow(2, attempt)));
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        continue;
+      }
+
+      let body: unknown = null;
+      try {
+        body = await response.json();
+      } catch {
+        if (response.ok) {
+          throw new GridbankAPIError(
+            response.status,
+            `Server returned a non-JSON response (${response.status} ${response.statusText})`,
+            null
+          );
+        }
+      }
+      if (!response.ok) {
+        const message =
+          body != null && typeof body === "object" && "detail" in body
+            ? String((body as Record<string, unknown>).detail)
+            : response.statusText;
+        throw new GridbankAPIError(response.status, message, body);
+      }
+      return body as T;
     }
-    if (!response.ok) {
-      const message =
-        body != null && typeof body === "object" && "detail" in body
-          ? String((body as Record<string, unknown>).detail)
-          : response.statusText;
-      throw new GridbankAPIError(response.status, message, body);
-    }
-    return body as T;
+    throw new GridbankAPIError(429, "Rate limit exceeded after retries");
   }
 
   ping(): Promise<PingResponse> {
