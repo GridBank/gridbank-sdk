@@ -32,16 +32,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install from npm
+      - name: Install and smoke test
         run: |
           mkdir smoke && cd smoke
           npm init -y
           npm install @gridbank/api-js
-
-      - name: Smoke test
-        run: |
           node -e "
           const { GridbankClient, GridbankAPIError } = require('@gridbank/api-js');
           const c = new GridbankClient({ apiKey: 'apik_test' });
           console.log('@gridbank/api-js installed and importable OK');
-          " smoke
+          "
