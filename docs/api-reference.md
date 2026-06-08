@@ -83,9 +83,6 @@ Fetch complete metadata for a single video by ID. Includes creator info, thumbna
     "region": "CA",
     "country": "United States"
   },
-  "content_tier": "base",
-  "created_at": "2024-01-15T10:30:00Z",
-  "is_featured": true,
   "keywords": ["skincare", "morning routine", "tutorial"]
 }
 ```
@@ -140,9 +137,14 @@ Fetch your account's current usage metrics and subscription details.
 
 ```json
 {
+  "customer_id": "cust_abc123",
+  "tier": "growth",
+  "lease_period_start": "2024-01-15T00:00:00Z",
+  "lease_period_end": "2024-02-15T00:00:00Z",
   "downloads_this_period": 42,
-  "tier": "pro",
-  "lease_period_end": "2024-02-15T00:00:00Z"
+  "active_collections_count": 3,
+  "wildcard_enabled": false,
+  "top_videos": []
 }
 ```
 
@@ -199,10 +201,10 @@ All API errors follow this pattern:
 
 ## Authentication
 
-All requests require a Bearer token in the `Authorization` header:
+All requests require your API key in the `X-API-Key` header:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api2.gridbank.io/external/v1/videos/search?q=nature
+curl -H "X-API-Key: YOUR_API_KEY" https://api2.gridbank.io/external/v1/videos/search?q=nature
 ```
 
 ---
@@ -258,9 +260,6 @@ While jumping to arbitrary pages (e.g., page 10) is technically supported, **res
   thumbnail: string;             // Thumbnail image URL
   creator: Creator;              // Creator metadata
   location: Location;            // Location metadata
-  content_tier: string;          // Licensing tier
-  created_at: string;            // ISO 8601 timestamp
-  is_featured: boolean;          // Featured/curated flag
   keywords: string[];            // Associated keywords
 }
 ```

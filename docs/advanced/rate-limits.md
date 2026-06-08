@@ -4,26 +4,29 @@ The GridBank API enforces rate limits based on your subscription tier. When you 
 
 ## Rate Limits by Tier
 
-| Tier | Requests/Minute | Concurrent | Burst | Notes |
-|------|-----------------|-----------|-------|-------|
-| **Starter** | 10 | 2 | 15 | For development and testing |
-| **Growth** | 60 | 5 | 80 | For production applications |
-| **Enterprise** | Custom | Custom | Custom | Contact sales@gridbank.io |
+| Tier | Requests/Second | Burst | Monthly Quota |
+|------|-----------------|-------|---------------|
+| **Starter** | 50 | 500 | 500,000 |
+| **Growth** | 100 | 1,000 | 2,000,000 |
+| **Scale** | 300 | 3,000 | 10,000,000 |
+| **Enterprise** | 500 | 5,000 | 50,000,000 |
+
+**Requests/Second** is the sustained throughput limit. **Burst** allows short spikes above that rate before throttling kicks in. **Monthly Quota** is the total request cap per billing period.
 
 ## Response Headers
 
 Rate limit information is included on successful responses and rate limit errors:
 
 ```
-X-RateLimit-Limit: 60                    # Your request limit this period
-X-RateLimit-Remaining: 45                # Requests remaining in current period
+X-RateLimit-Limit: 100                   # Your request limit this period
+X-RateLimit-Remaining: 85                # Requests remaining in current period
 X-RateLimit-Reset: 1705330800            # Unix timestamp when limit resets
 ```
 
 **On 429 (rate limit exceeded):**
 ```
-Retry-After: 60                          # Seconds to wait before retrying
-X-RateLimit-Limit: 60
+Retry-After: 1                           # Seconds to wait before retrying
+X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 0
 X-RateLimit-Reset: 1705330800
 ```
@@ -41,12 +44,9 @@ When rate limited, always respect the `Retry-After` header:
     try:
         results = client.search_videos(q="test")
     except GridbankAPIError as e:
-        if e.code == "rate_limited":
-            # Check Retry-After header in the response
-            retry_after = e.retry_after or 60  # Default to 60 seconds
-            print(f"Rate limited. Waiting {retry_after}s...")
-            time.sleep(retry_after)
-            results = client.search_videos(q="test")  # Retry
+        if e.status_code == 429:
+            time.sleep(1)  # Respect Retry-After; default to 1s if header unavailable
+            results = client.search_videos(q="test")
     ```
 
 === "JavaScript"
@@ -55,48 +55,16 @@ When rate limited, always respect the `Retry-After` header:
     try {
       const results = await client.searchVideos({ q: 'test' });
     } catch (error) {
-      if (error.code === 'rate_limited') {
-        const retryAfter = error.retryAfter || 60;
-        console.log(`Rate limited. Waiting ${retryAfter}s...`);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+      if (error instanceof GridbankAPIError && error.statusCode === 429) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const results = await client.searchVideos({ q: 'test' });
       }
     }
     ```
 
-## Automatic Retries
-
-The SDKs include built-in exponential backoff for 429 responses:
-
-=== "Python"
-
-    ```python
-    # Automatically retries with exponential backoff
-    client = GridbankClient(
-        api_key="apik_...",
-        max_retries=3  # Try up to 3 times
-    )
-    
-    # If rate limited, SDK retries automatically
-    results = client.search_videos(q="nature")
-    ```
-
-=== "JavaScript"
-
-    ```javascript
-    // Automatically retries with exponential backoff
-    const client = new GridbankClient({
-      apiKey: 'apik_...',
-      maxRetries: 3  // Try up to 3 times
-    });
-    
-    // If rate limited, SDK retries automatically
-    const results = await client.searchVideos({ q: 'nature' });
-    ```
-
 ## Manual Retry with Exponential Backoff
 
-Implement your own retry logic:
+The SDKs do not include built-in retry logic. Implement your own:
 
 === "Python"
 
@@ -110,7 +78,7 @@ Implement your own retry logic:
             results = client.search_videos(q="test")
             break
         except GridbankAPIError as e:
-            if e.code == "rate_limited" and attempt < max_retries - 1:
+            if e.status_code == 429 and attempt < max_retries - 1:
                 wait_time = 2 ** attempt  # 1s, 2s, 4s...
                 print(f"Rate limited. Waiting {wait_time}s...")
                 time.sleep(wait_time)
@@ -126,7 +94,7 @@ Implement your own retry logic:
         try {
           return await client.searchVideos({ q: query });
         } catch (error) {
-          if (error.code === 'rate_limited' && attempt < maxRetries - 1) {
+          if (error instanceof GridbankAPIError && error.statusCode === 429 && attempt < maxRetries - 1) {
             const waitTime = Math.pow(2, attempt) * 1000;  // 1s, 2s, 4s...
             console.log(`Rate limited. Waiting ${waitTime}ms...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -149,15 +117,8 @@ Check your rate limit usage before making large requests:
     ```python
     usage = client.usage_summary()
     print(f"Tier: {usage.tier}")
-    
-    tier_limits = {
-        "starter": 10,
-        "growth": 60,
-        "enterprise": float('inf')
-    }
-    
-    limit = tier_limits.get(usage.tier, 0)
-    print(f"Your rate limit: {limit} requests/minute")
+    print(f"Downloads this period: {usage.downloads_this_period}")
+    print(f"Period ends: {usage.lease_period_end}")
     ```
 
 === "JavaScript"
@@ -165,15 +126,8 @@ Check your rate limit usage before making large requests:
     ```javascript
     const usage = await client.usageSummary();
     console.log(`Tier: ${usage.tier}`);
-    
-    const tierLimits = {
-      'starter': 10,
-      'growth': 60,
-      'enterprise': Infinity
-    };
-    
-    const limit = tierLimits[usage.tier];
-    console.log(`Your rate limit: ${limit} requests/minute`);
+    console.log(`Downloads this period: ${usage.downloads_this_period}`);
+    console.log(`Period ends: ${usage.lease_period_end}`);
     ```
 
 ## Best Practices
@@ -187,22 +141,16 @@ Check your rate limit usage before making large requests:
 
 ## Upgrading Your Tier
 
-Rate limit too low? Upgrade your subscription:
+- **Starter** → **Growth** → **Scale** → **Enterprise**
 
-- **Starter** (10 req/min) → **Growth** (60 req/min)
-- **Growth** (60 req/min) → **Enterprise** (custom)
-
-Upgrade at [gridbank.io/billing](https://gridbank.io/billing) or contact sales@gridbank.io for enterprise plans.
+Contact [sales@gridbank.io](mailto:sales@gridbank.io) to upgrade or discuss enterprise plans.
 
 ## Rate Limit Errors
 
-Common rate limit errors:
-
 | Error | Meaning | Solution |
 |-------|---------|----------|
-| 429 Too Many Requests | You've exceeded your quota | Wait and retry after Retry-After |
+| 429 Too Many Requests | Sustained rate limit exceeded | Wait for `Retry-After` seconds and retry |
 | X-RateLimit-Remaining: 0 | No requests left this period | Wait for X-RateLimit-Reset |
-| Burst limit exceeded | Too many concurrent requests | Reduce concurrent connections |
 
 ---
 

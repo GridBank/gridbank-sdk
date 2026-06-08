@@ -15,35 +15,35 @@ try {
   const results = await client.searchVideos({
     q: 'morning skincare routine',
     sort: 'relevant',
-    perPage: 5
+    per_page: 5
   });
   
-  console.log(`Found ${results.videos.length} videos (search_id: ${results.searchId})`);
+  console.log(`Found ${results.videos.length} videos (search_id: ${results.search_id})`);
   
   // Get the first result
   if (results.videos.length > 0) {
     const video = results.videos[0];
     console.log(`\nTop result: ${video.title}`);
-    console.log(`Duration: ${video.duration}s | Creator: ${video.creator.name}`);
+    console.log(`Duration: ${video.duration}s | Creator: ${video.creator.username}`);
     
     // Download the video
     const download = await client.downloadVideo(video.id, {
-      expiresIn: 5,
-      searchId: results.searchId  // track funnel
+      expires_in: 5,
+      search_id: results.search_id  // track funnel
     });
     
     console.log(`\nDownload URL: ${download.url}`);
-    console.log(`Expires: ${download.expiresAt}`);
+    console.log(`Expires: ${download.expires_at}`);
     
     // Check usage
     const usage = await client.usageSummary();
-    console.log(`\nUsage: ${usage.downloadsThisPeriod} downloads used`);
+    console.log(`\nUsage: ${usage.downloads_this_period} downloads used`);
     console.log(`Tier: ${usage.tier}`);
   }
   
 } catch (error) {
   if (error instanceof GridbankAPIError) {
-    console.error(`API Error ${error.code}: ${error.message}`);
+    console.error(`HTTP ${error.statusCode}: ${error.message}`);
     if (error.details) {
       console.error(`Details:`, error.details);
     }
@@ -61,11 +61,11 @@ Search for videos with specific duration and theme:
 // Find short nature documentaries
 const results = await client.searchVideos({
   q: 'nature documentary',
-  durationMin: 60,      // At least 1 minute
-  durationMax: 300,     // At most 5 minutes
+  duration_min: 60,      // At least 1 minute
+  duration_max: 300,     // At most 5 minutes
   theme: 'nature',
   sort: 'popular',
-  perPage: 10
+  per_page: 10
 });
 
 console.log(`Found ${results.videos.length} short nature videos`);
@@ -79,14 +79,15 @@ Get full metadata for a video:
 const video = await client.getVideo('video_abc123');
 
 console.log(`Title: ${video.title}`);
-console.log(`Creator: ${video.creator.name} (@${video.creator.username})`);
-console.log(`Location: ${video.location.city}, ${video.location.region}`);
+console.log(`Creator: ${video.creator.username}`);
+if (video.location) {
+  console.log(`Location: ${video.location.city}, ${video.location.region}`);
+}
 console.log(`Duration: ${video.duration}s`);
 console.log(`Resolution: ${video.width}x${video.height}`);
-console.log(`Tier: ${video.contentTier}`);
-console.log(`Featured: ${video.isFeatured}`);
-console.log(`Keywords: ${video.keywords.join(', ')}`);
-console.log(`Uploaded: ${video.createdAt}`);
+if (video.keywords) {
+  console.log(`Keywords: ${video.keywords.join(', ')}`);
+}
 ```
 
 ## Batch Download Videos
@@ -94,13 +95,13 @@ console.log(`Uploaded: ${video.createdAt}`);
 Download multiple videos:
 
 ```javascript
-const results = await client.searchVideos({ q: 'nature', perPage: 20 });
+const results = await client.searchVideos({ q: 'nature', per_page: 20 });
 
 for (const video of results.videos) {
   try {
     const download = await client.downloadVideo(video.id, {
-      expiresIn: 5,
-      searchId: results.searchId
+      expires_in: 5,
+      search_id: results.search_id
     });
     console.log(`✓ ${video.title} -> ${download.url}`);
   } catch (error) {
@@ -113,29 +114,13 @@ for (const video of results.videos) {
 
 ## Check Quota Before Downloading
 
-Verify you have remaining quota before large downloads:
+Verify your usage before large downloads:
 
 ```javascript
 const usage = await client.usageSummary();
 console.log(`Tier: ${usage.tier}`);
-console.log(`Downloads used: ${usage.downloadsThisPeriod}`);
-console.log(`Period ends: ${usage.leasePeriodEnd}`);
-
-// Tier limits (example)
-const tierLimits = {
-  'starter': 100,
-  'pro': 1000,
-  'enterprise': Infinity
-};
-
-const limit = tierLimits[usage.tier] || 0;
-const remaining = limit - usage.downloadsThisPeriod;
-
-console.log(`Remaining quota: ${remaining}`);
-
-if (remaining < 10) {
-  console.warn('⚠️ Running low on quota. Upgrade or wait for period reset.');
-}
+console.log(`Downloads used: ${usage.downloads_this_period}`);
+console.log(`Period ends: ${usage.lease_period_end}`);
 ```
 
 ## Pagination Example
@@ -150,14 +135,14 @@ while (true) {
   const results = await client.searchVideos({
     q: 'nature',
     page,
-    perPage: 50
+    per_page: 50
   });
   
   allVideos.push(...results.videos);
   console.log(`Fetched ${results.videos.length} videos from page ${page}`);
   
-  // Always check hasMore before requesting next page
-  if (!results.hasMore) {
+  // Always check has_more before requesting next page
+  if (!results.has_more) {
     break;
   }
   
@@ -182,30 +167,30 @@ try {
   
 } catch (error) {
   if (error instanceof GridbankAPIError) {
-    // Handle specific API errors
-    switch (error.code) {
-      case 'unauthorized':
+    switch (error.statusCode) {
+      case 401:
         console.error('API key is invalid. Check your credentials.');
         break;
-      case 'forbidden':
+      case 403:
         console.error('You don\'t have access. Upgrade your subscription.');
         break;
-      case 'not_found':
+      case 404:
         console.error('Video not found. Try searching first.');
         break;
-      case 'rate_limited':
+      case 429:
         console.error('Too many requests. Wait before retrying.');
         break;
-      case 'validation_error':
-        error.details?.forEach(err => {
-          console.error(`Field ${err.loc.join('.')}: ${err.msg}`);
-        });
+      case 422:
+        if (Array.isArray(error.details)) {
+          error.details.forEach(err => {
+            console.error(`Field ${err.loc.join('.')}: ${err.msg}`);
+          });
+        }
         break;
       default:
-        console.error(`API Error: ${error.message}`);
+        console.error(`HTTP ${error.statusCode}: ${error.message}`);
     }
   } else {
-    // Handle unexpected errors
     console.error('Unexpected error:', error);
   }
 }
@@ -214,13 +199,13 @@ try {
 ## TypeScript Example
 
 ```typescript
-import { GridbankClient, SearchResult, Video, GridbankAPIError } from '@gridbank/api-js';
+import { GridbankClient, VideoListResponse, Video, GridbankAPIError } from '@gridbank/api-js';
 
 const client = new GridbankClient({ apiKey: 'apik_...' });
 
 async function findAndDownload(query: string): Promise<void> {
   try {
-    const results: SearchResult = await client.searchVideos({ q: query, perPage: 5 });
+    const results: VideoListResponse = await client.searchVideos({ q: query, per_page: 5 });
     
     if (results.videos.length === 0) {
       console.log('No videos found.');
@@ -229,14 +214,14 @@ async function findAndDownload(query: string): Promise<void> {
     
     const video: Video = results.videos[0];
     const download = await client.downloadVideo(video.id, {
-      searchId: results.searchId
+      search_id: results.search_id
     });
     
     console.log(`Downloaded: ${video.title}`);
     console.log(`URL: ${download.url}`);
   } catch (error) {
     if (error instanceof GridbankAPIError) {
-      console.error(`Error: ${error.code} - ${error.message}`);
+      console.error(`HTTP ${error.statusCode}: ${error.message}`);
     } else {
       throw error;
     }

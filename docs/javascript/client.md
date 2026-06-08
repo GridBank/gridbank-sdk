@@ -12,7 +12,7 @@ import { GridbankClient } from '@gridbank/api-js';
 const client = new GridbankClient({ apiKey: 'apik_your_key_here' });
 ```
 
-**Get your API key:** [GridBank Dashboard](https://gridbank.io/dashboard)
+**Get your API key:** Contact [hello@gridbank.io](mailto:hello@gridbank.io) — keys are provisioned manually during onboarding.
 
 ## Configuration Options
 
@@ -22,7 +22,6 @@ Customize client behavior with advanced options:
 const client = new GridbankClient({
   apiKey: 'apik_your_key_here',
   baseUrl: 'https://api2.gridbank.io',  // Default API endpoint
-  timeout: 30000,                       // Request timeout in milliseconds (default: 30000)
 });
 ```
 
@@ -71,8 +70,7 @@ try {
   const results = await client.searchVideos({ q: 'test' });
 } catch (error) {
   if (error instanceof GridbankAPIError) {
-    console.error(`Error ${error.code}: ${error.message}`);
-    console.error(`HTTP Status: ${error.statusCode}`);
+    console.error(`HTTP ${error.statusCode}: ${error.message}`);
     if (error.details) {
       console.error('Details:', error.details);
     }
@@ -89,14 +87,14 @@ See [Error Handling Guide](../api-reference.md#error-codes) for detailed error i
 Full type definitions are included for excellent IDE support:
 
 ```typescript
-import { GridbankClient, SearchResult, Video } from '@gridbank/api-js';
+import { GridbankClient, VideoListResponse, Video } from '@gridbank/api-js';
 
 const client = new GridbankClient({ apiKey: 'apik_...' });
 
 // Full type inference
-const results: SearchResult = await client.searchVideos({ 
+const results: VideoListResponse = await client.searchVideos({ 
   q: 'nature', 
-  perPage: 5 
+  per_page: 5 
 });
 
 // IDE autocomplete for all properties

@@ -42,7 +42,7 @@ try:
         print(f"Tier: {usage.tier}")
 
 except GridbankAPIError as e:
-    print(f"API Error {e.code}: {e.message}")
+    print(f"HTTP {e.status_code}: {e.message}")
     if e.details:
         print(f"Details: {e.details}")
 except Exception as e:
@@ -76,13 +76,12 @@ video = client.get_video(video_id="video_abc123")
 
 print(f"Title: {video.title}")
 print(f"Creator: {video.creator.name} (@{video.creator.username})")
-print(f"Location: {video.location.city}, {video.location.region}")
+if video.location:
+    print(f"Location: {video.location.city}, {video.location.region}")
 print(f"Duration: {video.duration}s")
 print(f"Resolution: {video.width}x{video.height}")
-print(f"Tier: {video.content_tier}")
-print(f"Featured: {video.is_featured}")
-print(f"Keywords: {', '.join(video.keywords)}")
-print(f"Uploaded: {video.created_at}")
+if video.keywords:
+    print(f"Keywords: {', '.join(video.keywords)}")
 ```
 
 ## Batch Download Videos
@@ -114,20 +113,7 @@ print(f"Tier: {usage.tier}")
 print(f"Downloads used: {usage.downloads_this_period}")
 print(f"Period ends: {usage.lease_period_end}")
 
-# Tier limits (example)
-tier_limits = {
-    "starter": 100,
-    "pro": 1000,
-    "enterprise": float('inf')
-}
-
-limit = tier_limits.get(usage.tier, 0)
-remaining = limit - usage.downloads_this_period
-
-print(f"Remaining quota: {remaining}")
-
-if remaining < 10:
-    print("⚠️ Running low on quota. Upgrade or wait for period reset.")
+print(f"Period ends: {usage.lease_period_end}")
 ```
 
 ## Pagination Example
@@ -171,20 +157,20 @@ try:
     video = client.get_video(video_id="video_xyz")
     
 except GridbankAPIError as e:
-    # Handle specific API errors
-    if e.code == "unauthorized":
+    # Handle by HTTP status code
+    if e.status_code == 401:
         print("API key is invalid. Check your credentials.")
-    elif e.code == "forbidden":
+    elif e.status_code == 403:
         print("You don't have access. Upgrade your subscription.")
-    elif e.code == "not_found":
+    elif e.status_code == 404:
         print("Video not found. Try searching first.")
-    elif e.code == "rate_limited":
+    elif e.status_code == 429:
         print("Too many requests. Wait before retrying.")
-    elif e.code == "validation_error":
-        for error in e.details:
+    elif e.status_code == 422:
+        for error in (e.details or []):
             print(f"Field {error['loc']}: {error['msg']}")
     else:
-        print(f"API Error: {e.message}")
+        print(f"HTTP {e.status_code}: {e.message}")
         
 except Exception as e:
     # Handle unexpected errors
