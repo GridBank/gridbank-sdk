@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - run: pip install hatch
+      - run: pip install hatch==1.14.1
 
       - run: hatch build
 
