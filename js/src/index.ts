@@ -5,7 +5,6 @@ const _BASE_URL = "https://api2.gridbank.io";
 // ---------------------------------------------------------------------------
 
 export interface Creator {
-  id: string;
   username: string;
   name?: string | null;
   bio?: string | null;
@@ -20,8 +19,6 @@ export interface Location {
 
 export interface Video {
   id: string;
-  content_tier: string;
-  created_at: string;
   creator: Creator;
   title?: string | null;
   description?: string | null;
@@ -31,7 +28,6 @@ export interface Video {
   url?: string | null;
   thumbnail?: string | null;
   location?: Location | null;
-  is_featured?: boolean | null;
   keywords?: string[] | null;
 }
 
