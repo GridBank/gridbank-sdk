@@ -17,6 +17,9 @@ classifiers = [
 ]
 dependencies = ["httpx>=0.27"]
 
+[project.optional-dependencies]
+test = ["pytest", "respx"]
+
 [project.urls]
 Homepage = "https://github.com/GridBank/gridbank-sdk"
 Documentation = "https://gridbank.github.io/gridbank-sdk"
