@@ -1,6 +1,6 @@
 # Python SDK Methods
 
-All GridBank API methods are available through the `GridbankClient` instance. Methods use Python naming conventions (snake_case) and return type-safe Pydantic models.
+All GridBank API methods are available through the `GridbankClient` instance. Methods use Python naming conventions (snake_case) and return typed dataclass models.
 
 ## search_videos()
 
@@ -31,10 +31,12 @@ result = client.search_videos(
 **Returns:**
 
 ```python
-class SearchResult:
-    videos: list[Video]        # Array of matching videos
-    has_more: bool             # True if more pages exist
+class VideoListResponse:
     search_id: str             # Unique search session ID
+    page: int                  # Current page number
+    per_page: int              # Results per page
+    has_more: bool             # True if more pages exist
+    videos: list[Video]        # Array of matching videos
 ```
 
 **Errors:** 400, 401, 422, 429, 500
@@ -67,19 +69,16 @@ video = client.get_video(video_id="video_abc123")
 ```python
 class Video:
     id: str                        # Video ID
-    title: str                     # Title
-    description: str               # Long-form description
-    duration: float                # Duration in seconds
-    width: int                     # Width in pixels
-    height: int                    # Height in pixels
-    url: str                       # Preview URL
-    thumbnail: str                 # Thumbnail URL
     creator: Creator               # Creator metadata
-    location: Location             # Location metadata
-    content_tier: str              # Licensing tier
-    created_at: datetime           # Upload timestamp
-    is_featured: bool              # Featured flag
-    keywords: list[str]            # Associated keywords
+    title: str | None              # Title
+    description: str | None        # Long-form description
+    duration: float | None         # Duration in seconds
+    width: int | None              # Width in pixels
+    height: int | None             # Height in pixels
+    url: str | None                # Preview URL
+    thumbnail: str | None          # Thumbnail URL
+    location: Location | None      # Location metadata
+    keywords: list[str] | None     # Associated keywords
 ```
 
 **Errors:** 401, 403, 404, 429, 500
@@ -116,9 +115,12 @@ download = client.download_video(
 **Returns:**
 
 ```python
-class Download:
-    url: str                   # Signed S3 download URL
+class DownloadResult:
+    video_id: str              # Video ID
+    url: str                   # Signed download URL
     expires_at: datetime       # Expiration timestamp
+    file_size: int             # File size in bytes
+    format: str                # File format (e.g. "mp4")
 ```
 
 **Errors:** 401, 403, 404, 429, 500
@@ -150,10 +152,15 @@ usage = client.usage_summary()
 **Returns:**
 
 ```python
-class Usage:
-    downloads_this_period: int     # Downloads used this billing period
+class UsageSummary:
+    customer_id: str               # Customer identifier
     tier: str                      # Subscription tier
+    lease_period_start: datetime   # Period start timestamp
     lease_period_end: datetime     # Period end timestamp
+    downloads_this_period: int     # Downloads used this billing period
+    active_collections_count: int  # Number of active collections
+    wildcard_enabled: bool         # Whether wildcard access is enabled
+    top_videos: list[TopVideo]     # Most downloaded videos this period
 ```
 
 **Errors:** 401, 429, 500
@@ -179,9 +186,7 @@ from gridbank_api import GridbankAPIError
 try:
     video = client.get_video(video_id="invalid")
 except GridbankAPIError as e:
-    print(f"Code: {e.code}")           # "not_found"
-    print(f"Message: {e.message}")     # "Video not found"
-    print(f"HTTP Status: {e.status_code}")  # 404
+    print(f"HTTP {e.status_code}: {e.message}")
     if e.details:
         print(f"Details: {e.details}")
 ```
