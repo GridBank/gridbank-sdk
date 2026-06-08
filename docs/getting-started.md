@@ -2,10 +2,11 @@
 
 ## 1. Get Your API Key
 
-1. Sign up or log in at [gridbank.io](https://gridbank.io)
-2. Navigate to **Settings** → **API Keys**
-3. Click **Create New Key** and copy the generated key (starts with `apik_`)
-4. Keep this key secure; never commit it to version control
+API keys are provisioned manually during onboarding. To get your key:
+
+1. Sign up at [gridbank.io](https://gridbank.io) or contact [hello@gridbank.io](mailto:hello@gridbank.io)
+2. The GridBank team will issue your API key (starts with `apik_`) and send it to you directly
+3. Keep this key secure; never commit it to version control
 
 ## 2. Choose Your SDK
 
