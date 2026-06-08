@@ -12,7 +12,7 @@ from gridbank_api import GridbankClient
 client = GridbankClient(api_key="apik_your_key_here")
 ```
 
-**Get your API key:** [GridBank Dashboard](https://gridbank.io/dashboard)
+**Get your API key:** Contact [hello@gridbank.io](mailto:hello@gridbank.io) — keys are provisioned manually during onboarding.
 
 ## Configuration Options
 
@@ -22,7 +22,6 @@ Customize client behavior with advanced options:
 client = GridbankClient(
     api_key="apik_your_key_here",
     base_url="https://api2.gridbank.io",  # Default API endpoint
-    timeout=30,                            # Request timeout in seconds (default: 30)
 )
 ```
 
@@ -60,8 +59,7 @@ client = GridbankClient(api_key="apik_...")
 try:
     results = client.search_videos(q="test")
 except GridbankAPIError as e:
-    print(f"Error {e.code}: {e.message}")
-    print(f"HTTP Status: {e.status_code}")
+    print(f"HTTP {e.status_code}: {e.message}")
     if e.details:
         print(f"Details: {e.details}")
 ```
@@ -73,12 +71,12 @@ See [Error Handling Guide](../api-reference.md#error-codes) for detailed error i
 The SDK provides full type hints for excellent IDE autocomplete:
 
 ```python
-from gridbank_api import GridbankClient, SearchResult, Video
+from gridbank_api import GridbankClient, VideoListResponse, Video
 
 client = GridbankClient(api_key="apik_...")
 
 # Full type support
-results: SearchResult = client.search_videos(q="nature", per_page=5)
+results: VideoListResponse = client.search_videos(q="nature", per_page=5)
 
 # IDE knows about all Video properties
 for video in results.videos:

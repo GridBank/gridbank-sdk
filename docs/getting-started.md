@@ -18,7 +18,7 @@ GridBank provides official SDKs for Python and JavaScript:
     pip install gridbank-api
     ```
 
-    Works with Python 3.8+
+    Works with Python 3.9+
 
 === "JavaScript"
 
