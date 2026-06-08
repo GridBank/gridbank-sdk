@@ -1,0 +1,47 @@
+name: Smoke Test Published Packages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  smoke-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install from PyPI
+        run: pip install gridbank-api
+
+      - name: Smoke test
+        run: |
+          python -c "
+          from gridbank_api import GridbankClient, GridbankAPIError
+          c = GridbankClient('apik_test')
+          print('gridbank-api installed and importable OK')
+          "
+
+  smoke-js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install from npm
+        run: |
+          mkdir smoke && cd smoke
+          npm init -y
+          npm install @gridbank/api-js
+
+      - name: Smoke test
+        run: |
+          node -e "
+          const { GridbankClient, GridbankAPIError } = require('@gridbank/api-js');
+          const c = new GridbankClient({ apiKey: 'apik_test' });
+          console.log('@gridbank/api-js installed and importable OK');
+          " smoke
