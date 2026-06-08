@@ -163,7 +163,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VideoResponse'
+                $ref: '#/components/schemas/VideoMetadataResponse'
         '404':
           description: Video not found or not accessible
         '422':
@@ -301,6 +301,35 @@ components:
       - username
       title: CreatorResponse
       description: Creator information in API responses.
+    CreatorMetadataResponse:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Creator display name
+        username:
+          type: string
+          title: Username
+          description: Creator username
+        bio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bio
+          description: Creator biography
+        profile_image:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profile Image
+          description: Creator profile image URL
+      type: object
+      required:
+      - username
+      title: CreatorMetadataResponse
+      description: Creator information for single-video metadata responses (no internal ID).
     HTTPValidationError:
       properties:
         detail:
@@ -508,7 +537,7 @@ components:
           description: Whether there are more results
         videos:
           items:
-            $ref: '#/components/schemas/VideoResponse'
+            $ref: '#/components/schemas/VideoMetadataResponse'
           type: array
           title: Videos
           description: List of videos on this page
@@ -524,7 +553,7 @@ components:
         Paginated video search/list response.
 
         Response format per technical-design.v2.md §3.1 specification.
-    VideoResponse:
+    VideoMetadataResponse:
       properties:
         id:
           type: string
@@ -560,21 +589,6 @@ components:
           - type: 'null'
           title: Height
           description: Video height in pixels
-        content_tier:
-          type: string
-          title: Content Tier
-          description: Content tier (e.g., premium, standard)
-        created_at:
-          type: string
-          format: date-time
-          title: Created At
-          description: Video creation timestamp
-        is_featured:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Is Featured
-          description: Whether video is featured
         keywords:
           anyOf:
           - items:
@@ -596,7 +610,7 @@ components:
           title: Thumbnail
           description: Watermarked thumbnail URL
         creator:
-          $ref: '#/components/schemas/CreatorResponse'
+          $ref: '#/components/schemas/CreatorMetadataResponse'
           description: Video creator information
         location:
           anyOf:
@@ -606,11 +620,9 @@ components:
       type: object
       required:
       - id
-      - content_tier
-      - created_at
       - creator
-      title: VideoResponse
-      description: Video information for browse/search responses (watermarked content only).
+      title: VideoMetadataResponse
+      description: Video metadata for GET /videos/{id} (excludes internal fields).
     UnauthorizedError:
       type: object
       required:

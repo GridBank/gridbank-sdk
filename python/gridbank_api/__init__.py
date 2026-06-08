@@ -16,7 +16,6 @@ _BASE_URL = "https://api2.gridbank.io"
 
 @dataclass
 class Creator:
-    id: str
     username: str
     name: Optional[str] = None
     bio: Optional[str] = None
@@ -33,8 +32,6 @@ class Location:
 @dataclass
 class Video:
     id: str
-    content_tier: str
-    created_at: datetime
     creator: Creator
     title: Optional[str] = None
     description: Optional[str] = None
@@ -44,7 +41,6 @@ class Video:
     url: Optional[str] = None
     thumbnail: Optional[str] = None
     location: Optional[Location] = None
-    is_featured: Optional[bool] = None
     keywords: Optional[List[str]] = None
 
 
@@ -113,7 +109,6 @@ def _dt(value: str) -> datetime:
 
 def _creator(data: dict) -> Creator:
     return Creator(
-        id=data["id"],
         username=data["username"],
         name=data.get("name"),
         bio=data.get("bio"),
@@ -130,8 +125,6 @@ def _location(data: Optional[dict]) -> Optional[Location]:
 def _video(data: dict) -> Video:
     return Video(
         id=data["id"],
-        content_tier=data["content_tier"],
-        created_at=_dt(data["created_at"]),
         creator=_creator(data["creator"]),
         title=data.get("title"),
         description=data.get("description"),
@@ -141,7 +134,6 @@ def _video(data: dict) -> Video:
         url=data.get("url"),
         thumbnail=data.get("thumbnail"),
         location=_location(data.get("location")),
-        is_featured=data.get("is_featured"),
         keywords=data.get("keywords"),
     )
 
