@@ -6,7 +6,7 @@ The official GridBank Python SDK provides a type-safe, Pythonic wrapper around t
 
 - **Type hints** — Full type annotations for IDE autocomplete and better development experience
 - **Error handling** — Automatic exception raising with detailed error messages and status codes
-- **Pydantic models** — Strongly-typed request/response objects with validation
+- **Dataclass models** — Strongly-typed request/response objects
 - **Zero friction** — No manual header management, authentication, or JSON parsing
 
 ## Installation
@@ -15,7 +15,7 @@ The official GridBank Python SDK provides a type-safe, Pythonic wrapper around t
 pip install gridbank-api
 ```
 
-**Requires:** Python 3.8+
+**Requires:** Python 3.9+
 
 ## Quick Example
 
@@ -42,7 +42,7 @@ for video in results.videos:
 - **download_video()** — Generate signed download URLs (requires subscription)
 - **usage_summary()** — Check your account tier and download quota
 - **GridbankAPIError** — Exception class for comprehensive error handling
-- **Type models** — Pydantic models for all request/response shapes
+- **Type models** — Dataclasses for all response shapes
 
 ## Authentication
 
