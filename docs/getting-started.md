@@ -4,7 +4,7 @@
 
 API keys are provisioned manually during onboarding. To get your key:
 
-1. Sign up at [gridbank.io](https://gridbank.io) or contact [hello@gridbank.io](mailto:hello@gridbank.io)
+1. Sign up at [gridbank.io](https://gridbank.io) or contact [support@gridbank.io](mailto:support@gridbank.io)
 2. The GridBank team will issue your API key (starts with `apik_`) and send it to you directly
 3. Keep this key secure; never commit it to version control
 
@@ -137,6 +137,6 @@ Monitor your subscription tier and remaining quota:
 
 Stuck? Reach out:
 
-- **Email:** hello@gridbank.io
+- **Email:** support@gridbank.io
 - **Status Page:** [gridbank.io](https://gridbank.io)
 - **GitHub Issues:** [gridbank/gridbank-external-api/issues](https://github.com/gridbank/gridbank-external-api/issues)

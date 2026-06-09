@@ -323,5 +323,5 @@ Use the specification with:
 ## Support
 
 - **Documentation:** [gridbank.github.io/gridbank-sdk](https://gridbank.github.io/gridbank-sdk)
-- **Email:** hello@gridbank.io
+- **Email:** support@gridbank.io
 - **Status:** [gridbank.io](https://gridbank.io)
