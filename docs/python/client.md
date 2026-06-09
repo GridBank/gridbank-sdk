@@ -12,7 +12,7 @@ from gridbank_api import GridbankClient
 client = GridbankClient(api_key="apik_your_key_here")
 ```
 
-**Get your API key:** Contact [hello@gridbank.io](mailto:hello@gridbank.io) — keys are provisioned manually during onboarding.
+**Get your API key:** Contact [support@gridbank.io](mailto:support@gridbank.io) — keys are provisioned manually during onboarding.
 
 ## Configuration Options
 
