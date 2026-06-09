@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: GridBank External API
   description: RESTful API for third-party access to GridBank's video library.
@@ -67,10 +67,9 @@ paths:
         in: query
         required: false
         schema:
-          anyOf:
-          - type: string
-            pattern: ^(relevant|popular|recent)$
-          - type: 'null'
+          type: string
+          pattern: ^(relevant|popular|recent)$
+          nullable: true
           description: 'Sort order: relevant, popular, or recent'
           default: relevant
           title: Sort
@@ -79,10 +78,9 @@ paths:
         in: query
         required: false
         schema:
-          anyOf:
-          - type: integer
-            minimum: 0
-          - type: 'null'
+          type: integer
+          minimum: 0
+          nullable: true
           description: Minimum video duration in seconds
           title: Duration Min
         description: Minimum video duration in seconds
@@ -90,10 +88,9 @@ paths:
         in: query
         required: false
         schema:
-          anyOf:
-          - type: integer
-            minimum: 0
-          - type: 'null'
+          type: integer
+          minimum: 0
+          nullable: true
           description: Maximum video duration in seconds
           title: Duration Max
         description: Maximum video duration in seconds
@@ -101,9 +98,8 @@ paths:
         in: query
         required: false
         schema:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           description: Filter to videos in curated collections with this theme
           title: Theme
         description: Filter to videos in curated collections with this theme
@@ -111,9 +107,8 @@ paths:
         in: query
         required: false
         schema:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           description: UUID to track search funnel (auto-generated if not provided)
           title: Search Id
         description: UUID to track search funnel (auto-generated if not provided)
@@ -210,9 +205,8 @@ paths:
         in: query
         required: false
         schema:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           description: Optional search session ID for analytics funnel
           title: Search Id
         description: Optional search session ID for analytics funnel
@@ -274,9 +268,8 @@ components:
           title: Id
           description: Unique creator identifier
         name:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Name
           description: Creator display name
         username:
@@ -284,15 +277,13 @@ components:
           title: Username
           description: Creator username
         bio:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Bio
           description: Creator biography
         profile_image:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Profile Image
           description: Creator profile image URL
       type: object
@@ -304,9 +295,8 @@ components:
     CreatorMetadataResponse:
       properties:
         name:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Name
           description: Creator display name
         username:
@@ -314,15 +304,13 @@ components:
           title: Username
           description: Creator username
         bio:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Bio
           description: Creator biography
         profile_image:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Profile Image
           description: Creator profile image URL
       type: object
@@ -342,21 +330,18 @@ components:
     LocationResponse:
       properties:
         city:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: City
           description: City name
         region:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Region
           description: Region/state name
         country:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Country
           description: Country name
       type: object
@@ -369,10 +354,9 @@ components:
           title: Ping
           description: Ping response message
         timestamp:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
+          type: string
+          format: date-time
+          nullable: true
           title: Timestamp
           description: Response timestamp
       type: object
@@ -391,9 +375,8 @@ components:
           title: Download Count
           description: Number of downloads this period
         thumbnail:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Thumbnail
           description: Thumbnail URL
       type: object
@@ -560,62 +543,54 @@ components:
           title: Id
           description: Unique video identifier
         title:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Title
           description: Video title
         description:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Description
           description: Video description
         duration:
-          anyOf:
-          - type: number
-          - type: 'null'
+          type: number
+          nullable: true
           title: Duration
           description: Video duration in seconds
         width:
-          anyOf:
-          - type: integer
-          - type: 'null'
+          type: integer
+          nullable: true
           title: Width
           description: Video width in pixels
         height:
-          anyOf:
-          - type: integer
-          - type: 'null'
+          type: integer
+          nullable: true
           title: Height
           description: Video height in pixels
         keywords:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
+          type: array
+          items:
+            type: string
+          nullable: true
           title: Keywords
           description: Video keywords/tags
         url:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Url
           description: Watermarked preview video URL
         thumbnail:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          nullable: true
           title: Thumbnail
           description: Watermarked thumbnail URL
         creator:
           $ref: '#/components/schemas/CreatorMetadataResponse'
           description: Video creator information
         location:
-          anyOf:
+          allOf:
           - $ref: '#/components/schemas/LocationResponse'
-          - type: 'null'
+          nullable: true
           description: Video location information
       type: object
       required:
