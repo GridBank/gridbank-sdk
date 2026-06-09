@@ -34,9 +34,3 @@ import { GridbankClient } from '@gridbank/api-js';
 const client = new GridbankClient({ apiKey: 'apik_...' });
 const results = await client.searchVideos({ q: 'nature', per_page: 10 });
 ```
-
-## Publishing
-
-**Python** — tag `python/v<version>` to trigger PyPI publish via GitHub Actions.
-
-**JavaScript** — tag `js/v<version>` to trigger npm publish via GitHub Actions. Requires `NPM_TOKEN` secret.
