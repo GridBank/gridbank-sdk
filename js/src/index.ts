@@ -137,7 +137,7 @@ export class GridbankClient {
     let response: Response;
     try {
       response = await fetch(url.toString(), {
-        headers: { "X-API-Key": this.apiKey },
+        headers: { Authorization: `Bearer ${this.apiKey}` },
         signal: controller.signal,
       });
     } catch (err) {

@@ -38,6 +38,15 @@ def client():
 
 
 @respx.mock
+def test_auth_header(client):
+    route = respx.get(f"{BASE}/external/ping").mock(
+        return_value=httpx.Response(200, json={"ping": "pong"})
+    )
+    client.ping()
+    assert route.calls[0].request.headers["authorization"] == "Bearer apik_test"
+
+
+@respx.mock
 def test_ping(client):
     respx.get(f"{BASE}/external/ping").mock(
         return_value=httpx.Response(200, json={"ping": "pong", "timestamp": "2026-06-08T12:00:00Z"})
