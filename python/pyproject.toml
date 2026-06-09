@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gridbank-api"
-version = "0.1.0"
+version = "0.2.0"
 description = "Official Python SDK for the GridBank API"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -19,7 +19,7 @@ dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/GridBank/gridbank-sdk"
-Documentation = "https://gridbank.github.io/gridbank-sdk"
+Documentation = "https://docs.gridbank.io"
 "Bug Tracker" = "https://github.com/GridBank/gridbank-sdk/issues"
 
 [tool.hatch.build.targets.wheel]
