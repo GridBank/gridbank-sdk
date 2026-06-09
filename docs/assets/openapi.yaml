@@ -6,8 +6,6 @@ info:
 servers:
   - url: https://api2.gridbank.io
     description: Production API
-  - url: https://staging-api.gridbank.io
-    description: Staging API
 paths:
   /external/ping:
     get:
