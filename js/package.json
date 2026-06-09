@@ -17,7 +17,7 @@
     "url": "https://github.com/GridBank/gridbank-sdk.git",
     "directory": "js"
   },
-  "homepage": "https://gridbank.github.io/gridbank-sdk",
+  "homepage": "https://docs.gridbank.io",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29",
