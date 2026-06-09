@@ -22,7 +22,7 @@ test = ["pytest", "respx"]
 
 [project.urls]
 Homepage = "https://github.com/GridBank/gridbank-sdk"
-Documentation = "https://gridbank.github.io/gridbank-sdk"
+Documentation = "https://docs.gridbank.io"
 "Bug Tracker" = "https://github.com/GridBank/gridbank-sdk/issues"
 
 [tool.hatch.build.targets.wheel]
