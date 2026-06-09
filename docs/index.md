@@ -77,4 +77,4 @@ We provide official SDKs for Python and JavaScript to make integration simple:
 - **[API Reference](api-reference.md)** — Complete endpoint documentation
 - **[Python SDK](python/overview.md)** — Python SDK guide
 - **[JavaScript SDK](javascript/overview.md)** — JavaScript SDK guide
-- **Email:** hello@gridbank.io
+- **Email:** support@gridbank.io
