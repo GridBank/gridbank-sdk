@@ -143,7 +143,7 @@ Check your rate limit usage before making large requests:
 
 - **Starter** → **Growth** → **Scale** → **Enterprise**
 
-Contact [sales@gridbank.io](mailto:sales@gridbank.io) to upgrade or discuss enterprise plans.
+Contact [support@gridbank.io](mailto:support@gridbank.io) to upgrade or discuss enterprise plans.
 
 ## Rate Limit Errors
 

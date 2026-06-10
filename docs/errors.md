@@ -82,7 +82,7 @@ All GridBank API responses use standard HTTP status codes. Non-2xx responses inc
 **Solution:**
 - Upgrade to a plan that includes video downloads
 - Verify subscription is active (check usage_summary())
-- Contact sales@gridbank.io if you believe this is an error
+- Contact support@gridbank.io if you believe this is an error
 
 === "Python"
 
