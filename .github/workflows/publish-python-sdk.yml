@@ -9,6 +9,9 @@ permissions:
   contents: write
   id-token: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -31,17 +34,11 @@ jobs:
           packages-dir: python/dist
 
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Python SDK ${{ github.ref }}
           body: |
             Published to PyPI
 
             Install with: `pip install gridbank-api`
 
             Verify: https://pypi.org/project/gridbank-api/
-          draft: false
-          prerelease: false

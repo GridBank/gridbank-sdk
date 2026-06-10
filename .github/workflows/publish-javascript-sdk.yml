@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -39,17 +42,11 @@ jobs:
         run: npm publish --access public
 
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: JavaScript SDK ${{ github.ref }}
           body: |
             Published to npm
 
             Install with: `npm install @gridbank/api-js`
 
             Verify: https://www.npmjs.com/package/@gridbank/api-js
-          draft: false
-          prerelease: false
