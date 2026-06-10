@@ -62,51 +62,31 @@ When rate limited, always respect the `Retry-After` header:
     }
     ```
 
-## Manual Retry with Exponential Backoff
+## Built-in Retry with Exponential Backoff
 
-The SDKs do not include built-in retry logic. Implement your own:
+Both SDKs automatically retry on 429 responses using exponential backoff, respecting the `Retry-After` header. The default is **3 attempts** (1 initial + 2 retries).
 
 === "Python"
 
     ```python
-    import time
-    from gridbank_api import GridbankAPIError
+    # Default: 3 attempts
+    client = GridbankClient(api_key="apik_...")
 
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            results = client.search_videos(q="test")
-            break
-        except GridbankAPIError as e:
-            if e.status_code == 429 and attempt < max_retries - 1:
-                wait_time = 2 ** attempt  # 1s, 2s, 4s...
-                print(f"Rate limited. Waiting {wait_time}s...")
-                time.sleep(wait_time)
-            else:
-                raise
+    # Custom retry count
+    client = GridbankClient(api_key="apik_...", max_retries=5)
     ```
 
 === "JavaScript"
 
     ```javascript
-    async function searchWithRetry(query, maxRetries = 3) {
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          return await client.searchVideos({ q: query });
-        } catch (error) {
-          if (error instanceof GridbankAPIError && error.statusCode === 429 && attempt < maxRetries - 1) {
-            const waitTime = Math.pow(2, attempt) * 1000;  // 1s, 2s, 4s...
-            console.log(`Rate limited. Waiting ${waitTime}ms...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-          } else {
-            throw error;
-          }
-        }
-      }
-    }
+    // Default: 3 attempts
+    const client = new GridbankClient({ apiKey: 'apik_...' });
 
-    const results = await searchWithRetry('nature');
+    // Custom retry count
+    const client = new GridbankClient({ apiKey: 'apik_...', maxRetries: 5 });
     ```
+
+To disable retries entirely, set `max_retries=1` (Python) or `maxRetries: 1` (JavaScript).
 
 ## Monitoring Your Usage
 
@@ -134,7 +114,7 @@ Check your rate limit usage before making large requests:
 
 1. **Check before you make requests** — Use response headers to know your remaining quota
 2. **Batch operations during off-peak** — Schedule large batch jobs when traffic is lower
-3. **Implement backoff** — Use exponential backoff (1s, 2s, 4s, 8s...) when retrying
+3. **Rely on built-in retries** — Both SDKs retry automatically with exponential backoff; increase `max_retries` for large batch jobs
 4. **Monitor trends** — Track your usage over time; upgrade if you consistently hit limits
 5. **Cache results** — Cache video metadata if you query the same videos repeatedly
 6. **Use appropriate page sizes** — Larger page sizes (per_page=80) reduce total requests
