@@ -201,10 +201,10 @@ All API errors follow this pattern:
 
 ## Authentication
 
-All requests require your API key in the `X-API-Key` header:
+All requests require your API key as a Bearer token in the `Authorization` header:
 
 ```bash
-curl -H "X-API-Key: YOUR_API_KEY" https://api2.gridbank.io/external/v1/videos/search?q=nature
+curl -H "Authorization: Bearer YOUR_API_KEY" https://api2.gridbank.io/external/v1/videos/search?q=nature
 ```
 
 ---
@@ -323,5 +323,5 @@ Use the specification with:
 ## Support
 
 - **Documentation:** [gridbank.github.io/gridbank-sdk](https://gridbank.github.io/gridbank-sdk)
-- **Email:** hello@gridbank.io
+- **Email:** support@gridbank.io
 - **Status:** [gridbank.io](https://gridbank.io)
