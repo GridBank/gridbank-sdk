@@ -45,6 +45,8 @@ nav:
     - Client: javascript/client.md
     - Methods: javascript/methods.md
     - Examples: javascript/examples.md
+  - Partner API:
+    - Overview: partner/overview.md
   - Advanced:
     - Pagination: advanced/pagination.md
     - Rate Limits: advanced/rate-limits.md
