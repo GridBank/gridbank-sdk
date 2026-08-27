@@ -103,7 +103,8 @@ class GridBankAPIClient:
             timeout=timeout,
             follow_redirects=True,
         )
-        # max_retries counts retries, not attempts: 0 still sends the request once.
+        # max_retries is a total attempt count, matching GridbankClient. Floored at
+        # one so 0 disables retrying rather than sending nothing at all.
         self._max_retries = max(1, max_retries)
 
     def __enter__(self) -> "GridBankAPIClient":

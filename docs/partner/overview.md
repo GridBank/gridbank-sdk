@@ -55,12 +55,15 @@ GET /partner/v1/content?per_page=50
       "creator": { "id": "crea_9", "username": "jdoe", "name": "J. Doe" }
     }
   ],
-  "next_cursor": "eyJvZmZzZXQiOiA1MH0="
+  "next_cursor": "eyJvZmZ..."
 }
 ```
 
 Newest purchase first. Pass `next_cursor` back as `cursor` for the next page; no
 `next_cursor` means you have reached the end. `per_page` accepts 1–100.
+
+Treat the cursor as opaque — pass it back unchanged. Its encoding is an implementation
+detail and may change.
 
 ### Get a download URL
 

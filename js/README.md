@@ -61,7 +61,7 @@ const client = new GridBankAPIClient({
   apiKey: 'apik_...',
   userAgent: 'your-app/1.0', // identify your app; unidentified traffic can be blocked
   timeoutMs: 30_000,
-  maxRetries: 3, // retries on 429, honours Retry-After (0 disables retrying, still sends the request)
+  maxRetries: 3, // total attempts on 429, honours Retry-After (1 or 0 disables retrying)
 });
 ```
 

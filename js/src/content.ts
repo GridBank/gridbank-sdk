@@ -154,7 +154,8 @@ export class GridBankAPIClient {
 
     this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? BASE_URL).replace(/\/$/, "") + PARTNER_PREFIX;
-    // maxRetries counts retries, not attempts: 0 still sends the request once.
+    // maxRetries is a total attempt count, matching GridbankClient. Floored at one
+    // so 0 disables retrying rather than sending nothing at all.
     this.maxRetries = Math.max(1, options.maxRetries ?? 3);
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.userAgent = options.userAgent;
