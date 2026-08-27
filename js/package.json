@@ -8,10 +8,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./partner": {
-      "types": "./dist/partner.d.ts",
-      "default": "./dist/partner.js"
     }
   },
   "files": [

@@ -5,15 +5,15 @@
  * `GridbankClient`, which serves leased collections to enterprise contracts:
  * different credential, different contract.
  *
- * Create a key at https://gridbank.io/account/api-keys.
+ * Create a key from your account settings on gridbank.io.
  *
  * ```ts
- * import { GridBankAPIClient } from "@gridbank/api-js/partner";
+ * import { GridBankAPIClient } from "@gridbank/api-js";
  *
  * const client = new GridBankAPIClient({ apiKey: "apik_..." });
  *
  * for await (const video of client.content()) {
- *   const response = await client.fetchDownload(video.video_key);
+ *   const response = await client.fetchDownload(video.id);
  *   // pipe response.body wherever it belongs
  * }
  * ```
@@ -23,25 +23,32 @@ const BASE_URL = "https://api2.gridbank.io";
 const PARTNER_PREFIX = "/partner/v1";
 const DEFAULT_PER_PAGE = 50;
 
-export interface PartnerCreator {
-  id: string;
-  username?: string | null;
-  name?: string | null;
-}
+import type { Creator, Video } from "./index";
 
-export interface PartnerVideo {
+/** The wire shape of a video, before it is mapped onto {@link Video}. */
+interface VideoPayload {
   video_key: string;
-  creator: PartnerCreator;
+  creator?: { id?: string; username?: string | null; name?: string | null } | null;
   title?: string | null;
   duration_seconds?: number | null;
-  content_tier: number;
-  purchased_at?: number | null;
   preview_url?: string | null;
   thumbnail_url?: string | null;
 }
 
+function toVideo(data: VideoPayload): Video {
+  const creator = data.creator ?? {};
+  return {
+    id: data.video_key,
+    creator: { id: creator.id ?? "", username: creator.username ?? "", name: creator.name },
+    title: data.title,
+    duration: data.duration_seconds,
+    url: data.preview_url,
+    thumbnail: data.thumbnail_url,
+  };
+}
+
 export interface PartnerContentPage {
-  videos: PartnerVideo[];
+  videos: VideoPayload[];
   next_cursor?: string | null;
 }
 
@@ -202,7 +209,7 @@ export class GridBankAPIClient {
    * Pages are fetched as they are consumed, so breaking out of the loop early
    * does not pay for the rest.
    */
-  async *content(options: { perPage?: number } = {}): AsyncGenerator<PartnerVideo> {
+  async *content(options: { perPage?: number } = {}): AsyncGenerator<Video> {
     const perPage = options.perPage ?? DEFAULT_PER_PAGE;
     let cursor: string | null | undefined;
 
@@ -212,7 +219,7 @@ export class GridBankAPIClient {
         cursor,
       });
 
-      for (const video of page.videos ?? []) yield video;
+      for (const video of page.videos ?? []) yield toVideo(video);
 
       cursor = page.next_cursor;
       if (!cursor) return;

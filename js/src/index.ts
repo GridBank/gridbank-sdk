@@ -6,6 +6,7 @@ const _BASE_URL = "https://api2.gridbank.io";
 
 export interface Creator {
   username: string;
+  id?: string;
   name?: string | null;
   bio?: string | null;
   profile_image?: string | null;
@@ -214,3 +215,12 @@ export class GridbankClient {
     return this.request<UsageSummary>("/external/v1/usage/me");
   }
 }
+
+export {
+  GridBankAPIClient,
+  NotAuthenticated,
+  NotLicensed,
+  PartnerError,
+  VideoNotFound,
+} from "./content";
+export type { GridBankAPIClientOptions, PartnerContentPage, PartnerDownload } from "./content";

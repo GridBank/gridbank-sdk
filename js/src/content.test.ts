@@ -3,9 +3,9 @@ import {
   NotLicensed,
   GridBankAPIClient,
   PartnerError,
-  PartnerVideo,
   VideoNotFound,
-} from "./partner";
+} from "./content";
+import type { Video } from "./index";
 
 const BASE = "https://api2.gridbank.io/partner/v1";
 const SIGNED = "https://s3.example/video.mp4?sig=abc";
@@ -40,9 +40,9 @@ function client() {
 
 afterEach(() => jest.restoreAllMocks());
 
-async function collect(iterator: AsyncGenerator<PartnerVideo>): Promise<string[]> {
+async function collect(iterator: AsyncGenerator<Video>): Promise<string[]> {
   const keys: string[] = [];
-  for await (const video of iterator) keys.push(video.video_key);
+  for await (const video of iterator) keys.push(video.id);
   return keys;
 }
 
@@ -84,7 +84,7 @@ describe("content iteration", () => {
       .mockResolvedValue(json({ videos: [video("a"), video("b")], next_cursor: "c1" }));
 
     for await (const first of client().content()) {
-      expect(first.video_key).toBe("a");
+      expect(first.id).toBe("a");
       break;
     }
 

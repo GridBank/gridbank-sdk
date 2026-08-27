@@ -7,41 +7,21 @@ from typing import Any, List, Optional
 
 import httpx
 
+from ._models import Creator, Location, Video
+from ._content import (
+    GridBankAPIClient,
+    NotAuthenticated,
+    NotLicensed,
+    PartnerError,
+    VideoNotFound,
+)
+
 _BASE_URL = "https://api2.gridbank.io"
 
 
 # ---------------------------------------------------------------------------
 # Response models
 # ---------------------------------------------------------------------------
-
-@dataclass
-class Creator:
-    username: str
-    name: Optional[str] = None
-    bio: Optional[str] = None
-    profile_image: Optional[str] = None
-
-
-@dataclass
-class Location:
-    city: Optional[str] = None
-    region: Optional[str] = None
-    country: Optional[str] = None
-
-
-@dataclass
-class Video:
-    id: str
-    creator: Creator
-    title: Optional[str] = None
-    description: Optional[str] = None
-    duration: Optional[float] = None
-    width: Optional[int] = None
-    height: Optional[int] = None
-    url: Optional[str] = None
-    thumbnail: Optional[str] = None
-    location: Optional[Location] = None
-    keywords: Optional[List[str]] = None
 
 
 @dataclass
@@ -110,6 +90,10 @@ def _dt(value: str) -> datetime:
 def _creator(data: dict) -> Creator:
     return Creator(
         username=data["username"],
+        # ponytail: the leased-collection payload has never carried a creator id.
+        # Defaulted rather than required so this client keeps parsing; make it
+        # data["id"] once that endpoint is confirmed to return one.
+        id=data.get("id", ""),
         name=data.get("name"),
         bio=data.get("bio"),
         profile_image=data.get("profile_image"),

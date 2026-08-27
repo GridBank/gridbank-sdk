@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from gridbank_api.partner import (
+from gridbank_api import (
     NotAuthenticated,
     NotLicensed,
     GridBankAPIClient,
@@ -53,7 +53,7 @@ class TestContentIteration:
             )
         )
 
-        assert [v.video_key for v in client.content()] == ["a", "b", "c"]
+        assert [v.id for v in client.content()] == ["a", "b", "c"]
 
     def test_it_stops_when_there_is_no_cursor(self, respx_mock, client):
         route = respx_mock.get(f"{BASE}/content").mock(
@@ -80,7 +80,7 @@ class TestContentIteration:
 
         first = next(client.content())
 
-        assert first.video_key == "a"
+        assert first.id == "a"
         assert route.call_count == 1
 
     def test_it_parses_the_video(self, respx_mock, client):
@@ -90,8 +90,12 @@ class TestContentIteration:
 
         first = next(client.content())
 
+        assert first.id == "a"
         assert first.title == "Clip a"
-        assert first.duration_seconds == 12.5
+        assert first.duration == 12.5
+        assert first.url == "https://cdn.example/p.mp4"
+        assert first.thumbnail == "https://cdn.example/t.jpg"
+        assert first.creator.id == "crea_1"
         assert first.creator.username == "jdoe"
 
 

@@ -8,7 +8,7 @@ your account has already paid for — and uses a different credential.
 
 ## Getting a key
 
-Create one at [gridbank.io/account/api-keys](https://gridbank.io/account/api-keys). The secret
+Create one from your account settings on gridbank.io. The secret
 is shown once, at creation. Store it in a secret manager, not in your repository.
 
 On a team account, only the team owner can create keys.
@@ -96,13 +96,13 @@ pip install gridbank-api
 ```
 
 ```python
-from gridbank_api.partner import GridBankAPIClient, NotLicensed
+from gridbank_api import GridBankAPIClient, NotLicensed
 
 client = GridBankAPIClient(api_key="apik_...")
 
 # Pages are fetched as you consume them.
 for video in client.content():
-    print(video.video_key, video.title)
+    print(video.id, video.title)
 
 # Handles the five-minute expiry for you, and streams to disk.
 try:
@@ -122,13 +122,13 @@ npm install @gridbank/api-js
 ```
 
 ```ts
-import { GridBankAPIClient, NotLicensed } from "@gridbank/api-js/partner";
+import { GridBankAPIClient, NotLicensed } from "@gridbank/api-js";
 
 const client = new GridBankAPIClient({ apiKey: "apik_..." });
 
 // Pages are fetched as you consume them.
 for await (const video of client.content()) {
-  console.log(video.video_key, video.title);
+  console.log(video.id, video.title);
 }
 
 try {

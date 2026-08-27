@@ -4,14 +4,14 @@ Reads and downloads the videos your account has licensed. Separate from
 :class:`gridbank_api.GridbankClient`, which serves leased collections to
 enterprise contracts: different credential, different contract.
 
-Create a key at https://gridbank.io/account/api-keys.
+Create a key from your account settings on gridbank.io.
 
-    from gridbank_api.partner import GridBankAPIClient
+    from gridbank_api import GridBankAPIClient
 
     client = GridBankAPIClient(api_key="apik_...")
 
     for video in client.content():
-        client.download(video.video_key, f"{video.video_key}.mp4")
+        client.download(video.id, f"{video.id}.mp4")
 
 The raw API is three things away from comfortable, and this wraps exactly those:
 paging is a cursor you have to thread through, a download URL expires after five
@@ -24,34 +24,16 @@ import os
 import shutil
 import tempfile
 import time
-from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
 import httpx
 
+from ._models import Creator, Video
+
 _BASE_URL = "https://api2.gridbank.io"
 _PARTNER_PREFIX = "/partner/v1"
 _DEFAULT_PER_PAGE = 50
-
-
-@dataclass
-class Creator:
-    id: str
-    username: Optional[str] = None
-    name: Optional[str] = None
-
-
-@dataclass
-class Video:
-    video_key: str
-    creator: Creator
-    title: Optional[str] = None
-    duration_seconds: Optional[float] = None
-    content_tier: int = 0
-    purchased_at: Optional[int] = None
-    preview_url: Optional[str] = None
-    thumbnail_url: Optional[str] = None
 
 
 class PartnerError(Exception):
@@ -83,18 +65,16 @@ class NotAuthenticated(PartnerError):
 def _video(data: dict) -> Video:
     creator = data.get("creator") or {}
     return Video(
-        video_key=data["video_key"],
+        id=data["video_key"],
         creator=Creator(
             id=creator.get("id", ""),
-            username=creator.get("username"),
+            username=creator.get("username") or "",
             name=creator.get("name"),
         ),
         title=data.get("title"),
-        duration_seconds=data.get("duration_seconds"),
-        content_tier=data.get("content_tier", 0),
-        purchased_at=data.get("purchased_at"),
-        preview_url=data.get("preview_url"),
-        thumbnail_url=data.get("thumbnail_url"),
+        duration=data.get("duration_seconds"),
+        url=data.get("preview_url"),
+        thumbnail=data.get("thumbnail_url"),
     )
 
 
@@ -267,11 +247,9 @@ class GridBankAPIClient:
 
 
 __all__ = [
-    "Creator",
+    "GridBankAPIClient",
     "NotAuthenticated",
     "NotLicensed",
-    "GridBankAPIClient",
     "PartnerError",
-    "Video",
     "VideoNotFound",
 ]
