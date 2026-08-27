@@ -64,7 +64,7 @@ const client = new GridBankAPIClient({
 
 ### Errors
 
-All extend `PartnerError`, which carries `statusCode`, `message`, and `details`.
+All extend `ContentError`, which carries `statusCode`, `message`, and `details`.
 
 | Error | Meaning |
 |-------|---------|

@@ -60,7 +60,7 @@ client = GridBankAPIClient(
 
 ### Errors
 
-All inherit from `PartnerError`, which carries `status_code`, `message`, and `details`.
+All inherit from `ContentError`, which carries `status_code`, `message`, and `details`.
 
 | Exception | Meaning |
 |-----------|---------|

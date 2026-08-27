@@ -2,7 +2,7 @@ import {
   NotAuthenticated,
   NotLicensed,
   GridBankAPIClient,
-  PartnerError,
+  ContentError,
   VideoNotFound,
 } from "./content";
 import type { Video } from "./index";
@@ -107,7 +107,7 @@ describe("error mapping", () => {
     [401, NotAuthenticated],
     [403, NotLicensed],
     [404, VideoNotFound],
-    [500, PartnerError],
+    [500, ContentError],
   ])("maps %s to a typed error", async (status, expected) => {
     jest.spyOn(global, "fetch").mockResolvedValue(json(errorBody("nope"), status as number));
 
@@ -127,7 +127,22 @@ describe("error mapping", () => {
 
     expect(error).toBeInstanceOf(NotLicensed);
     expect(error).not.toBeInstanceOf(VideoNotFound);
-    expect((error as PartnerError).message).toBe("Video not purchased.");
+    expect((error as ContentError).message).toBe("Video not purchased.");
+  });
+
+  it("does not treat an edge 403 as a licensing error", async () => {
+    // WAF rejections carry no error envelope and say nothing about licensing.
+    jest
+      .spyOn(global, "fetch")
+      .mockImplementation(async () => json({ message: "Forbidden" }, 403));
+
+    const error = await client()
+      .downloadUrl("v1")
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ContentError);
+    expect(error).not.toBeInstanceOf(NotLicensed);
+    expect((error as ContentError).statusCode).toBe(403);
   });
 
   it("raises cleanly on a non-JSON error body", async () => {
@@ -135,7 +150,7 @@ describe("error mapping", () => {
       .spyOn(global, "fetch")
       .mockResolvedValue(new Response("<html>bad</html>", { status: 502 }));
 
-    await expect(client().downloadUrl("v1")).rejects.toBeInstanceOf(PartnerError);
+    await expect(client().downloadUrl("v1")).rejects.toBeInstanceOf(ContentError);
   });
 });
 
@@ -174,7 +189,7 @@ describe("fetchDownload", () => {
       .mockResolvedValueOnce(json({ video_key: "v1", url: SIGNED, expires_at: 2 }))
       .mockResolvedValueOnce(new Response("denied", { status: 403 }));
 
-    await expect(client().fetchDownload("v1")).rejects.toBeInstanceOf(PartnerError);
+    await expect(client().fetchDownload("v1")).rejects.toBeInstanceOf(ContentError);
   });
 
   it("raises before fetching anything when the video is not licensed", async () => {

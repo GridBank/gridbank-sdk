@@ -220,7 +220,7 @@ export {
   GridBankAPIClient,
   NotAuthenticated,
   NotLicensed,
-  PartnerError,
+  ContentError,
   VideoNotFound,
 } from "./content";
-export type { GridBankAPIClientOptions, PartnerContentPage, PartnerDownload } from "./content";
+export type { GridBankAPIClientOptions, ContentPage, ContentDownload } from "./content";

@@ -5,7 +5,7 @@ from gridbank_api import (
     NotAuthenticated,
     NotLicensed,
     GridBankAPIClient,
-    PartnerError,
+    ContentError,
     VideoNotFound,
 )
 
@@ -102,7 +102,7 @@ class TestContentIteration:
 class TestErrorMapping:
     @pytest.mark.parametrize(
         "status,expected",
-        [(401, NotAuthenticated), (403, NotLicensed), (404, VideoNotFound), (500, PartnerError)],
+        [(401, NotAuthenticated), (403, NotLicensed), (404, VideoNotFound), (500, ContentError)],
     )
     def test_status_becomes_a_typed_error(self, respx_mock, client, status, expected):
         respx_mock.get(f"{BASE}/videos/v1/download").mock(
@@ -124,12 +124,23 @@ class TestErrorMapping:
         assert "not purchased" in e.value.message.lower()
         assert not isinstance(e.value, VideoNotFound)
 
+    def test_an_edge_403_is_not_a_licensing_error(self, respx_mock, client):
+        """WAF rejections carry no error envelope and say nothing about licensing."""
+        respx_mock.get(f"{BASE}/videos/v1/download").mock(
+            return_value=httpx.Response(403, json={"message": "Forbidden"})
+        )
+
+        with pytest.raises(ContentError) as e:
+            client.download_url("v1")
+        assert not isinstance(e.value, NotLicensed)
+        assert e.value.status_code == 403
+
     def test_a_non_json_body_still_raises_cleanly(self, respx_mock, client):
         respx_mock.get(f"{BASE}/content").mock(
             return_value=httpx.Response(502, text="<html>bad</html>")
         )
 
-        with pytest.raises(PartnerError) as e:
+        with pytest.raises(ContentError) as e:
             list(client.content())
         assert e.value.status_code == 502
 
@@ -183,7 +194,7 @@ class TestDownload:
         )
         respx_mock.get(SIGNED).mock(return_value=httpx.Response(403, text="denied"))
 
-        with pytest.raises(PartnerError):
+        with pytest.raises(ContentError):
             client.download("v1", tmp_path / "clip.mp4")
 
     def test_it_writes_to_an_open_file(self, respx_mock, client, tmp_path):

@@ -47,12 +47,12 @@ function toVideo(data: VideoPayload): Video {
   };
 }
 
-export interface PartnerContentPage {
+export interface ContentPage {
   videos: VideoPayload[];
   next_cursor?: string | null;
 }
 
-export interface PartnerDownload {
+export interface ContentDownload {
   video_key: string;
   url: string;
   expires_at: number;
@@ -67,13 +67,13 @@ export interface GridBankAPIClientOptions {
 }
 
 /** Any non-success response from the Partner API. */
-export class PartnerError extends Error {
+export class ContentError extends Error {
   readonly statusCode: number;
   readonly details: unknown;
 
   constructor(statusCode: number, message: string, details?: unknown) {
     super(message);
-    this.name = "PartnerError";
+    this.name = "ContentError";
     this.statusCode = statusCode;
     this.details = details;
   }
@@ -85,7 +85,7 @@ export class PartnerError extends Error {
  * Distinct from `VideoNotFound` on purpose: this one is resolved by licensing
  * the video, so it is worth catching separately from a bad key or a typo.
  */
-export class NotLicensed extends PartnerError {
+export class NotLicensed extends ContentError {
   constructor(statusCode: number, message: string, details?: unknown) {
     super(statusCode, message, details);
     this.name = "NotLicensed";
@@ -93,7 +93,7 @@ export class NotLicensed extends PartnerError {
 }
 
 /** No video with that key. */
-export class VideoNotFound extends PartnerError {
+export class VideoNotFound extends ContentError {
   constructor(statusCode: number, message: string, details?: unknown) {
     super(statusCode, message, details);
     this.name = "VideoNotFound";
@@ -101,18 +101,29 @@ export class VideoNotFound extends PartnerError {
 }
 
 /** The API key is missing, malformed, or revoked. */
-export class NotAuthenticated extends PartnerError {
+export class NotAuthenticated extends ContentError {
   constructor(statusCode: number, message: string, details?: unknown) {
     super(statusCode, message, details);
     this.name = "NotAuthenticated";
   }
 }
 
-function errorFor(status: number, message: string, body: unknown): PartnerError {
+/**
+ * A 403 from the edge is a bare `{"message": "Forbidden"}` with no error
+ * envelope, and has nothing to do with licensing. Only the API's own 403 means
+ * the caller has not licensed the video.
+ */
+function hasErrorEnvelope(body: unknown): boolean {
+  if (!body || typeof body !== "object" || !("detail" in body)) return false;
+  const detail = (body as { detail: unknown }).detail;
+  return !!detail && typeof detail === "object" && "error" in detail;
+}
+
+function errorFor(status: number, message: string, body: unknown): ContentError {
   if (status === 401) return new NotAuthenticated(status, message, body);
-  if (status === 403) return new NotLicensed(status, message, body);
+  if (status === 403 && hasErrorEnvelope(body)) return new NotLicensed(status, message, body);
   if (status === 404) return new VideoNotFound(status, message, body);
-  return new PartnerError(status, message, body);
+  return new ContentError(status, message, body);
 }
 
 function messageFrom(body: unknown, fallback: string): string {
@@ -172,7 +183,7 @@ export class GridBankAPIClient {
           signal: controller.signal,
         });
       } catch (err) {
-        throw new PartnerError(0, err instanceof Error ? err.message : "Request failed", err);
+        throw new ContentError(0, err instanceof Error ? err.message : "Request failed", err);
       } finally {
         clearTimeout(timer);
       }
@@ -189,7 +200,7 @@ export class GridBankAPIClient {
         body = await response.json();
       } catch {
         if (response.ok) {
-          throw new PartnerError(response.status, "Server returned a non-JSON response");
+          throw new ContentError(response.status, "Server returned a non-JSON response");
         }
       }
 
@@ -200,7 +211,7 @@ export class GridBankAPIClient {
       return body as T;
     }
 
-    throw new PartnerError(429, "Rate limited, and retries are exhausted");
+    throw new ContentError(429, "Rate limited, and retries are exhausted");
   }
 
   /**
@@ -214,7 +225,7 @@ export class GridBankAPIClient {
     let cursor: string | null | undefined;
 
     for (;;) {
-      const page = await this.request<PartnerContentPage>("/content", {
+      const page = await this.request<ContentPage>("/content", {
         per_page: perPage,
         cursor,
       });
@@ -233,7 +244,7 @@ export class GridBankAPIClient {
    * expiry for you.
    */
   async downloadUrl(videoKey: string): Promise<string> {
-    const result = await this.request<PartnerDownload>(
+    const result = await this.request<ContentDownload>(
       `/videos/${encodeURIComponent(videoKey)}/download`
     );
     return result.url;
@@ -261,7 +272,7 @@ export class GridBankAPIClient {
 
       const expired = response.status === 400 || response.status === 403;
       if (!expired || attempt === 1) {
-        throw new PartnerError(
+        throw new ContentError(
           response.status,
           `Could not fetch the signed URL for ${videoKey}`
         );
@@ -269,6 +280,6 @@ export class GridBankAPIClient {
       // The URL went stale between issuing and using it; ask for another.
     }
 
-    throw new PartnerError(0, `Could not fetch ${videoKey}`);
+    throw new ContentError(0, `Could not fetch ${videoKey}`);
   }
 }

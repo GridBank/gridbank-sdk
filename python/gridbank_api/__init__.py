@@ -12,7 +12,7 @@ from ._content import (
     GridBankAPIClient,
     NotAuthenticated,
     NotLicensed,
-    PartnerError,
+    ContentError,
     VideoNotFound,
 )
 

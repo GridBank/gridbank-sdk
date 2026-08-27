@@ -36,7 +36,7 @@ _PARTNER_PREFIX = "/partner/v1"
 _DEFAULT_PER_PAGE = 50
 
 
-class PartnerError(Exception):
+class ContentError(Exception):
     """Any non-success response from the Partner API."""
 
     def __init__(self, status_code: int, message: str, details: Optional[Any] = None) -> None:
@@ -46,7 +46,7 @@ class PartnerError(Exception):
         self.details = details
 
 
-class NotLicensed(PartnerError):
+class NotLicensed(ContentError):
     """The video exists on GridBank, but this account has not licensed it.
 
     Distinct from :class:`VideoNotFound` on purpose: this one is fixable by
@@ -54,11 +54,11 @@ class NotLicensed(PartnerError):
     """
 
 
-class VideoNotFound(PartnerError):
+class VideoNotFound(ContentError):
     """No video with that key."""
 
 
-class NotAuthenticated(PartnerError):
+class NotAuthenticated(ContentError):
     """The API key is missing, malformed, or revoked."""
 
 
@@ -124,7 +124,7 @@ class GridBankAPIClient:
             try:
                 response = self._http.get(path, params=query)
             except httpx.RequestError as exc:
-                raise PartnerError(0, str(exc)) from exc
+                raise ContentError(0, str(exc)) from exc
 
             if response.status_code == 429 and attempt < self._max_retries - 1:
                 time.sleep(float(response.headers.get("Retry-After", 2**attempt)))
@@ -135,10 +135,10 @@ class GridBankAPIClient:
 
             raise self._error(response)
 
-        raise PartnerError(429, "Rate limited, and retries are exhausted")
+        raise ContentError(429, "Rate limited, and retries are exhausted")
 
     @staticmethod
-    def _error(response: httpx.Response) -> PartnerError:
+    def _error(response: httpx.Response) -> ContentError:
         try:
             body = response.json()
         except ValueError:
@@ -149,9 +149,15 @@ class GridBankAPIClient:
         message = message or (detail if isinstance(detail, str) else response.text)
 
         by_status = {401: NotAuthenticated, 403: NotLicensed, 404: VideoNotFound}
-        return by_status.get(response.status_code, PartnerError)(
-            response.status_code, message, body
-        )
+        kind = by_status.get(response.status_code, ContentError)
+
+        # A 403 from the edge is a bare {"message": "Forbidden"} with no error
+        # envelope, and has nothing to do with licensing. Only the API's own 403
+        # means the caller has not licensed the video.
+        if kind is NotLicensed and not (isinstance(detail, dict) and detail.get("error")):
+            kind = ContentError
+
+        return kind(response.status_code, message, body)
 
     # -- content ----------------------------------------------------------
 
@@ -206,7 +212,7 @@ class GridBankAPIClient:
             except httpx.HTTPStatusError as exc:
                 expired = exc.response.status_code in (400, 403)
                 if not expired or attempt == 1:
-                    raise PartnerError(
+                    raise ContentError(
                         exc.response.status_code,
                         f"Could not fetch the signed URL for {video_key}",
                     ) from exc
@@ -250,6 +256,6 @@ __all__ = [
     "GridBankAPIClient",
     "NotAuthenticated",
     "NotLicensed",
-    "PartnerError",
+    "ContentError",
     "VideoNotFound",
 ]
