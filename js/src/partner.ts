@@ -8,9 +8,9 @@
  * Create a key at https://gridbank.io/account/api-keys.
  *
  * ```ts
- * import { PartnerClient } from "@gridbank/api-js/partner";
+ * import { GridBankClient } from "@gridbank/api-js/partner";
  *
- * const client = new PartnerClient({ apiKey: "apik_..." });
+ * const client = new GridBankClient({ apiKey: "apik_..." });
  *
  * for await (const video of client.content()) {
  *   const response = await client.fetchDownload(video.video_key);
@@ -51,7 +51,7 @@ export interface PartnerDownload {
   expires_at: number;
 }
 
-export interface PartnerClientOptions {
+export interface GridBankClientOptions {
   apiKey: string;
   baseUrl?: string;
   maxRetries?: number;
@@ -124,14 +124,14 @@ function messageFrom(body: unknown, fallback: string): string {
 
 type Params = Record<string, string | number | null | undefined>;
 
-export class PartnerClient {
+export class GridBankClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly maxRetries: number;
   private readonly timeoutMs: number;
   private readonly userAgent?: string;
 
-  constructor(options: PartnerClientOptions) {
+  constructor(options: GridBankClientOptions) {
     if (!options.apiKey) throw new Error("apiKey is required");
 
     this.apiKey = options.apiKey;

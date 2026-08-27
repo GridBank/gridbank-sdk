@@ -96,9 +96,9 @@ pip install gridbank-api
 ```
 
 ```python
-from gridbank_api.partner import PartnerClient, NotLicensed
+from gridbank_api.partner import GridBankClient, NotLicensed
 
-client = PartnerClient(api_key="apik_...")
+client = GridBankClient(api_key="apik_...")
 
 # Pages are fetched as you consume them.
 for video in client.content():
@@ -122,9 +122,9 @@ npm install @gridbank/api-js
 ```
 
 ```ts
-import { PartnerClient, NotLicensed } from "@gridbank/api-js/partner";
+import { GridBankClient, NotLicensed } from "@gridbank/api-js/partner";
 
-const client = new PartnerClient({ apiKey: "apik_..." });
+const client = new GridBankClient({ apiKey: "apik_..." });
 
 // Pages are fetched as you consume them.
 for await (const video of client.content()) {
