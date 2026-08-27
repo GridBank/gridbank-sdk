@@ -89,6 +89,23 @@ as often as you like. There is no charge for re-issuing.
 | `400` | Malformed cursor — restart paging from the beginning |
 | `422` | Invalid parameter, e.g. `per_page` above 100 |
 
+## SDK field names
+
+Both SDKs return the packages' shared `Video` and `Creator` types, so a few fields are
+read under different names than the JSON above:
+
+| Response field | SDK field |
+|---|---|
+| `video_key` | `video.id` |
+| `duration_seconds` | `video.duration` |
+| `preview_url` | `video.url` |
+| `thumbnail_url` | `video.thumbnail` |
+
+`content_tier` and `purchased_at` are not surfaced by the SDKs; read them from the raw
+response if you need them. `Video` also carries `description`, `width`, `height`,
+`location`, and `keywords` for the enterprise client — the Partner API does not return
+those, so they are always unset here.
+
 ## Python
 
 ```bash

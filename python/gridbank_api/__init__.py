@@ -90,9 +90,8 @@ def _dt(value: str) -> datetime:
 def _creator(data: dict) -> Creator:
     return Creator(
         username=data["username"],
-        # ponytail: the leased-collection payload has never carried a creator id.
-        # Defaulted rather than required so this client keeps parsing; make it
-        # data["id"] once that endpoint is confirmed to return one.
+        # The leased-collection payload has never carried a creator id; the
+        # Partner API always does. Defaulted here so this client keeps parsing.
         id=data.get("id", ""),
         name=data.get("name"),
         bio=data.get("bio"),

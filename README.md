@@ -11,6 +11,15 @@ Official Python and JavaScript SDKs for the GridBank External API.
 | Python | [`gridbank-api`](https://pypi.org/project/gridbank-api/) | `0.2.0` |
 | JavaScript | [`@gridbank/api-js`](https://www.npmjs.com/package/@gridbank/api-js) | `0.2.0` |
 
+## Clients
+
+Each package ships two clients, for two different products.
+
+| Client | Serves | Credential |
+|--------|--------|------------|
+| `GridBankAPIClient` | the videos an account has **licensed** | member API key |
+| `GridbankClient` | leased collections on an **enterprise contract** | customer API key |
+
 ## Quick Start
 
 **Python**
@@ -18,10 +27,12 @@ Official Python and JavaScript SDKs for the GridBank External API.
 pip install gridbank-api
 ```
 ```python
-from gridbank_api import GridbankClient
+from gridbank_api import GridBankAPIClient
 
-client = GridbankClient(api_key="apik_...")
-results = client.search_videos(q="nature", per_page=10)
+client = GridBankAPIClient(api_key="apik_...", user_agent="your-app/1.0")
+
+for video in client.content():
+    client.download(video.id, f"{video.id}.mp4")
 ```
 
 **JavaScript**
@@ -29,8 +40,13 @@ results = client.search_videos(q="nature", per_page=10)
 npm install @gridbank/api-js
 ```
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { GridBankAPIClient } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
-const results = await client.searchVideos({ q: 'nature', per_page: 10 });
+const client = new GridBankAPIClient({ apiKey: 'apik_...', userAgent: 'your-app/1.0' });
+
+for await (const video of client.content()) {
+  console.log(video.id, video.title);
+}
 ```
+
+For the enterprise client, see the per-package READMEs: [Python](python/README.md), [JavaScript](js/README.md).

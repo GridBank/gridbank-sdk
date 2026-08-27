@@ -6,7 +6,7 @@ const _BASE_URL = "https://api2.gridbank.io";
 
 export interface Creator {
   username: string;
-  id?: string;
+  id: string;
   name?: string | null;
   bio?: string | null;
   profile_image?: string | null;

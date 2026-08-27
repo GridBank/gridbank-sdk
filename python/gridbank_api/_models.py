@@ -9,7 +9,7 @@ from typing import List, Optional
 @dataclass
 class Creator:
     username: str
-    id: str = ""
+    id: str
     name: Optional[str] = None
     bio: Optional[str] = None
     profile_image: Optional[str] = None
