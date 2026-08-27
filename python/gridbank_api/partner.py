@@ -6,9 +6,9 @@ enterprise contracts: different credential, different contract.
 
 Create a key at https://gridbank.io/account/api-keys.
 
-    from gridbank_api.partner import GridBankClient
+    from gridbank_api.partner import GridBankAPIClient
 
-    client = GridBankClient(api_key="apik_...")
+    client = GridBankAPIClient(api_key="apik_...")
 
     for video in client.content():
         client.download(video.video_key, f"{video.video_key}.mp4")
@@ -98,7 +98,7 @@ def _video(data: dict) -> Video:
     )
 
 
-class GridBankClient:
+class GridBankAPIClient:
     """Synchronous client. Safe to keep for the life of a process."""
 
     def __init__(
@@ -126,7 +126,7 @@ class GridBankClient:
         # max_retries counts retries, not attempts: 0 still sends the request once.
         self._max_retries = max(1, max_retries)
 
-    def __enter__(self) -> "GridBankClient":
+    def __enter__(self) -> "GridBankAPIClient":
         return self
 
     def __exit__(self, *_exc: object) -> None:
@@ -270,7 +270,7 @@ __all__ = [
     "Creator",
     "NotAuthenticated",
     "NotLicensed",
-    "GridBankClient",
+    "GridBankAPIClient",
     "PartnerError",
     "Video",
     "VideoNotFound",
