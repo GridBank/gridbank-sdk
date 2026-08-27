@@ -107,17 +107,23 @@ class PartnerClient:
         base_url: str = _BASE_URL,
         timeout: float = 30.0,
         max_retries: int = 3,
+        user_agent: Optional[str] = None,
     ) -> None:
         if not api_key:
             raise ValueError("api_key is required")
 
+        headers = {"Authorization": f"Bearer {api_key}"}
+        if user_agent:
+            headers["User-Agent"] = user_agent
+
         self._http = httpx.Client(
             base_url=base_url.rstrip("/") + _PARTNER_PREFIX,
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers=headers,
             timeout=timeout,
             follow_redirects=True,
         )
-        self._max_retries = max_retries
+        # max_retries counts retries, not attempts: 0 still sends the request once.
+        self._max_retries = max(1, max_retries)
 
     def __enter__(self) -> "PartnerClient":
         return self
@@ -246,10 +252,14 @@ class PartnerClient:
             # Write beside the target, then move: an interrupted download must
             # not leave a truncated file that looks complete.
             partial = path.with_suffix(path.suffix + ".part")
-            with open(partial, "wb") as handle:
-                for chunk in response.iter_bytes(chunk_size):
-                    handle.write(chunk)
-            os.replace(partial, path)
+            try:
+                with open(partial, "wb") as handle:
+                    for chunk in response.iter_bytes(chunk_size):
+                        handle.write(chunk)
+                os.replace(partial, path)
+            except BaseException:
+                partial.unlink(missing_ok=True)
+                raise
 
 
 __all__ = [
