@@ -218,9 +218,9 @@ class GridBankAPIClient:
                         f"Could not fetch the signed URL for {video_key}",
                     ) from exc
                 # The URL went stale between issuing and using it; ask for another.
-                if hasattr(destination, "seek"):
-                    destination.seek(0)  # type: ignore[union-attr]
-                    destination.truncate()  # type: ignore[union-attr]
+                # Nothing has been written: _stream_to raises for status before the
+                # first chunk, so there is no partial write to undo. Resetting a
+                # caller-supplied handle here would erase content we never wrote.
 
     def _stream_to(
         self,

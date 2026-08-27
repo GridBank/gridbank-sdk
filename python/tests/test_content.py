@@ -197,6 +197,27 @@ class TestDownload:
         with pytest.raises(ContentError):
             client.download("v1", tmp_path / "clip.mp4")
 
+    def test_a_retry_keeps_what_the_caller_already_wrote(self, respx_mock, client, tmp_path):
+        """The first URL fails before a single byte is streamed, so there is
+        nothing to undo — and the handle may hold data that is not ours."""
+        respx_mock.get(f"{BASE}/videos/v1/download").mock(
+            return_value=httpx.Response(200, json={"url": SIGNED, "expires_at": 1})
+        )
+        respx_mock.get(SIGNED).mock(
+            side_effect=[
+                httpx.Response(403, text="<Error>AccessDenied</Error>"),
+                httpx.Response(200, content=b"fresh-bytes"),
+            ]
+        )
+
+        target = tmp_path / "clip.mp4"
+        target.write_bytes(b"existing-")
+        with open(target, "r+b") as handle:
+            handle.seek(0, 2)
+            client.download("v1", handle)
+
+        assert target.read_bytes() == b"existing-fresh-bytes"
+
     def test_it_writes_to_an_open_file(self, respx_mock, client, tmp_path):
         respx_mock.get(f"{BASE}/videos/v1/download").mock(
             return_value=httpx.Response(200, json={"url": SIGNED, "expires_at": 1})
