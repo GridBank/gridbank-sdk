@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -250,10 +251,13 @@ class PartnerClient:
 
             path = Path(destination)  # type: ignore[arg-type]
             # Write beside the target, then move: an interrupted download must
-            # not leave a truncated file that looks complete.
-            partial = path.with_suffix(path.suffix + ".part")
+            # not leave a truncated file that looks complete. The name is unique
+            # per call so concurrent downloads of the same video cannot delete
+            # each other's partial, and same-directory keeps the replace atomic.
+            fd, name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".part")
+            partial = Path(name)
             try:
-                with open(partial, "wb") as handle:
+                with os.fdopen(fd, "wb") as handle:
                     for chunk in response.iter_bytes(chunk_size):
                         handle.write(chunk)
                 os.replace(partial, path)

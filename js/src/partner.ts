@@ -56,6 +56,7 @@ export interface PartnerClientOptions {
   baseUrl?: string;
   maxRetries?: number;
   timeoutMs?: number;
+  userAgent?: string;
 }
 
 /** Any non-success response from the Partner API. */
@@ -128,6 +129,7 @@ export class PartnerClient {
   private readonly baseUrl: string;
   private readonly maxRetries: number;
   private readonly timeoutMs: number;
+  private readonly userAgent?: string;
 
   constructor(options: PartnerClientOptions) {
     if (!options.apiKey) throw new Error("apiKey is required");
@@ -136,6 +138,13 @@ export class PartnerClient {
     this.baseUrl = (options.baseUrl ?? BASE_URL).replace(/\/$/, "") + PARTNER_PREFIX;
     this.maxRetries = options.maxRetries ?? 3;
     this.timeoutMs = options.timeoutMs ?? 30_000;
+    this.userAgent = options.userAgent;
+  }
+
+  private headers(): Record<string, string> {
+    const headers: Record<string, string> = { Authorization: `Bearer ${this.apiKey}` };
+    if (this.userAgent) headers["User-Agent"] = this.userAgent;
+    return headers;
   }
 
   private async request<T>(path: string, params?: Params): Promise<T> {
@@ -151,7 +160,7 @@ export class PartnerClient {
       let response: Response;
       try {
         response = await fetch(url.toString(), {
-          headers: { Authorization: `Bearer ${this.apiKey}` },
+          headers: this.headers(),
           signal: controller.signal,
         });
       } catch (err) {
