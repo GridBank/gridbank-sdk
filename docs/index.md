@@ -2,6 +2,11 @@
 
 Access premium video content with powerful search, metadata retrieval, and download capabilities.
 
+!!! info "Looking for your own licensed library?"
+    This is the Enterprise API, for leased collections on an enterprise contract. To read and
+    download the clips your own account has paid for, see the [Partner API](partner/overview.md).
+    Separate products, separate credentials.
+
 ## Quick Start
 
 Choose your SDK and get started in minutes.

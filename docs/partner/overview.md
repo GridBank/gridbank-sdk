@@ -2,9 +2,10 @@
 
 Read and download the videos your GridBank account has licensed, from your own tools.
 
-This is a different product from the [main GridBank API](../index.md), which serves leased
-collections to enterprise contracts. The Partner API serves **your own library** — the clips
-your account has already paid for — and uses a different credential.
+One of two GridBank APIs, for a different audience than the
+[Enterprise API](../index.md). That one serves leased collections to enterprise contracts;
+this one serves **your own library** — the clips your account has already paid for. Separate
+products, separate credentials, neither built on the other.
 
 ## Getting a key
 

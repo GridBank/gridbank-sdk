@@ -1,6 +1,6 @@
 # GridBank SDK
 
-Official Python and JavaScript SDKs for the GridBank External API.
+Official Python and JavaScript SDKs for the GridBank APIs.
 
 **Documentation:** https://docs.gridbank.io
 
@@ -13,12 +13,12 @@ Official Python and JavaScript SDKs for the GridBank External API.
 
 ## Clients
 
-Each package ships two clients, for two different products.
+Each package ships two clients for two separate products. Neither is built on the other.
 
-| Client | Serves | Credential |
-|--------|--------|------------|
-| `GridBankAPIClient` | the videos an account has **licensed** | member API key |
-| `GridbankClient` | leased collections on an **enterprise contract** | customer API key |
+| Client | Product | Serves | Credential |
+|--------|---------|--------|------------|
+| `GridBankAPIClient` | Partner API | the videos an account has **licensed** | member API key |
+| `GridbankClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
 
 ## Quick Start
 

@@ -14,14 +14,17 @@ Requires Node.js 18+. TypeScript types included.
 
 ## Which client
 
-The package ships two, for two different products. Both import from `@gridbank/api-js`.
+The package ships two clients for two separate products. Neither is built on the other, and
+neither is the "main" one — they serve different audiences with different credentials. Both
+import from `@gridbank/api-js`.
 
-| Client | Serves | Credential |
-|--------|--------|------------|
-| `GridBankAPIClient` | the videos **your own account has licensed** | member API key |
-| `GridbankClient` | leased collections on an **enterprise contract** | customer API key |
+| Client | Product | Serves | Credential |
+|--------|---------|--------|------------|
+| `GridBankAPIClient` | Partner API | the videos **your own account has licensed** | member API key |
+| `GridbankClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
 
-If you are a partner reaching your own library from your own tools, you want `GridBankAPIClient`.
+Reaching your own library from your own tools → `GridBankAPIClient`.
+On an enterprise contract, searching leased collections → `GridbankClient`.
 
 ---
 
