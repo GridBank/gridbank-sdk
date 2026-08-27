@@ -115,6 +115,36 @@ except NotLicensed:
 transfer never leaves a truncated file that looks complete. If the signed URL expires
 between being issued and used, it requests a fresh one and retries once.
 
+## JavaScript / TypeScript
+
+```bash
+npm install @gridbank/api-js
+```
+
+```ts
+import { PartnerClient, NotLicensed } from "@gridbank/api-js/partner";
+
+const client = new PartnerClient({ apiKey: "apik_..." });
+
+// Pages are fetched as you consume them.
+for await (const video of client.content()) {
+  console.log(video.video_key, video.title);
+}
+
+try {
+  const response = await client.fetchDownload("video_019b12...");
+  // Node: pipe response.body to a file. Browser: await response.blob().
+} catch (err) {
+  if (err instanceof NotLicensed) {
+    console.log("not licensed by this account");
+  }
+}
+```
+
+`fetchDownload()` returns the `Response` rather than writing to a path — this package runs
+in browsers as well as Node, and only you know where the bytes should go. It handles the
+five-minute expiry: a stale URL is re-requested once before it gives up.
+
 ## Machine-to-machine traffic
 
 Requests are made by servers, not browsers. Send a `User-Agent` identifying your
