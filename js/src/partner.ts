@@ -136,7 +136,8 @@ export class PartnerClient {
 
     this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? BASE_URL).replace(/\/$/, "") + PARTNER_PREFIX;
-    this.maxRetries = options.maxRetries ?? 3;
+    // maxRetries counts retries, not attempts: 0 still sends the request once.
+    this.maxRetries = Math.max(1, options.maxRetries ?? 3);
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.userAgent = options.userAgent;
   }
