@@ -18,7 +18,6 @@ def video(key: str) -> dict:
         "video_key": key,
         "title": f"Clip {key}",
         "duration_seconds": 12.5,
-        "content_tier": 0,
         "purchased_at": 1756200000,
         "preview_url": "https://cdn.example/p.mp4",
         "thumbnail_url": "https://cdn.example/t.jpg",
@@ -95,6 +94,7 @@ class TestContentIteration:
         assert first.duration == 12.5
         assert first.url == "https://cdn.example/p.mp4"
         assert first.thumbnail == "https://cdn.example/t.jpg"
+        assert first.purchased_at == 1756200000
         assert first.creator.id == "crea_1"
         assert first.creator.username == "jdoe"
 

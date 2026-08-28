@@ -31,6 +31,7 @@ interface VideoPayload {
   creator?: { id?: string; username?: string | null; name?: string | null } | null;
   title?: string | null;
   duration_seconds?: number | null;
+  purchased_at?: number | null;
   preview_url?: string | null;
   thumbnail_url?: string | null;
 }
@@ -44,6 +45,7 @@ function toVideo(data: VideoPayload): Video {
     duration: data.duration_seconds,
     url: data.preview_url,
     thumbnail: data.thumbnail_url,
+    purchasedAt: data.purchased_at,
   };
 }
 

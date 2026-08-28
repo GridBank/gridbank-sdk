@@ -35,3 +35,4 @@ class Video:
     thumbnail: Optional[str] = None
     location: Optional[Location] = None
     keywords: Optional[List[str]] = None
+    purchased_at: Optional[int] = None

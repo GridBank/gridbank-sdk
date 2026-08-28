@@ -15,7 +15,6 @@ function video(key: string) {
     video_key: key,
     title: `Clip ${key}`,
     duration_seconds: 12.5,
-    content_tier: 0,
     purchased_at: 1756200000,
     preview_url: "https://cdn.example/p.mp4",
     thumbnail_url: "https://cdn.example/t.jpg",
@@ -75,6 +74,23 @@ describe("content iteration", () => {
     jest.spyOn(global, "fetch").mockResolvedValue(json({ videos: [], next_cursor: null }));
 
     expect(await collect(client().content())).toEqual([]);
+  });
+
+  it("maps the wire fields onto Video", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(json({ videos: [video("a")], next_cursor: null }));
+
+    let first: Video | undefined;
+    for await (const video of client().content()) first = video;
+
+    expect(first).toEqual({
+      id: "a",
+      title: "Clip a",
+      duration: 12.5,
+      url: "https://cdn.example/p.mp4",
+      thumbnail: "https://cdn.example/t.jpg",
+      purchasedAt: 1756200000,
+      creator: { id: "crea_1", username: "jdoe", name: "J Doe" },
+    });
   });
 
   it("does not fetch pages the caller never asks for", async () => {

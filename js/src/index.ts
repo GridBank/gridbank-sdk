@@ -30,6 +30,8 @@ export interface Video {
   thumbnail?: string | null;
   location?: Location | null;
   keywords?: string[] | null;
+  /** Unix timestamp of the licence purchase. Partner API only. */
+  purchasedAt?: number | null;
 }
 
 export interface VideoListResponse {

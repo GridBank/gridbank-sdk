@@ -75,6 +75,7 @@ def _video(data: dict) -> Video:
         duration=data.get("duration_seconds"),
         url=data.get("preview_url"),
         thumbnail=data.get("thumbnail_url"),
+        purchased_at=data.get("purchased_at"),
     )
 
 

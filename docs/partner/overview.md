@@ -48,7 +48,6 @@ GET /partner/v1/content?per_page=50
       "video_key": "video_019b12...",
       "title": "Aerial coastline",
       "duration_seconds": 12.4,
-      "content_tier": 0,
       "purchased_at": 1756200000,
       "preview_url": "https://.../watermarked.mp4",
       "thumbnail_url": "https://.../watermarked.jpg",
@@ -104,11 +103,12 @@ read under different names than the JSON above:
 | `duration_seconds` | `video.duration` |
 | `preview_url` | `video.url` |
 | `thumbnail_url` | `video.thumbnail` |
+| `purchased_at` | `video.purchased_at` (Python) / `video.purchasedAt` (JS) |
 
-`content_tier` and `purchased_at` are not surfaced by the SDKs; read them from the raw
-response if you need them. `Video` also carries `description`, `width`, `height`,
-`location`, and `keywords` for the enterprise client — the Partner API does not return
-those, so they are always unset here.
+`Video` also carries `description`, `width`, `height`, `location`, and `keywords` for
+the enterprise client — the Partner API does not return those, so they are always unset
+here. `purchased_at` is the reverse: the Partner API always sets it, the enterprise
+client never does.
 
 ## Python
 
