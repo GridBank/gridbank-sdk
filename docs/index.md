@@ -10,7 +10,7 @@ self-service from your account settings.
 
 - List what you have licensed, newest purchase first
 - Issue a signed download URL for any clip you own
-- 600 requests per minute per key
+- 300 requests per minute per key
 
 [Read the Partner API docs](partner/index.md){ .md-button .md-button--primary }
 
