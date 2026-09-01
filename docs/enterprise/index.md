@@ -67,9 +67,6 @@ The Enterprise API consists of 4 core endpoints:
 | `/external/v1/videos/{video_id}/download` | `GET` | Generate signed download URL |
 | `/external/v1/usage/me` | `GET` | Check subscription tier and usage |
 
-The `/external/` path prefix is the original route name and is unchanged — only the
-product name is "Enterprise API".
-
 ## Authentication
 
 All requests require a Bearer token in the `Authorization` header.
