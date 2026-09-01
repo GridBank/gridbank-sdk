@@ -39,4 +39,4 @@ npm — so installing once gives you either.
 
 ## Support
 
-**Email:** [support@gridbank.io](mailto:support@gridbank.io)
+**Email:** [hello@gridbank.io](mailto:hello@gridbank.io)
