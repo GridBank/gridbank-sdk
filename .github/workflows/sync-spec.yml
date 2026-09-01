@@ -1,6 +1,7 @@
 name: Sync OpenAPI Spec
 
-# Triggered by gridbank-external-api via repository_dispatch when docs/openapi.yaml changes.
+# Triggered by gridbank-backend via repository_dispatch when the Enterprise API spec
+# (apps/external-api/docs/openapi.yaml) changes on main.
 # Also runnable manually for one-off syncs.
 on:
   repository_dispatch:
@@ -8,8 +9,8 @@ on:
 
   workflow_dispatch:
     inputs:
-      external_api_ref:
-        description: 'Branch or tag to pull spec from'
+      backend_ref:
+        description: 'gridbank-backend branch or tag to pull the spec from'
         required: false
         default: main
 
@@ -35,27 +36,27 @@ jobs:
           app-id: ${{ secrets.CI_BOT_APP_ID }}
           private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-          repositories: gridbank-sdk,gridbank-external-api
+          repositories: gridbank-sdk,gridbank-backend
 
       - name: Checkout SDK
         uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Checkout external-api spec
+      - name: Checkout the Enterprise API spec
         uses: actions/checkout@v4
         with:
-          repository: GridBank/gridbank-external-api
-          ref: ${{ github.event.client_payload.sha || github.event.inputs.external_api_ref || 'main' }}
+          repository: GridBank/gridbank-backend
+          ref: ${{ github.event.client_payload.sha || github.event.inputs.backend_ref || 'main' }}
           token: ${{ steps.app-token.outputs.token }}
-          path: _external_api
-          sparse-checkout: docs/openapi.yaml
+          path: _backend
+          sparse-checkout: apps/external-api/docs/openapi.yaml
           sparse-checkout-cone-mode: false
 
       - name: Copy spec
         run: |
           mkdir -p docs/assets
-          cp _external_api/docs/openapi.yaml docs/assets/openapi.yaml
+          cp _backend/apps/external-api/docs/openapi.yaml docs/assets/openapi.yaml
 
       - name: Check for changes
         id: diff
@@ -81,10 +82,10 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           add-paths: docs/assets/openapi.yaml
           branch: sync/openapi-spec
-          commit-message: 'chore: sync OpenAPI spec from external-api'
-          title: 'chore: sync OpenAPI spec'
+          commit-message: 'chore: sync the Enterprise API OpenAPI spec'
+          title: 'chore: sync the Enterprise API OpenAPI spec'
           body: |
-            Automated spec sync triggered by a change in `gridbank-external-api`.
+            Automated spec sync triggered by a change in `gridbank-backend`.
 
             **Review checklist:**
             - [ ] Review the spec diff in the Files Changed tab
