@@ -170,7 +170,7 @@ five-minute expiry: a stale URL is re-requested once before it gives up.
 
 ## Rate limits
 
-100 requests per minute, counted per API key. Over that, requests are rejected
+300 requests per minute, counted per API key. Over that, requests are rejected
 with `429` and a `Retry-After` header giving the seconds to wait. Both clients
 retry `429` for you and honour that header — see `max_retries` / `maxRetries`.
 
