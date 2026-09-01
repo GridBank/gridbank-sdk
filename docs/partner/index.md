@@ -2,11 +2,6 @@
 
 Read and download the videos your GridBank account has licensed, from your own tools.
 
-One of two GridBank APIs, for a different audience than the
-[Enterprise API](../enterprise/index.md). That one serves leased collections to enterprise contracts;
-this one serves **your own library** — the clips your account has already paid for. Separate
-products, separate credentials, neither built on the other.
-
 ## Getting a key
 
 Create one from your account settings on gridbank.io. The secret
@@ -96,8 +91,8 @@ as often as you like. There is no charge for re-issuing.
 
 ## SDK field names
 
-Both SDKs return the packages' shared `Video` and `Creator` types, so a few fields are
-read under different names than the JSON above:
+Both SDKs return `Video` and `Creator` objects, so a few fields are read under
+different names than the JSON above:
 
 | Response field | SDK field |
 |---|---|
@@ -107,10 +102,8 @@ read under different names than the JSON above:
 | `thumbnail_url` | `video.thumbnail` |
 | `purchased_at` | `video.purchased_at` (Python) / `video.purchasedAt` (JS) |
 
-`Video` also carries `description`, `width`, `height`, `location`, and `keywords` for
-the enterprise client — the Partner API does not return those, so they are always unset
-here. `purchased_at` is the reverse: the Partner API always sets it, the enterprise
-client never does.
+`Video` carries other fields the Partner API does not return - `description`, `width`,
+`height`, `location`, `keywords` - which are always unset here.
 
 ## Python
 
