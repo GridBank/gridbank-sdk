@@ -1,6 +1,6 @@
-# Error Handling
+# Enterprise API Errors
 
-All GridBank API responses use standard HTTP status codes. Non-2xx responses include a JSON error envelope.
+All Enterprise API responses use standard HTTP status codes. Non-2xx responses include a JSON error envelope.
 
 ## Error Response Format
 

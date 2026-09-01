@@ -1,4 +1,4 @@
-# Getting Started
+# Enterprise API: Getting Started
 
 ## 1. Get Your API Key
 
@@ -139,4 +139,4 @@ Stuck? Reach out:
 
 - **Email:** support@gridbank.io
 - **Status Page:** [gridbank.io](https://gridbank.io)
-- **GitHub Issues:** [gridbank/gridbank-external-api/issues](https://github.com/gridbank/gridbank-external-api/issues)
+- **GitHub Issues:** [gridbank/gridbank-sdk/issues](https://github.com/gridbank/gridbank-sdk/issues)

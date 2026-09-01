@@ -1,6 +1,6 @@
-# Rate Limiting
+# Enterprise API Rate Limits
 
-The GridBank API enforces rate limits based on your subscription tier. When you hit a rate limit, the API returns a **429 Too Many Requests** response.
+The Enterprise API enforces rate limits based on your subscription tier. When you hit a rate limit, the API returns a **429 Too Many Requests** response.
 
 ## Rate Limits by Tier
 

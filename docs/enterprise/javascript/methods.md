@@ -1,6 +1,6 @@
 # JavaScript SDK Methods
 
-All GridBank API methods are available through the `GridbankClient` instance. Methods use JavaScript naming conventions (camelCase) and return fully-typed objects for TypeScript support.
+All Enterprise API methods are available through the `GridbankClient` instance. Methods use JavaScript naming conventions (camelCase) and return fully-typed objects for TypeScript support.
 
 Note: option and response field names use **snake_case** to match the API wire format.
 

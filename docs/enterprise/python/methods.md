@@ -1,6 +1,6 @@
 # Python SDK Methods
 
-All GridBank API methods are available through the `GridbankClient` instance. Methods use Python naming conventions (snake_case) and return typed dataclass models.
+All Enterprise API methods are available through the `GridbankClient` instance. Methods use Python naming conventions (snake_case) and return typed dataclass models.
 
 ## search_videos()
 

@@ -1,6 +1,6 @@
 # Python SDK Client Setup
 
-Initialize and configure the GridBank API client for your Python application.
+Initialize and configure the Enterprise API client for your Python application.
 
 ## Basic Initialization
 

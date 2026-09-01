@@ -1,8 +1,8 @@
-# API Reference
+# Enterprise API Reference
 
 ## Endpoints
 
-The GridBank API provides 4 core endpoints for video search, metadata retrieval, downloads, and account management.
+The Enterprise API provides 4 core endpoints for video search, metadata retrieval, downloads, and account management.
 
 ### Search Videos
 
@@ -301,13 +301,13 @@ The full OpenAPI 3.1.0 specification is available in multiple formats:
 
 ### Interactive Explorer
 
-[**Open OpenAPI Explorer →**](openapi-viewer.html) — Explore endpoints, view schemas, and test requests in your browser.
+[**Open OpenAPI Explorer →**](../openapi-viewer.html) — Explore endpoints, view schemas, and test requests in your browser.
 
 ### Download Specification
 
 Download the specification file to import into other tools:
 
-- [openapi.yaml](assets/openapi.yaml) — YAML format
+- [openapi.yaml](../assets/openapi.yaml) — YAML format
 - Production URL: `https://api2.gridbank.io/openapi.json`
 
 ### Import Into Tools

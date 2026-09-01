@@ -1,4 +1,4 @@
-# JavaScript SDK
+# Enterprise API: JavaScript SDK
 
 The official GridBank JavaScript SDK provides a modern, async-first wrapper around the REST API. Built with TypeScript, it delivers full type safety, excellent IDE support, and a developer-friendly API.
 

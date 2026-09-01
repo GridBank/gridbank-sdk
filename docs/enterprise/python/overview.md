@@ -1,4 +1,4 @@
-# Python SDK
+# Enterprise API: Python SDK
 
 The official GridBank Python SDK provides a type-safe, Pythonic wrapper around the REST API. Build video search, metadata retrieval, and download features with just a few lines of code.
 
