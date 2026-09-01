@@ -32,7 +32,7 @@ download from the collection your contract covers. Keys are issued during onboar
 | Content | What your account licensed | What your contract leases |
 | Base path | `/partner/v1` | `/external/v1` |
 | Get a key | Account settings on gridbank.io | Issued by GridBank during onboarding |
-| SDK client | `GridBankAPIClient` | `GridbankClient` |
+| SDK client | `PartnerClient` | `EnterpriseClient` |
 
 Both clients ship in the same packages — `gridbank-api` on PyPI, `@gridbank/api-js` on
 npm — so installing once gives you either.

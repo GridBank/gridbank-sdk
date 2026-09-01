@@ -7,9 +7,9 @@ Initialize and configure the Enterprise API client for your JavaScript/TypeScrip
 Create a client with just your API key:
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_your_key_here' });
+const client = new EnterpriseClient({ apiKey: 'apik_your_key_here' });
 ```
 
 **Get your API key:** Contact [support@gridbank.io](mailto:support@gridbank.io) — keys are provisioned manually during onboarding.
@@ -19,7 +19,7 @@ const client = new GridbankClient({ apiKey: 'apik_your_key_here' });
 Customize client behavior with advanced options:
 
 ```javascript
-const client = new GridbankClient({
+const client = new EnterpriseClient({
   apiKey: 'apik_your_key_here',
   baseUrl: 'https://api2.gridbank.io',  // Default API endpoint
 });
@@ -40,7 +40,7 @@ const apiKey = import.meta.env.VITE_GRIDBANK_API_KEY;
 if (!apiKey) {
   throw new Error('VITE_GRIDBANK_API_KEY environment variable not set');
 }
-const client = new GridbankClient({ apiKey });
+const client = new EnterpriseClient({ apiKey });
 ```
 
 **For Node.js:**
@@ -54,22 +54,22 @@ const apiKey = process.env.GRIDBANK_API_KEY;
 if (!apiKey) {
   throw new Error('GRIDBANK_API_KEY environment variable not set');
 }
-const client = new GridbankClient({ apiKey });
+const client = new EnterpriseClient({ apiKey });
 ```
 
 ## Error Handling
 
-All SDK methods throw `GridbankAPIError` on API errors. Handle them gracefully:
+All SDK methods throw `EnterpriseAPIError` on API errors. Handle them gracefully:
 
 ```javascript
-import { GridbankClient, GridbankAPIError } from '@gridbank/api-js';
+import { EnterpriseClient, EnterpriseAPIError } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
 try {
   const results = await client.searchVideos({ q: 'test' });
 } catch (error) {
-  if (error instanceof GridbankAPIError) {
+  if (error instanceof EnterpriseAPIError) {
     console.error(`HTTP ${error.statusCode}: ${error.message}`);
     if (error.details) {
       console.error('Details:', error.details);
@@ -87,9 +87,9 @@ See [Error Handling Guide](../api-reference.md#error-codes) for detailed error i
 Full type definitions are included for excellent IDE support:
 
 ```typescript
-import { GridbankClient, VideoListResponse, Video } from '@gridbank/api-js';
+import { EnterpriseClient, VideoListResponse, Video } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
 // Full type inference
 const results: VideoListResponse = await client.searchVideos({ 

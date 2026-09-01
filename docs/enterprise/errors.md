@@ -52,12 +52,12 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
 === "Python"
 
     ```python
-    from gridbank_api import GridbankClient, GridbankAPIError
+    from gridbank_api import EnterpriseClient, EnterpriseAPIError
 
-    client = GridbankClient(api_key="invalid_key")
+    client = EnterpriseClient(api_key="invalid_key")
     try:
         results = client.search_videos(q="test")
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         if e.code == "unauthorized":
             print("API key is invalid. Check your credentials.")
     ```
@@ -65,7 +65,7 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
 === "JavaScript"
 
     ```javascript
-    const client = new GridbankClient({ apiKey: 'invalid_key' });
+    const client = new EnterpriseClient({ apiKey: 'invalid_key' });
     try {
       await client.searchVideos({ q: 'test' });
     } catch (error) {
@@ -89,7 +89,7 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
     ```python
     try:
         download = client.download_video(video_id="video_abc123")
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         if e.code == "forbidden":
             print("You need an active subscription to download videos.")
             usage = client.usage_summary()
@@ -124,7 +124,7 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
     ```python
     try:
         video = client.get_video(video_id="invalid_id")
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         if e.code == "not_found":
             print("Video not found. Search for videos first:")
             results = client.search_videos(q="nature")
@@ -161,7 +161,7 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
     ```python
     try:
         results = client.search_videos(q="test", per_page=200)
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         if e.code == "validation_error":
             for error in e.details:
                 print(f"Field {error['loc']}: {error['msg']}")
@@ -195,14 +195,14 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
 
     ```python
     import time
-    from gridbank_api import GridbankAPIError
+    from gridbank_api import EnterpriseAPIError
 
     max_retries = 3
     for attempt in range(max_retries):
         try:
             results = client.search_videos(q="test")
             break
-        except GridbankAPIError as e:
+        except EnterpriseAPIError as e:
             if e.code == "rate_limited":
                 wait_time = (2 ** attempt)  # exponential backoff
                 print(f"Rate limited. Retrying in {wait_time}s...")
@@ -245,7 +245,7 @@ All Enterprise API responses use standard HTTP status codes. Non-2xx responses i
 ### Python
 
 ```python
-class GridbankAPIError(Exception):
+class EnterpriseAPIError(Exception):
     code: str          # Error code (e.g., "unauthorized")
     message: str       # Human-readable message
     details: Any       # Optional field-level details
@@ -255,7 +255,7 @@ class GridbankAPIError(Exception):
 ### JavaScript
 
 ```typescript
-class GridbankAPIError extends Error {
+class EnterpriseAPIError extends Error {
     code: string;      // Error code
     message: string;   // Human-readable message
     details: any;      // Optional field-level details

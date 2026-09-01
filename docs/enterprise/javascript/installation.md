@@ -33,7 +33,7 @@ pnpm add @gridbank/api-js
 Check that the SDK is installed correctly:
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 console.log('✓ @gridbank/api-js installed');
 ```
 
@@ -42,9 +42,9 @@ console.log('✓ @gridbank/api-js installed');
 Use the SDK in your Node.js applications:
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 const results = await client.searchVideos({ q: 'nature' });
 ```
 
@@ -53,9 +53,9 @@ const results = await client.searchVideos({ q: 'nature' });
 Use with a bundler like Webpack, Vite, or esbuild for browser environments:
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 const results = await client.searchVideos({ q: 'nature' });
 ```
 
@@ -64,9 +64,9 @@ const results = await client.searchVideos({ q: 'nature' });
 Full TypeScript types are included. No extra installation needed:
 
 ```typescript
-import { GridbankClient, SearchResult } from '@gridbank/api-js';
+import { EnterpriseClient, SearchResult } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 const results: SearchResult = await client.searchVideos({ q: 'nature' });
 ```
 

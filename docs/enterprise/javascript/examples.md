@@ -5,10 +5,10 @@
 Initialize a client and search for videos, then download one.
 
 ```javascript
-import { GridbankClient, GridbankAPIError } from '@gridbank/api-js';
+import { EnterpriseClient, EnterpriseAPIError } from '@gridbank/api-js';
 
 // Initialize client
-const client = new GridbankClient({ apiKey: 'apik_your_key_here' });
+const client = new EnterpriseClient({ apiKey: 'apik_your_key_here' });
 
 try {
   // Search for videos
@@ -42,7 +42,7 @@ try {
   }
   
 } catch (error) {
-  if (error instanceof GridbankAPIError) {
+  if (error instanceof EnterpriseAPIError) {
     console.error(`HTTP ${error.statusCode}: ${error.message}`);
     if (error.details) {
       console.error(`Details:`, error.details);
@@ -105,7 +105,7 @@ for (const video of results.videos) {
     });
     console.log(`✓ ${video.title} -> ${download.url}`);
   } catch (error) {
-    if (error instanceof GridbankAPIError) {
+    if (error instanceof EnterpriseAPIError) {
       console.log(`✗ ${video.title} failed: ${error.message}`);
     }
   }
@@ -158,15 +158,15 @@ console.log(`Total videos collected: ${allVideos.length}`);
 ## Error Handling Best Practices
 
 ```javascript
-import { GridbankClient, GridbankAPIError } from '@gridbank/api-js';
+import { EnterpriseClient, EnterpriseAPIError } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
 try {
   const video = await client.getVideo('video_xyz');
   
 } catch (error) {
-  if (error instanceof GridbankAPIError) {
+  if (error instanceof EnterpriseAPIError) {
     switch (error.statusCode) {
       case 401:
         console.error('API key is invalid. Check your credentials.');
@@ -199,9 +199,9 @@ try {
 ## TypeScript Example
 
 ```typescript
-import { GridbankClient, VideoListResponse, Video, GridbankAPIError } from '@gridbank/api-js';
+import { EnterpriseClient, VideoListResponse, Video, EnterpriseAPIError } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
 async function findAndDownload(query: string): Promise<void> {
   try {
@@ -220,7 +220,7 @@ async function findAndDownload(query: string): Promise<void> {
     console.log(`Downloaded: ${video.title}`);
     console.log(`URL: ${download.url}`);
   } catch (error) {
-    if (error instanceof GridbankAPIError) {
+    if (error instanceof EnterpriseAPIError) {
       console.error(`HTTP ${error.statusCode}: ${error.message}`);
     } else {
       throw error;
@@ -243,7 +243,7 @@ VITE_GRIDBANK_API_KEY=apik_your_key_here
 ```javascript
 // vite.config.js or similar
 const apiKey = import.meta.env.VITE_GRIDBANK_API_KEY;
-const client = new GridbankClient({ apiKey });
+const client = new EnterpriseClient({ apiKey });
 ```
 
 Or in Node.js:
@@ -262,7 +262,7 @@ if (!apiKey) {
   throw new Error('GRIDBANK_API_KEY environment variable not set');
 }
 
-const client = new GridbankClient({ apiKey });
+const client = new EnterpriseClient({ apiKey });
 ```
 
 ---

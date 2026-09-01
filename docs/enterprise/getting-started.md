@@ -33,10 +33,10 @@ GridBank provides official SDKs for Python and JavaScript:
 === "Python"
 
     ```python
-    from gridbank_api import GridbankClient
+    from gridbank_api import EnterpriseClient
 
     # Initialize client
-    client = GridbankClient(api_key="apik_your_key_here")
+    client = EnterpriseClient(api_key="apik_your_key_here")
 
     # Search for videos
     results = client.search_videos(q="nature", per_page=5)
@@ -48,10 +48,10 @@ GridBank provides official SDKs for Python and JavaScript:
 === "JavaScript"
 
     ```javascript
-    import { GridbankClient } from '@gridbank/api-js';
+    import { EnterpriseClient } from '@gridbank/api-js';
 
     // Initialize client
-    const client = new GridbankClient({ apiKey: 'apik_your_key_here' });
+    const client = new EnterpriseClient({ apiKey: 'apik_your_key_here' });
 
     // Search for videos
     const results = await client.searchVideos({ q: 'nature', perPage: 5 });
@@ -68,13 +68,13 @@ All SDK methods raise exceptions on non-2xx responses. Always wrap API calls in 
 === "Python"
 
     ```python
-    from gridbank_api import GridbankClient, GridbankAPIError
+    from gridbank_api import EnterpriseClient, EnterpriseAPIError
 
-    client = GridbankClient(api_key="apik_...")
+    client = EnterpriseClient(api_key="apik_...")
 
     try:
         results = client.search_videos(q="test")
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         print(f"Error {e.code}: {e.message}")
         if e.details:
             print(f"Details: {e.details}")
@@ -83,7 +83,7 @@ All SDK methods raise exceptions on non-2xx responses. Always wrap API calls in 
 === "JavaScript"
 
     ```javascript
-    const client = new GridbankClient({ apiKey: 'apik_...' });
+    const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
     try {
       const results = await client.searchVideos({ q: 'test' });

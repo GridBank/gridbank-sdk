@@ -17,8 +17,8 @@ Each package ships two clients for two separate products. Neither is built on th
 
 | Client | Product | Serves | Credential |
 |--------|---------|--------|------------|
-| `GridBankAPIClient` | Partner API | the videos an account has **licensed** | member API key |
-| `GridbankClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
+| `PartnerClient` | Partner API | the videos an account has **licensed** | member API key |
+| `EnterpriseClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
 
 ## Quick Start
 
@@ -27,9 +27,9 @@ Each package ships two clients for two separate products. Neither is built on th
 pip install gridbank-api
 ```
 ```python
-from gridbank_api import GridBankAPIClient
+from gridbank_api import PartnerClient
 
-client = GridBankAPIClient(api_key="apik_...", user_agent="your-app/1.0")
+client = PartnerClient(api_key="apik_...", user_agent="your-app/1.0")
 
 for video in client.content():
     client.download(video.id, f"{video.id}.mp4")
@@ -40,9 +40,9 @@ for video in client.content():
 npm install @gridbank/api-js
 ```
 ```javascript
-import { GridBankAPIClient } from '@gridbank/api-js';
+import { PartnerClient } from '@gridbank/api-js';
 
-const client = new GridBankAPIClient({ apiKey: 'apik_...', userAgent: 'your-app/1.0' });
+const client = new PartnerClient({ apiKey: 'apik_...', userAgent: 'your-app/1.0' });
 
 for await (const video of client.content()) {
   console.log(video.id, video.title);

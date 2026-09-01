@@ -4,8 +4,8 @@ import httpx
 from datetime import datetime, timezone
 
 from gridbank_api import (
-    GridbankClient,
-    GridbankAPIError,
+    EnterpriseClient,
+    EnterpriseAPIError,
     Creator,
     Video,
     VideoListResponse,
@@ -34,7 +34,7 @@ VIDEO = {
 
 @pytest.fixture
 def client():
-    return GridbankClient(api_key="apik_test")
+    return EnterpriseClient(api_key="apik_test")
 
 
 @respx.mock
@@ -151,7 +151,7 @@ def test_error_raises_gridbank_api_error(client):
     respx.get(f"{BASE}/external/v1/videos/missing").mock(
         return_value=httpx.Response(404, json={"detail": "Video not found"})
     )
-    with pytest.raises(GridbankAPIError) as exc_info:
+    with pytest.raises(EnterpriseAPIError) as exc_info:
         client.get_video("missing")
     assert exc_info.value.status_code == 404
     assert "Video not found" in exc_info.value.message
@@ -162,6 +162,18 @@ def test_context_manager(client):
     respx.get(f"{BASE}/external/ping").mock(
         return_value=httpx.Response(200, json={"ping": "pong"})
     )
-    with GridbankClient(api_key="apik_test") as c:
+    with EnterpriseClient(api_key="apik_test") as c:
         result = c.ping()
     assert result.ping == "pong"
+
+
+def test_the_old_client_name_still_works_and_warns():
+    import pytest as _pytest
+
+    from gridbank_api import EnterpriseAPIError, EnterpriseClient, GridbankAPIError, GridbankClient
+
+    with _pytest.warns(DeprecationWarning):
+        client = GridbankClient(api_key="apik_test")
+
+    assert isinstance(client, EnterpriseClient)
+    assert GridbankAPIError is EnterpriseAPIError

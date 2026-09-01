@@ -4,7 +4,7 @@ import pytest
 from gridbank_api import (
     NotAuthenticated,
     NotLicensed,
-    GridBankAPIClient,
+    PartnerClient,
     ContentError,
     VideoNotFound,
 )
@@ -31,14 +31,14 @@ def error_body(message: str) -> dict:
 
 @pytest.fixture
 def client():
-    with GridBankAPIClient(api_key="apik_test.secret") as c:
+    with PartnerClient(api_key="apik_test.secret") as c:
         yield c
 
 
 class TestConstruction:
     def test_an_empty_key_is_rejected_up_front(self):
         with pytest.raises(ValueError):
-            GridBankAPIClient(api_key="")
+            PartnerClient(api_key="")
 
 
 class TestContentIteration:

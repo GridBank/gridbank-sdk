@@ -5,10 +5,10 @@
 Initialize a client and search for videos, then download one.
 
 ```python
-from gridbank_api import GridbankClient, GridbankAPIError
+from gridbank_api import EnterpriseClient, EnterpriseAPIError
 
 # Initialize client
-client = GridbankClient(api_key="apik_your_key_here")
+client = EnterpriseClient(api_key="apik_your_key_here")
 
 try:
     # Search for videos
@@ -41,7 +41,7 @@ try:
         print(f"\nUsage: {usage.downloads_this_period} downloads used")
         print(f"Tier: {usage.tier}")
 
-except GridbankAPIError as e:
+except EnterpriseAPIError as e:
     print(f"HTTP {e.status_code}: {e.message}")
     if e.details:
         print(f"Details: {e.details}")
@@ -99,7 +99,7 @@ for video in results.videos:
             search_id=results.search_id
         )
         print(f"✓ {video.title} -> {download.url}")
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         print(f"✗ {video.title} failed: {e.message}")
 ```
 
@@ -149,14 +149,14 @@ print(f"Total videos collected: {len(all_videos)}")
 ## Error Handling Best Practices
 
 ```python
-from gridbank_api import GridbankClient, GridbankAPIError
+from gridbank_api import EnterpriseClient, EnterpriseAPIError
 
-client = GridbankClient(api_key="apik_...")
+client = EnterpriseClient(api_key="apik_...")
 
 try:
     video = client.get_video(video_id="video_xyz")
     
-except GridbankAPIError as e:
+except EnterpriseAPIError as e:
     # Handle by HTTP status code
     if e.status_code == 401:
         print("API key is invalid. Check your credentials.")
@@ -188,13 +188,13 @@ GRIDBANK_API_KEY=apik_your_key_here
 
 ```python
 import os
-from gridbank_api import GridbankClient
+from gridbank_api import EnterpriseClient
 
 api_key = os.getenv("GRIDBANK_API_KEY")
 if not api_key:
     raise ValueError("GRIDBANK_API_KEY environment variable not set")
 
-client = GridbankClient(api_key=api_key)
+client = EnterpriseClient(api_key=api_key)
 ```
 
 ---

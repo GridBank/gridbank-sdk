@@ -2,15 +2,15 @@
  * Client for the GridBank Partner API.
  *
  * Reads and downloads the videos your account has licensed. Separate from
- * `GridbankClient`, which serves leased collections to enterprise contracts:
+ * `EnterpriseClient`, which serves leased collections to enterprise contracts:
  * different credential, different contract.
  *
  * Create a key from your account settings on gridbank.io.
  *
  * ```ts
- * import { GridBankAPIClient } from "@gridbank/api-js";
+ * import { PartnerClient } from "@gridbank/api-js";
  *
- * const client = new GridBankAPIClient({ apiKey: "apik_..." });
+ * const client = new PartnerClient({ apiKey: "apik_..." });
  *
  * for await (const video of client.content()) {
  *   const response = await client.fetchDownload(video.id);
@@ -60,7 +60,7 @@ export interface ContentDownload {
   expires_at: number;
 }
 
-export interface GridBankAPIClientOptions {
+export interface PartnerClientOptions {
   apiKey: string;
   baseUrl?: string;
   maxRetries?: number;
@@ -144,19 +144,19 @@ function messageFrom(body: unknown, fallback: string): string {
 
 type Params = Record<string, string | number | null | undefined>;
 
-export class GridBankAPIClient {
+export class PartnerClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly maxRetries: number;
   private readonly timeoutMs: number;
   private readonly userAgent?: string;
 
-  constructor(options: GridBankAPIClientOptions) {
+  constructor(options: PartnerClientOptions) {
     if (!options.apiKey) throw new Error("apiKey is required");
 
     this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? BASE_URL).replace(/\/$/, "") + PARTNER_PREFIX;
-    // maxRetries is a total attempt count, matching GridbankClient. Floored at one
+    // maxRetries is a total attempt count, matching EnterpriseClient. Floored at one
     // so 0 disables retrying rather than sending nothing at all.
     this.maxRetries = Math.max(1, options.maxRetries ?? 3);
     this.timeoutMs = options.timeoutMs ?? 30_000;

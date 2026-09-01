@@ -1,6 +1,6 @@
 # Python SDK Methods
 
-All Enterprise API methods are available through the `GridbankClient` instance. Methods use Python naming conventions (snake_case) and return typed dataclass models.
+All Enterprise API methods are available through the `EnterpriseClient` instance. Methods use Python naming conventions (snake_case) and return typed dataclass models.
 
 ## search_videos()
 
@@ -178,14 +178,14 @@ print(f"Period ends: {usage.lease_period_end}")
 
 ## Exception Handling
 
-All methods raise `GridbankAPIError` on errors:
+All methods raise `EnterpriseAPIError` on errors:
 
 ```python
-from gridbank_api import GridbankAPIError
+from gridbank_api import EnterpriseAPIError
 
 try:
     video = client.get_video(video_id="invalid")
-except GridbankAPIError as e:
+except EnterpriseAPIError as e:
     print(f"HTTP {e.status_code}: {e.message}")
     if e.details:
         print(f"Details: {e.details}")

@@ -20,20 +20,20 @@ import from `@gridbank/api-js`.
 
 | Client | Product | Serves | Credential |
 |--------|---------|--------|------------|
-| `GridBankAPIClient` | Partner API | the videos **your own account has licensed** | member API key |
-| `GridbankClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
+| `PartnerClient` | Partner API | the videos **your own account has licensed** | member API key |
+| `EnterpriseClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
 
-Reaching your own library from your own tools → `GridBankAPIClient`.
-On an enterprise contract, searching leased collections → `GridbankClient`.
+Reaching your own library from your own tools → `PartnerClient`.
+On an enterprise contract, searching leased collections → `EnterpriseClient`.
 
 ---
 
-## `GridBankAPIClient` — your licensed library
+## `PartnerClient` — your licensed library
 
 ```ts
-import { GridBankAPIClient, NotLicensed } from '@gridbank/api-js';
+import { PartnerClient, NotLicensed } from '@gridbank/api-js';
 
-const client = new GridBankAPIClient({ apiKey: 'apik_...', userAgent: 'your-app/1.0' });
+const client = new PartnerClient({ apiKey: 'apik_...', userAgent: 'your-app/1.0' });
 
 // Pages are fetched as you consume them, so stopping early costs nothing.
 for await (const video of client.content()) {
@@ -57,7 +57,7 @@ belong. The five-minute signed-URL expiry is retried once internally.
 ### Options
 
 ```ts
-const client = new GridBankAPIClient({
+const client = new PartnerClient({
   apiKey: 'apik_...',
   userAgent: 'your-app/1.0', // identify your app; unidentified traffic can be blocked
   timeoutMs: 30_000,
@@ -78,12 +78,15 @@ All extend `ContentError`, which carries `statusCode`, `message`, and `details`.
 
 ---
 
-## `GridbankClient` — enterprise collections
+## `EnterpriseClient` — enterprise collections
+
+> Renamed in 0.3.0. `GridbankClient` and `GridbankAPIError` still work as deprecated
+> aliases; they are removed in 1.0.
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
 const results = await client.searchVideos({ q: 'nature', per_page: 10 });
 for (const video of results.videos) {
@@ -94,7 +97,7 @@ for (const video of results.videos) {
 ### Options
 
 ```javascript
-const client = new GridbankClient({
+const client = new EnterpriseClient({
   apiKey: 'apik_...',
   maxRetries: 3, // retries on 429, honours Retry-After header (default: 3, set 0 to disable)
 });
@@ -103,12 +106,12 @@ const client = new GridbankClient({
 ### Errors
 
 ```javascript
-import { GridbankClient, GridbankAPIError } from '@gridbank/api-js';
+import { EnterpriseClient, EnterpriseAPIError } from '@gridbank/api-js';
 
 try {
   const results = await client.searchVideos({ q: 'nature' });
 } catch (error) {
-  if (error instanceof GridbankAPIError) {
+  if (error instanceof EnterpriseAPIError) {
     console.error(`Error ${error.code}: ${error.message}`);
   }
 }

@@ -7,9 +7,9 @@ Initialize and configure the Enterprise API client for your Python application.
 Create a client with just your API key:
 
 ```python
-from gridbank_api import GridbankClient
+from gridbank_api import EnterpriseClient
 
-client = GridbankClient(api_key="apik_your_key_here")
+client = EnterpriseClient(api_key="apik_your_key_here")
 ```
 
 **Get your API key:** Contact [support@gridbank.io](mailto:support@gridbank.io) — keys are provisioned manually during onboarding.
@@ -19,7 +19,7 @@ client = GridbankClient(api_key="apik_your_key_here")
 Customize client behavior with advanced options:
 
 ```python
-client = GridbankClient(
+client = EnterpriseClient(
     api_key="apik_your_key_here",
     base_url="https://api2.gridbank.io",  # Default API endpoint
 )
@@ -38,27 +38,27 @@ Load from environment:
 
 ```python
 import os
-from gridbank_api import GridbankClient
+from gridbank_api import EnterpriseClient
 
 api_key = os.getenv("GRIDBANK_API_KEY")
 if not api_key:
     raise ValueError("GRIDBANK_API_KEY environment variable not set")
 
-client = GridbankClient(api_key=api_key)
+client = EnterpriseClient(api_key=api_key)
 ```
 
 ## Error Handling
 
-All SDK methods raise `GridbankAPIError` on API errors. Handle them gracefully:
+All SDK methods raise `EnterpriseAPIError` on API errors. Handle them gracefully:
 
 ```python
-from gridbank_api import GridbankClient, GridbankAPIError
+from gridbank_api import EnterpriseClient, EnterpriseAPIError
 
-client = GridbankClient(api_key="apik_...")
+client = EnterpriseClient(api_key="apik_...")
 
 try:
     results = client.search_videos(q="test")
-except GridbankAPIError as e:
+except EnterpriseAPIError as e:
     print(f"HTTP {e.status_code}: {e.message}")
     if e.details:
         print(f"Details: {e.details}")
@@ -71,9 +71,9 @@ See [Error Handling Guide](../api-reference.md#error-codes) for detailed error i
 The SDK provides full type hints for excellent IDE autocomplete:
 
 ```python
-from gridbank_api import GridbankClient, VideoListResponse, Video
+from gridbank_api import EnterpriseClient, VideoListResponse, Video
 
-client = GridbankClient(api_key="apik_...")
+client = EnterpriseClient(api_key="apik_...")
 
 # Full type support
 results: VideoListResponse = client.search_videos(q="nature", per_page=5)

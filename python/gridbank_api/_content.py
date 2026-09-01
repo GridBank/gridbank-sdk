@@ -1,14 +1,14 @@
 """Client for the GridBank Partner API.
 
 Reads and downloads the videos your account has licensed. Separate from
-:class:`gridbank_api.GridbankClient`, which serves leased collections to
+:class:`gridbank_api.EnterpriseClient`, which serves leased collections to
 enterprise contracts: different credential, different contract.
 
 Create a key from your account settings on gridbank.io.
 
-    from gridbank_api import GridBankAPIClient
+    from gridbank_api import PartnerClient
 
-    client = GridBankAPIClient(api_key="apik_...")
+    client = PartnerClient(api_key="apik_...")
 
     for video in client.content():
         client.download(video.id, f"{video.id}.mp4")
@@ -79,7 +79,7 @@ def _video(data: dict) -> Video:
     )
 
 
-class GridBankAPIClient:
+class PartnerClient:
     """Synchronous client. Safe to keep for the life of a process."""
 
     def __init__(
@@ -104,11 +104,11 @@ class GridBankAPIClient:
             timeout=timeout,
             follow_redirects=True,
         )
-        # max_retries is a total attempt count, matching GridbankClient. Floored at
+        # max_retries is a total attempt count, matching EnterpriseClient. Floored at
         # one so 0 disables retrying rather than sending nothing at all.
         self._max_retries = max(1, max_retries)
 
-    def __enter__(self) -> "GridBankAPIClient":
+    def __enter__(self) -> "PartnerClient":
         return self
 
     def __exit__(self, *_exc: object) -> None:
@@ -255,7 +255,7 @@ class GridBankAPIClient:
 
 
 __all__ = [
-    "GridBankAPIClient",
+    "PartnerClient",
     "NotAuthenticated",
     "NotLicensed",
     "ContentError",

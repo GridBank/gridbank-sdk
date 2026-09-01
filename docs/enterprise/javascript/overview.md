@@ -27,10 +27,10 @@ yarn add @gridbank/api-js
 ## Quick Example
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 
 // Initialize the client with your API key
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
 // Search for videos
 const results = await client.searchVideos({ q: 'nature', perPage: 5 });
@@ -44,12 +44,12 @@ for (const video of results.videos) {
 
 ## What's Included
 
-- **GridbankClient** — Main API client with 4 core methods
+- **EnterpriseClient** — Main API client with 4 core methods
 - **searchVideos()** — Full-text video search with pagination
 - **getVideo()** — Fetch complete video metadata (requires subscription)
 - **downloadVideo()** — Generate signed download URLs (requires subscription)
 - **usageSummary()** — Check your account tier and download quota
-- **GridbankAPIError** — Exception class for comprehensive error handling
+- **EnterpriseAPIError** — Exception class for comprehensive error handling
 - **TypeScript types** — Full type definitions for all objects and responses
 
 ## Authentication
@@ -57,7 +57,7 @@ for (const video of results.videos) {
 All requests require a Bearer token. [Get your API key →](../api-reference.md#authentication)
 
 ```javascript
-const client = new GridbankClient({ apiKey: 'apik_your_key_here' });
+const client = new EnterpriseClient({ apiKey: 'apik_your_key_here' });
 ```
 
 ## Next Steps

@@ -20,10 +20,10 @@ pip install gridbank-api
 ## Quick Example
 
 ```python
-from gridbank_api import GridbankClient
+from gridbank_api import EnterpriseClient
 
 # Initialize the client with your API key
-client = GridbankClient(api_key="apik_...")
+client = EnterpriseClient(api_key="apik_...")
 
 # Search for videos
 results = client.search_videos(q="nature", per_page=5)
@@ -36,12 +36,12 @@ for video in results.videos:
 
 ## What's Included
 
-- **GridbankClient** — Main API client with 4 core methods
+- **EnterpriseClient** — Main API client with 4 core methods
 - **search_videos()** — Full-text video search with pagination
 - **get_video()** — Fetch complete video metadata (requires subscription)
 - **download_video()** — Generate signed download URLs (requires subscription)
 - **usage_summary()** — Check your account tier and download quota
-- **GridbankAPIError** — Exception class for comprehensive error handling
+- **EnterpriseAPIError** — Exception class for comprehensive error handling
 - **Type models** — Dataclasses for all response shapes
 
 ## Authentication
@@ -49,7 +49,7 @@ for video in results.videos:
 All requests require a Bearer token. [Get your API key →](../api-reference.md#authentication)
 
 ```python
-client = GridbankClient(api_key="apik_your_key_here")
+client = EnterpriseClient(api_key="apik_your_key_here")
 ```
 
 ## Next Steps

@@ -20,7 +20,7 @@ pip install gridbank-api
 Confirm the SDK is installed correctly:
 
 ```bash
-python -c "from gridbank_api import GridbankClient; print('✓ gridbank-api installed')"
+python -c "from gridbank_api import EnterpriseClient; print('✓ gridbank-api installed')"
 ```
 
 ## Using with Virtual Environment (Recommended)

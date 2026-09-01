@@ -1,7 +1,7 @@
 import {
   NotAuthenticated,
   NotLicensed,
-  GridBankAPIClient,
+  PartnerClient,
   ContentError,
   VideoNotFound,
 } from "./content";
@@ -34,7 +34,7 @@ function errorBody(message: string) {
 }
 
 function client() {
-  return new GridBankAPIClient({ apiKey: "apik_test.secret" });
+  return new PartnerClient({ apiKey: "apik_test.secret" });
 }
 
 afterEach(() => jest.restoreAllMocks());
@@ -47,7 +47,7 @@ async function collect(iterator: AsyncGenerator<Video>): Promise<string[]> {
 
 describe("construction", () => {
   it("rejects an empty key up front", () => {
-    expect(() => new GridBankAPIClient({ apiKey: "" })).toThrow("apiKey is required");
+    expect(() => new PartnerClient({ apiKey: "" })).toThrow("apiKey is required");
   });
 });
 

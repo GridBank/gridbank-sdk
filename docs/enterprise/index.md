@@ -8,6 +8,10 @@ metadata, signed URLs, and usage reporting.
     and download the clips your own account has paid for, see the
     [Partner API](../partner/index.md). Separate products, separate credentials.
 
+!!! warning "Client renamed in 0.3.0"
+    `GridbankClient` is now `EnterpriseClient`, and `GridbankAPIError` is
+    `EnterpriseAPIError`. The old names still work as aliases and are removed in 1.0.
+
 ## Quick Start
 
 Choose your SDK and get started in minutes.
@@ -19,9 +23,9 @@ pip install gridbank-api
 ```
 
 ```python
-from gridbank_api import GridbankClient
+from gridbank_api import EnterpriseClient
 
-client = GridbankClient(api_key="apik_...")
+client = EnterpriseClient(api_key="apik_...")
 results = client.search_videos(q="nature", per_page=5)
 print(f"Found {len(results.videos)} videos")
 ```
@@ -35,9 +39,9 @@ npm install @gridbank/api-js
 ```
 
 ```javascript
-import { GridbankClient } from '@gridbank/api-js';
+import { EnterpriseClient } from '@gridbank/api-js';
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
+const client = new EnterpriseClient({ apiKey: 'apik_...' });
 const results = await client.searchVideos({ q: 'nature', perPage: 5 });
 console.log(`Found ${results.videos.length} videos`);
 ```

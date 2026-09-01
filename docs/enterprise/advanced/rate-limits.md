@@ -39,11 +39,11 @@ When rate limited, always respect the `Retry-After` header:
 
     ```python
     import time
-    from gridbank_api import GridbankAPIError
+    from gridbank_api import EnterpriseAPIError
 
     try:
         results = client.search_videos(q="test")
-    except GridbankAPIError as e:
+    except EnterpriseAPIError as e:
         if e.status_code == 429:
             time.sleep(1)  # Respect Retry-After; default to 1s if header unavailable
             results = client.search_videos(q="test")
@@ -55,7 +55,7 @@ When rate limited, always respect the `Retry-After` header:
     try {
       const results = await client.searchVideos({ q: 'test' });
     } catch (error) {
-      if (error instanceof GridbankAPIError && error.statusCode === 429) {
+      if (error instanceof EnterpriseAPIError && error.statusCode === 429) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         const results = await client.searchVideos({ q: 'test' });
       }
@@ -70,20 +70,20 @@ Both SDKs automatically retry on 429 responses using exponential backoff, respec
 
     ```python
     # Default: 3 attempts
-    client = GridbankClient(api_key="apik_...")
+    client = EnterpriseClient(api_key="apik_...")
 
     # Custom retry count
-    client = GridbankClient(api_key="apik_...", max_retries=5)
+    client = EnterpriseClient(api_key="apik_...", max_retries=5)
     ```
 
 === "JavaScript"
 
     ```javascript
     // Default: 3 attempts
-    const client = new GridbankClient({ apiKey: 'apik_...' });
+    const client = new EnterpriseClient({ apiKey: 'apik_...' });
 
     // Custom retry count
-    const client = new GridbankClient({ apiKey: 'apik_...', maxRetries: 5 });
+    const client = new EnterpriseClient({ apiKey: 'apik_...', maxRetries: 5 });
     ```
 
 To disable retries entirely, set `max_retries=1` (Python) or `maxRetries: 1` (JavaScript).

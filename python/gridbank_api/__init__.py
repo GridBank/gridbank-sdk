@@ -1,6 +1,7 @@
 """GridBank API Python SDK."""
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, List, Optional
@@ -9,7 +10,7 @@ import httpx
 
 from ._models import Creator, Location, Video
 from ._content import (
-    GridBankAPIClient,
+    PartnerClient,
     NotAuthenticated,
     NotLicensed,
     ContentError,
@@ -71,7 +72,7 @@ class PingResponse:
 # Error
 # ---------------------------------------------------------------------------
 
-class GridbankAPIError(Exception):
+class EnterpriseAPIError(Exception):
     def __init__(self, status_code: int, message: str, details: Optional[Any] = None) -> None:
         super().__init__(message)
         self.status_code = status_code
@@ -125,7 +126,7 @@ def _video(data: dict) -> Video:
 # Client
 # ---------------------------------------------------------------------------
 
-class GridbankClient:
+class EnterpriseClient:
     def __init__(self, api_key: str, *, base_url: str = _BASE_URL, max_retries: int = 3) -> None:
         self._http = httpx.Client(
             base_url=base_url,
@@ -140,7 +141,7 @@ class GridbankClient:
             try:
                 response = self._http.get(path, params=filtered)
             except httpx.RequestError as exc:
-                raise GridbankAPIError(0, str(exc)) from exc
+                raise EnterpriseAPIError(0, str(exc)) from exc
             if response.status_code == 429 and attempt < self._max_retries - 1:
                 wait = float(response.headers.get("Retry-After", 2 ** attempt))
                 time.sleep(wait)
@@ -148,11 +149,11 @@ class GridbankClient:
             if not response.is_success:
                 body = response.json() if "application/json" in response.headers.get("content-type", "") else {}
                 detail = body.get("detail", response.text) if isinstance(body, dict) else response.text
-                raise GridbankAPIError(response.status_code, detail, body)
+                raise EnterpriseAPIError(response.status_code, detail, body)
             try:
                 return response.json()
             except Exception as exc:
-                raise GridbankAPIError(
+                raise EnterpriseAPIError(
                     response.status_code,
                     f"Server returned a non-JSON response: {exc}",
                 ) from exc
@@ -239,8 +240,25 @@ class GridbankClient:
     def close(self) -> None:
         self._http.close()
 
-    def __enter__(self) -> GridbankClient:
+    def __enter__(self) -> EnterpriseClient:
         return self
 
     def __exit__(self, *_: Any) -> None:
         self.close()
+
+
+class GridbankClient(EnterpriseClient):
+    """Deprecated alias for :class:`EnterpriseClient`. Removed in 1.0."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        warnings.warn(
+            "GridbankClient is deprecated, use EnterpriseClient instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(*args, **kwargs)
+
+
+# Plain alias, not a subclass: `except GridbankAPIError` must still catch what
+# EnterpriseClient raises.
+GridbankAPIError = EnterpriseAPIError
