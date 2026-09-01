@@ -58,6 +58,7 @@ client = GridBankAPIClient(
     user_agent="your-app/1.0",  # identify your app; unidentified traffic can be blocked
     timeout=30.0,
     max_retries=3,  # total attempts on 429, honours Retry-After (1 or 0 disables retrying)
+    # The API allows 600 requests per minute per key.
 )
 ```
 

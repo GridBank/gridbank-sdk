@@ -12,7 +12,8 @@ products, separate credentials, neither built on the other.
 Create one from your account settings on gridbank.io. The secret
 is shown once, at creation. Store it in a secret manager, not in your repository.
 
-On a team account, only the team owner can create keys.
+On a team account, only the team owner can create keys. An account holds up to
+five active keys at a time — revoke one to create another.
 
 ## Authentication
 
@@ -91,6 +92,7 @@ as often as you like. There is no charge for re-issuing.
 | `404` | No video with that key |
 | `400` | Malformed cursor — restart paging from the beginning |
 | `422` | Invalid parameter, e.g. `per_page` above 100 |
+| `429` | Rate limited — retry after the `Retry-After` header |
 
 ## SDK field names
 
@@ -165,6 +167,15 @@ try {
 `fetchDownload()` returns the `Response` rather than writing to a path — this package runs
 in browsers as well as Node, and only you know where the bytes should go. It handles the
 five-minute expiry: a stale URL is re-requested once before it gives up.
+
+## Rate limits
+
+600 requests per minute, counted per API key. Over that, requests are rejected
+with `429` and a `Retry-After` header giving the seconds to wait. Both clients
+retry `429` for you and honour that header — see `max_retries` / `maxRetries`.
+
+Because the limit is per key, splitting work across keys does not raise your
+total: budget the account, not the key.
 
 ## Machine-to-machine traffic
 
