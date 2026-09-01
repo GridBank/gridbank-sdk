@@ -21,6 +21,7 @@ theme:
     - search.highlight
 
 markdown_extensions:
+  - attr_list
   - tables
   - admonition
   - pymdownx.tabbed:
