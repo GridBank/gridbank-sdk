@@ -1,4 +1,4 @@
-import { GridbankClient, GridbankAPIError } from "./index";
+import { EnterpriseClient, EnterpriseAPIError } from "./index";
 
 const BASE = "https://api2.gridbank.io";
 
@@ -28,7 +28,7 @@ function mockFetch(body: unknown, status = 200): jest.SpyInstance {
 
 afterEach(() => jest.restoreAllMocks());
 
-const client = new GridbankClient({ apiKey: "apik_test" });
+const client = new EnterpriseClient({ apiKey: "apik_test" });
 
 test("ping returns PingResponse", async () => {
   mockFetch({ ping: "pong", timestamp: "2026-06-08T12:00:00Z" });
@@ -94,8 +94,14 @@ test("usageSummary returns UsageSummary", async () => {
   expect(result.top_videos[0].video_id).toBe("vid_1");
 });
 
-test("non-2xx response throws GridbankAPIError", async () => {
+test("non-2xx response throws EnterpriseAPIError", async () => {
   mockFetch({ detail: "Video not found" }, 404);
-  await expect(client.getVideo("missing")).rejects.toThrow(GridbankAPIError);
+  await expect(client.getVideo("missing")).rejects.toThrow(EnterpriseAPIError);
   await expect(client.getVideo("missing")).rejects.toMatchObject({ statusCode: 404 });
+});
+
+test("the old client names are still exported", async () => {
+  const mod = await import("./index");
+  expect(mod.GridbankClient).toBe(mod.EnterpriseClient);
+  expect(mod.GridbankAPIError).toBe(mod.EnterpriseAPIError);
 });

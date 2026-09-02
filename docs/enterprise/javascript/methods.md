@@ -1,6 +1,6 @@
 # JavaScript SDK Methods
 
-All GridBank API methods are available through the `GridbankClient` instance. Methods use JavaScript naming conventions (camelCase) and return fully-typed objects for TypeScript support.
+All Enterprise API methods are available through the `EnterpriseClient` instance. Methods use JavaScript naming conventions (camelCase) and return fully-typed objects for TypeScript support.
 
 Note: option and response field names use **snake_case** to match the API wire format.
 
@@ -186,15 +186,15 @@ console.log(`Period ends: ${usage.lease_period_end}`);
 
 ## Exception Handling
 
-All methods throw `GridbankAPIError` on errors:
+All methods throw `EnterpriseAPIError` on errors:
 
 ```javascript
-import { GridbankAPIError } from '@gridbank/api-js';
+import { EnterpriseAPIError } from '@gridbank/api-js';
 
 try {
   const video = await client.getVideo('invalid');
 } catch (error) {
-  if (error instanceof GridbankAPIError) {
+  if (error instanceof EnterpriseAPIError) {
     console.error(`HTTP ${error.statusCode}: ${error.message}`);
     if (error.details) {
       console.error('Details:', error.details);

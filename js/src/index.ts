@@ -6,6 +6,7 @@ const _BASE_URL = "https://api2.gridbank.io";
 
 export interface Creator {
   username: string;
+  id: string;
   name?: string | null;
   bio?: string | null;
   profile_image?: string | null;
@@ -29,6 +30,8 @@ export interface Video {
   thumbnail?: string | null;
   location?: Location | null;
   keywords?: string[] | null;
+  /** Unix timestamp of the licence purchase. Partner API only. */
+  purchasedAt?: number | null;
 }
 
 export interface VideoListResponse {
@@ -73,7 +76,7 @@ export interface PingResponse {
 // Client options
 // ---------------------------------------------------------------------------
 
-export interface GridbankClientOptions {
+export interface EnterpriseClientOptions {
   apiKey: string;
   baseUrl?: string;
   maxRetries?: number;
@@ -99,13 +102,13 @@ export interface DownloadVideoOptions {
 // Error
 // ---------------------------------------------------------------------------
 
-export class GridbankAPIError extends Error {
+export class EnterpriseAPIError extends Error {
   readonly statusCode: number;
   readonly details: unknown;
 
   constructor(statusCode: number, message: string, details?: unknown) {
     super(message);
-    this.name = "GridbankAPIError";
+    this.name = "EnterpriseAPIError";
     this.statusCode = statusCode;
     this.details = details;
   }
@@ -117,12 +120,12 @@ export class GridbankAPIError extends Error {
 
 type Params = Record<string, string | number | boolean | null | undefined>;
 
-export class GridbankClient {
+export class EnterpriseClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly maxRetries: number;
 
-  constructor(options: GridbankClientOptions) {
+  constructor(options: EnterpriseClientOptions) {
     this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? _BASE_URL).replace(/\/$/, "");
     this.maxRetries = options.maxRetries ?? 3;
@@ -146,7 +149,7 @@ export class GridbankClient {
           signal: controller.signal,
         });
       } catch (err) {
-        throw new GridbankAPIError(0, err instanceof Error ? err.message : "Request failed", err);
+        throw new EnterpriseAPIError(0, err instanceof Error ? err.message : "Request failed", err);
       } finally {
         clearTimeout(timeout);
       }
@@ -163,7 +166,7 @@ export class GridbankClient {
         body = await response.json();
       } catch {
         if (response.ok) {
-          throw new GridbankAPIError(
+          throw new EnterpriseAPIError(
             response.status,
             `Server returned a non-JSON response (${response.status} ${response.statusText})`,
             null
@@ -175,11 +178,11 @@ export class GridbankClient {
           body != null && typeof body === "object" && "detail" in body
             ? String((body as Record<string, unknown>).detail)
             : response.statusText;
-        throw new GridbankAPIError(response.status, message, body);
+        throw new EnterpriseAPIError(response.status, message, body);
       }
       return body as T;
     }
-    throw new GridbankAPIError(429, "Rate limit exceeded after retries");
+    throw new EnterpriseAPIError(429, "Rate limit exceeded after retries");
   }
 
   ping(): Promise<PingResponse> {
@@ -214,3 +217,19 @@ export class GridbankClient {
     return this.request<UsageSummary>("/external/v1/usage/me");
   }
 }
+
+export {
+  PartnerClient,
+  NotAuthenticated,
+  NotLicensed,
+  ContentError,
+  VideoNotFound,
+} from "./content";
+export type { PartnerClientOptions, ContentPage, ContentDownload } from "./content";
+
+/** @deprecated Use `EnterpriseClient`. Removed in 1.0. */
+export { EnterpriseClient as GridbankClient };
+/** @deprecated Use `EnterpriseAPIError`. Removed in 1.0. */
+export { EnterpriseAPIError as GridbankAPIError };
+/** @deprecated Use `EnterpriseClientOptions`. Removed in 1.0. */
+export type { EnterpriseClientOptions as GridbankClientOptions };

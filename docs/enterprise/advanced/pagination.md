@@ -1,4 +1,4 @@
-# Pagination
+# Enterprise API Pagination
 
 When retrieving paginated results, always navigate sequentially (page 1 → 2 → 3, etc.). Jumping arbitrarily to non-sequential pages may return inconsistent results or use different backend search modes.
 

@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: GridBank External API
   description: RESTful API for third-party access to GridBank's video library.
@@ -6,6 +6,8 @@ info:
 servers:
   - url: https://api2.gridbank.io
     description: Production API
+  - url: https://staging-api.gridbank.io
+    description: Staging API
 paths:
   /external/ping:
     get:
@@ -65,9 +67,10 @@ paths:
         in: query
         required: false
         schema:
-          type: string
-          pattern: ^(relevant|popular|recent)$
-          nullable: true
+          anyOf:
+          - type: string
+            pattern: ^(relevant|popular|recent)$
+          - type: 'null'
           description: 'Sort order: relevant, popular, or recent'
           default: relevant
           title: Sort
@@ -76,9 +79,10 @@ paths:
         in: query
         required: false
         schema:
-          type: integer
-          minimum: 0
-          nullable: true
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
           description: Minimum video duration in seconds
           title: Duration Min
         description: Minimum video duration in seconds
@@ -86,9 +90,10 @@ paths:
         in: query
         required: false
         schema:
-          type: integer
-          minimum: 0
-          nullable: true
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
           description: Maximum video duration in seconds
           title: Duration Max
         description: Maximum video duration in seconds
@@ -96,8 +101,9 @@ paths:
         in: query
         required: false
         schema:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           description: Filter to videos in curated collections with this theme
           title: Theme
         description: Filter to videos in curated collections with this theme
@@ -105,8 +111,9 @@ paths:
         in: query
         required: false
         schema:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           description: UUID to track search funnel (auto-generated if not provided)
           title: Search Id
         description: UUID to track search funnel (auto-generated if not provided)
@@ -203,8 +210,9 @@ paths:
         in: query
         required: false
         schema:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           description: Optional search session ID for analytics funnel
           title: Search Id
         description: Optional search session ID for analytics funnel
@@ -266,8 +274,9 @@ components:
           title: Id
           description: Unique creator identifier
         name:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Name
           description: Creator display name
         username:
@@ -275,13 +284,15 @@ components:
           title: Username
           description: Creator username
         bio:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Bio
           description: Creator biography
         profile_image:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Profile Image
           description: Creator profile image URL
       type: object
@@ -293,8 +304,9 @@ components:
     CreatorMetadataResponse:
       properties:
         name:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Name
           description: Creator display name
         username:
@@ -302,13 +314,15 @@ components:
           title: Username
           description: Creator username
         bio:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Bio
           description: Creator biography
         profile_image:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Profile Image
           description: Creator profile image URL
       type: object
@@ -328,18 +342,21 @@ components:
     LocationResponse:
       properties:
         city:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: City
           description: City name
         region:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Region
           description: Region/state name
         country:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Country
           description: Country name
       type: object
@@ -352,9 +369,10 @@ components:
           title: Ping
           description: Ping response message
         timestamp:
-          type: string
-          format: date-time
-          nullable: true
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
           title: Timestamp
           description: Response timestamp
       type: object
@@ -373,8 +391,9 @@ components:
           title: Download Count
           description: Number of downloads this period
         thumbnail:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Thumbnail
           description: Thumbnail URL
       type: object
@@ -534,6 +553,93 @@ components:
         Paginated video search/list response.
 
         Response format per technical-design.v2.md §3.1 specification.
+    VideoResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Unique video identifier
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+          description: Video title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Video description
+        duration:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Duration
+          description: Video duration in seconds
+        width:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Width
+          description: Video width in pixels
+        height:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Height
+          description: Video height in pixels
+        content_tier:
+          type: string
+          title: Content Tier
+          description: Content tier (e.g., premium, standard)
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: Video creation timestamp
+        is_featured:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Featured
+          description: Whether video is featured
+        keywords:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Keywords
+          description: Video keywords/tags
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url
+          description: Watermarked preview video URL
+        thumbnail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Thumbnail
+          description: Watermarked thumbnail URL
+        creator:
+          $ref: '#/components/schemas/CreatorResponse'
+          description: Video creator information
+        location:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Video location information
+      type: object
+      required:
+      - id
+      - content_tier
+      - created_at
+      - creator
+      title: VideoResponse
+      description: Video information for browse/search responses (watermarked content only).
     VideoMetadataResponse:
       properties:
         id:
@@ -541,54 +647,62 @@ components:
           title: Id
           description: Unique video identifier
         title:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Title
           description: Video title
         description:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Description
           description: Video description
         duration:
-          type: number
-          nullable: true
+          anyOf:
+          - type: number
+          - type: 'null'
           title: Duration
           description: Video duration in seconds
         width:
-          type: integer
-          nullable: true
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Width
           description: Video width in pixels
         height:
-          type: integer
-          nullable: true
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Height
           description: Video height in pixels
         keywords:
-          type: array
-          items:
-            type: string
-          nullable: true
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
           title: Keywords
           description: Video keywords/tags
         url:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Url
           description: Watermarked preview video URL
         thumbnail:
-          type: string
-          nullable: true
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Thumbnail
           description: Watermarked thumbnail URL
         creator:
           $ref: '#/components/schemas/CreatorMetadataResponse'
           description: Video creator information
         location:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/LocationResponse'
-          nullable: true
+          - type: 'null'
           description: Video location information
       type: object
       required:

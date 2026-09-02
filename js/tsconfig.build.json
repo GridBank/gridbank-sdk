@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  // Publishing config: tests stay typechecked by tsconfig.json but must not ship in dist.
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

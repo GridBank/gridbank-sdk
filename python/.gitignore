@@ -1,0 +1,3 @@
+
+# uv creates this when running the test suite; the package pins deps in pyproject.toml.
+uv.lock

@@ -1,5 +1,5 @@
 site_name: GridBank SDK
-site_description: Official API documentation and SDK reference for GridBank
+site_description: Documentation for the GridBank Partner API and Enterprise API, and their Python and JavaScript SDKs
 repo_url: https://github.com/gridbank/gridbank-sdk
 repo_name: gridbank/gridbank-sdk
 edit_uri: ""
@@ -21,6 +21,7 @@ theme:
     - search.highlight
 
 markdown_extensions:
+  - attr_list
   - tables
   - admonition
   - pymdownx.tabbed:
@@ -29,25 +30,29 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - API Reference: api-reference.md
-  - Errors: errors.md
-  - OpenAPI Explorer: openapi-viewer.html
-  - Python SDK:
-    - Overview: python/overview.md
-    - Installation: python/installation.md
-    - Client: python/client.md
-    - Methods: python/methods.md
-    - Examples: python/examples.md
-  - JavaScript SDK:
-    - Overview: javascript/overview.md
-    - Installation: javascript/installation.md
-    - Client: javascript/client.md
-    - Methods: javascript/methods.md
-    - Examples: javascript/examples.md
-  - Advanced:
-    - Pagination: advanced/pagination.md
-    - Rate Limits: advanced/rate-limits.md
+  - Partner API:
+    - Overview: partner/index.md
+  - Enterprise API:
+    - Overview: enterprise/index.md
+    - Getting Started: enterprise/getting-started.md
+    - API Reference: enterprise/api-reference.md
+    - Errors: enterprise/errors.md
+    - Python SDK:
+      - Overview: enterprise/python/overview.md
+      - Installation: enterprise/python/installation.md
+      - Client: enterprise/python/client.md
+      - Methods: enterprise/python/methods.md
+      - Examples: enterprise/python/examples.md
+    - JavaScript SDK:
+      - Overview: enterprise/javascript/overview.md
+      - Installation: enterprise/javascript/installation.md
+      - Client: enterprise/javascript/client.md
+      - Methods: enterprise/javascript/methods.md
+      - Examples: enterprise/javascript/examples.md
+    - Advanced:
+      - Pagination: enterprise/advanced/pagination.md
+      - Rate Limits: enterprise/advanced/rate-limits.md
+    - OpenAPI Explorer: openapi-viewer.html
 
 plugins:
   - search

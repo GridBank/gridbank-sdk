@@ -1,80 +1,42 @@
-# GridBank API
+# GridBank APIs
 
-Access premium video content with powerful search, metadata retrieval, and download capabilities.
+GridBank has two APIs. They serve different audiences, take different credentials, and
+neither is built on the other. Pick the one that matches how you get your content.
 
-## Quick Start
+## Partner API
 
-Choose your SDK and get started in minutes.
+**Your own library** — the clips your GridBank account has already licensed. Keys are
+self-service from your account settings.
 
-### Python SDK
+- List what you have licensed, newest purchase first
+- Issue a signed download URL for any clip you own
+- 300 requests per minute per key
 
-```bash
-pip install gridbank-api
-```
+[Read the Partner API docs](partner/index.md){ .md-button .md-button--primary }
 
-```python
-from gridbank_api import GridbankClient
+## Enterprise API
 
-client = GridbankClient(api_key="apik_...")
-results = client.search_videos(q="nature", per_page=5)
-print(f"Found {len(results.videos)} videos")
-```
+**Leased collections** on an enterprise contract — search the GridBank catalogue and
+download from the collection your contract covers. Keys are issued during onboarding.
 
-[View Python Documentation](python/overview.md)
+- Full-text search across the catalogue
+- Video metadata, signed downloads, usage and quota
+- Rate limits and quota by contract tier
 
-### JavaScript SDK
+[Read the Enterprise API docs](enterprise/index.md){ .md-button }
 
-```bash
-npm install @gridbank/api-js
-```
+## Which one am I using?
 
-```javascript
-import { GridbankClient } from '@gridbank/api-js';
+| | Partner API | Enterprise API |
+|---|---|---|
+| Content | What your account licensed | What your contract leases |
+| Base path | `/partner/v1` | `/external/v1` |
+| Get a key | Account settings on gridbank.io | Issued by GridBank during onboarding |
+| SDK client | `PartnerClient` | `EnterpriseClient` |
 
-const client = new GridbankClient({ apiKey: 'apik_...' });
-const results = await client.searchVideos({ q: 'nature', perPage: 5 });
-console.log(`Found ${results.videos.length} videos`);
-```
-
-[View JavaScript Documentation](javascript/overview.md)
-
-## Features
-
-- **Full-text video search** with relevance, popularity, and recency sorting
-- **Video metadata** including creator info, dimensions, and licensing tiers
-- **Signed download URLs** with configurable expiration (1–5 minutes)
-- **Usage tracking** to monitor subscription tier and download quota
-- **Rate limiting** based on your tier (starter, pro, enterprise)
-
-## API Endpoints
-
-The GridBank API consists of 4 core endpoints:
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/external/v1/videos/search` | `GET` | Full-text video search with pagination |
-| `/external/v1/videos/{video_id}` | `GET` | Fetch metadata for a single video |
-| `/external/v1/videos/{video_id}/download` | `GET` | Generate signed download URL |
-| `/external/v1/usage/me` | `GET` | Check subscription tier and usage |
-
-## Authentication
-
-All requests require a Bearer token in the `Authorization` header.
-
-```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" https://api2.gridbank.io/external/v1/videos/search?q=nature
-```
-
-## SDKs
-
-We provide official SDKs for Python and JavaScript to make integration simple:
-
-- **[Python SDK](python/overview.md)** — Type-safe, Pythonic API wrapper
-- **[JavaScript SDK](javascript/overview.md)** — ESM modules with TypeScript support
+Both clients ship in the same packages — `gridbank-api` on PyPI, `@gridbank/api-js` on
+npm — so installing once gives you either.
 
 ## Support
 
-- **[API Reference](api-reference.md)** — Complete endpoint documentation
-- **[Python SDK](python/overview.md)** — Python SDK guide
-- **[JavaScript SDK](javascript/overview.md)** — JavaScript SDK guide
-- **Email:** hello@gridbank.io
+**Email:** [hello@gridbank.io](mailto:hello@gridbank.io)
