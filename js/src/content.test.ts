@@ -1,6 +1,7 @@
 import {
   NotAuthenticated,
   NotLicensed,
+  AccessRevoked,
   PartnerClient,
   ContentError,
   VideoNotFound,
@@ -31,6 +32,18 @@ function json(body: unknown, status = 200): Response {
 
 function errorBody(message: string) {
   return { detail: { error: { code: "x", message, details: {} } } };
+}
+
+function revokedBody() {
+  return {
+    detail: {
+      error: {
+        code: "partner_access_revoked",
+        message: "Partner API access has been revoked for this account",
+        details: {},
+      },
+    },
+  };
 }
 
 function client() {
@@ -159,6 +172,38 @@ describe("error mapping", () => {
     expect(error).toBeInstanceOf(ContentError);
     expect(error).not.toBeInstanceOf(NotLicensed);
     expect((error as ContentError).statusCode).toBe(403);
+  });
+
+  it("does not treat a revoked account as a licensing error", async () => {
+    // Both are 403 with an envelope. Only the code separates "buy this video"
+    // from "GridBank has blocked you", and the second is not fixable by the
+    // caller.
+    jest.spyOn(global, "fetch").mockImplementation(async () => json(revokedBody(), 403));
+
+    const error = await client()
+      .downloadUrl("v1")
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(AccessRevoked);
+    expect(error).not.toBeInstanceOf(NotLicensed);
+    expect((error as ContentError).statusCode).toBe(403);
+  });
+
+  it("reports a revoked account from listing too", async () => {
+    jest.spyOn(global, "fetch").mockImplementation(async () => json(revokedBody(), 403));
+
+    const iterate = async () => {
+      for await (const _ of client().content()) {
+        // listing should throw before yielding anything
+      }
+    };
+
+    await expect(iterate()).rejects.toBeInstanceOf(AccessRevoked);
+  });
+
+  it("keeps revocation catchable as a ContentError", async () => {
+    // Callers catching ContentError broadly must not start leaking this.
+    expect(new AccessRevoked(403, "x")).toBeInstanceOf(ContentError);
   });
 
   it("raises cleanly on a non-JSON error body", async () => {

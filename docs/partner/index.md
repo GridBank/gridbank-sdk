@@ -161,6 +161,13 @@ try {
 in browsers as well as Node, and only you know where the bytes should go. It handles the
 five-minute expiry: a stale URL is re-requested once before it gives up.
 
+## Revoked access
+
+GridBank can withdraw an account's Partner API access. When that happens every request
+returns `403` with the code `partner_access_revoked`, and both clients raise
+`AccessRevoked` rather than `NotLicensed` — the key is valid and the videos are still
+licensed, so retrying or minting a new key will not help. Get in touch with us instead.
+
 ## Rate limits
 
 300 requests per minute, counted per API key. Over that, requests are rejected

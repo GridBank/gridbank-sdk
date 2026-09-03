@@ -8,8 +8,8 @@ Official Python and JavaScript SDKs for the GridBank APIs.
 
 | Language | Package | Version |
 |----------|---------|---------|
-| Python | [`gridbank-api`](https://pypi.org/project/gridbank-api/) | `0.2.0` |
-| JavaScript | [`@gridbank/api-js`](https://www.npmjs.com/package/@gridbank/api-js) | `0.2.0` |
+| Python | [`gridbank-api`](https://pypi.org/project/gridbank-api/) | `0.3.0` |
+| JavaScript | [`@gridbank/api-js`](https://www.npmjs.com/package/@gridbank/api-js) | `0.3.0` |
 
 ## Clients
 

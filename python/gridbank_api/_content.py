@@ -62,6 +62,16 @@ class NotAuthenticated(ContentError):
     """The API key is missing, malformed, or revoked."""
 
 
+class AccessRevoked(ContentError):
+    """GridBank has withdrawn this account's Partner API access.
+
+    Nothing the client can do about it: the key is valid and the videos are
+    licensed, but the account is blocked. Retrying will not help and neither
+    will a new key, so this is worth catching separately from
+    :class:`NotLicensed` - get in touch with GridBank instead.
+    """
+
+
 def _video(data: dict) -> Video:
     creator = data.get("creator") or {}
     return Video(
@@ -147,11 +157,18 @@ class PartnerClient:
             body = {}
 
         detail = body.get("detail", {}) if isinstance(body, dict) else {}
-        message = detail.get("error", {}).get("message") if isinstance(detail, dict) else None
+        error = detail.get("error", {}) if isinstance(detail, dict) else {}
+        message = error.get("message") if isinstance(error, dict) else None
         message = message or (detail if isinstance(detail, str) else response.text)
 
         by_status = {401: NotAuthenticated, 403: NotLicensed, 404: VideoNotFound}
         kind = by_status.get(response.status_code, ContentError)
+
+        # The API sends two different 403s. Only the code tells them apart, and
+        # reading the status alone reports a blocked account as a licensing
+        # problem the caller could fix by buying the video.
+        if isinstance(error, dict) and error.get("code") == "partner_access_revoked":
+            return AccessRevoked(response.status_code, message, body)
 
         # A 403 from the edge is a bare {"message": "Forbidden"} with no error
         # envelope, and has nothing to do with licensing. Only the API's own 403
@@ -205,6 +222,7 @@ class PartnerClient:
         Raises:
             NotLicensed: this account has not licensed the video.
             VideoNotFound: no video with that key.
+            AccessRevoked: GridBank has blocked this account's API access.
         """
         for attempt in range(2):
             url = self.download_url(video_key)
