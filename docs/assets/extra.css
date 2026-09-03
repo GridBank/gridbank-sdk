@@ -237,10 +237,14 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Buttons and interactive elements */
-.md-button {
+/* Buttons and interactive elements.
+   Scoped under .md-typeset to match the theme's own `.md-typeset .md-button`,
+   which sets color to the primary blue and a 1px border. A bare `.md-button`
+   selector loses to it on specificity, so the fill applied but the text stayed
+   blue-on-blue. */
+.md-typeset .md-button {
   background: linear-gradient(135deg, #1e40af, #3b82f6);
-  color: white;
+  color: #ffffff;
   border-radius: 6px;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
@@ -248,9 +252,19 @@
   border: none;
 }
 
-.md-button:hover {
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(30, 64, 175, 0.3);
+  color: #ffffff;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+}
+
+/* Keyboard users need to see focus; the theme's outline is removed by the
+   border reset above. */
+.md-typeset .md-button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
 }
 
 /* Content container */
