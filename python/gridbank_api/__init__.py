@@ -13,6 +13,7 @@ from ._content import (
     PartnerClient,
     NotAuthenticated,
     NotLicensed,
+    AccessRevoked,
     ContentError,
     VideoNotFound,
 )

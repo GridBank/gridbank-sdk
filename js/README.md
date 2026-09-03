@@ -75,6 +75,7 @@ All extend `ContentError`, which carries `statusCode`, `message`, and `details`.
 | `NotLicensed` | the video exists, but this account has not licensed it |
 | `VideoNotFound` | no video with that key |
 | `NotAuthenticated` | the API key is missing, malformed, or revoked |
+| `AccessRevoked` | GridBank has withdrawn this account's Partner API access |
 
 ---
 

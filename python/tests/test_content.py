@@ -4,6 +4,7 @@ import pytest
 from gridbank_api import (
     NotAuthenticated,
     NotLicensed,
+    AccessRevoked,
     PartnerClient,
     ContentError,
     VideoNotFound,
@@ -134,6 +135,54 @@ class TestErrorMapping:
             client.download_url("v1")
         assert not isinstance(e.value, NotLicensed)
         assert e.value.status_code == 403
+
+    def test_a_revoked_account_is_not_a_licensing_error(self, respx_mock, client):
+        """Both are 403 with an envelope. Only the code separates "buy this
+        video" from "GridBank has blocked you", and the second is not fixable
+        by the caller."""
+        respx_mock.get(f"{BASE}/videos/v1/download").mock(
+            return_value=httpx.Response(
+                403,
+                json={
+                    "detail": {
+                        "error": {
+                            "code": "partner_access_revoked",
+                            "message": "Partner API access has been revoked for this account",
+                            "details": {},
+                        }
+                    }
+                },
+            )
+        )
+
+        with pytest.raises(AccessRevoked) as e:
+            client.download_url("v1")
+        assert not isinstance(e.value, NotLicensed)
+        assert e.value.status_code == 403
+        assert "revoked" in e.value.message.lower()
+
+    def test_a_revoked_account_is_reported_from_listing_too(self, respx_mock, client):
+        respx_mock.get(f"{BASE}/content").mock(
+            return_value=httpx.Response(
+                403,
+                json={
+                    "detail": {
+                        "error": {
+                            "code": "partner_access_revoked",
+                            "message": "Partner API access has been revoked for this account",
+                            "details": {},
+                        }
+                    }
+                },
+            )
+        )
+
+        with pytest.raises(AccessRevoked):
+            list(client.content())
+
+    def test_revocation_is_still_a_content_error(self, respx_mock, client):
+        """Callers catching ContentError broadly must not start leaking this."""
+        assert issubclass(AccessRevoked, ContentError)
 
     def test_a_non_json_body_still_raises_cleanly(self, respx_mock, client):
         respx_mock.get(f"{BASE}/content").mock(

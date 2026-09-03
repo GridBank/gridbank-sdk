@@ -111,6 +111,21 @@ export class NotAuthenticated extends ContentError {
 }
 
 /**
+ * GridBank has withdrawn this account's Partner API access.
+ *
+ * Nothing the client can do about it: the key is valid and the videos are
+ * licensed, but the account is blocked. Retrying will not help and neither will
+ * a new key, so this is worth catching separately from `NotLicensed` - get in
+ * touch with GridBank instead.
+ */
+export class AccessRevoked extends ContentError {
+  constructor(statusCode: number, message: string, details?: unknown) {
+    super(statusCode, message, details);
+    this.name = "AccessRevoked";
+  }
+}
+
+/**
  * A 403 from the edge is a bare `{"message": "Forbidden"}` with no error
  * envelope, and has nothing to do with licensing. Only the API's own 403 means
  * the caller has not licensed the video.
@@ -121,8 +136,26 @@ function hasErrorEnvelope(body: unknown): boolean {
   return !!detail && typeof detail === "object" && "error" in detail;
 }
 
+/**
+ * The API sends two different 403s. Only the code tells them apart, and reading
+ * the status alone reports a blocked account as a licensing problem the caller
+ * could fix by buying the video.
+ */
+function errorCodeOf(body: unknown): string | null {
+  if (!body || typeof body !== "object" || !("detail" in body)) return null;
+  const detail = (body as { detail: unknown }).detail;
+  if (!detail || typeof detail !== "object" || !("error" in detail)) return null;
+  const error = (detail as { error: unknown }).error;
+  if (!error || typeof error !== "object" || !("code" in error)) return null;
+  const code = (error as { code: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
 function errorFor(status: number, message: string, body: unknown): ContentError {
   if (status === 401) return new NotAuthenticated(status, message, body);
+  if (errorCodeOf(body) === "partner_access_revoked") {
+    return new AccessRevoked(status, message, body);
+  }
   if (status === 403 && hasErrorEnvelope(body)) return new NotLicensed(status, message, body);
   if (status === 404) return new VideoNotFound(status, message, body);
   return new ContentError(status, message, body);

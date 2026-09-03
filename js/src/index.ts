@@ -222,6 +222,7 @@ export {
   PartnerClient,
   NotAuthenticated,
   NotLicensed,
+  AccessRevoked,
   ContentError,
   VideoNotFound,
 } from "./content";
