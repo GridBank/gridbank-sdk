@@ -32,7 +32,7 @@ from gridbank_api import PartnerClient
 client = PartnerClient(api_key="apik_...", user_agent="your-app/1.0")
 
 for video in client.content():
-    client.download(video.id, f"{video.id}.mp4")
+    client.download(video.id, f"{video.id}.mov")
 ```
 
 **JavaScript**

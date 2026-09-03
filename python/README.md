@@ -41,7 +41,7 @@ for video in client.content():
 
 # Handles the five-minute signed-URL expiry, and streams to disk.
 try:
-    client.download("video_019b12...", "clip.mp4")
+    client.download("video_019b12...", "clip.mov")
 except NotLicensed:
     print("not licensed by this account")
 ```

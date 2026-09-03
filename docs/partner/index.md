@@ -122,7 +122,7 @@ for video in client.content():
 
 # Handles the five-minute expiry for you, and streams to disk.
 try:
-    client.download("video_019b12...", "clip.mp4")
+    client.download("video_019b12...", "clip.mov")
 except NotLicensed:
     print("not licensed by this account")
 ```
@@ -130,6 +130,12 @@ except NotLicensed:
 `download()` writes to a temporary file and moves it into place, so an interrupted
 transfer never leaves a truncated file that looks complete. If the signed URL expires
 between being issued and used, it requests a fresh one and retries once.
+
+You choose the destination path, so you choose the extension. Masters are usually
+QuickTime (`.mov`), but the format is a property of what the creator uploaded and is not
+returned by `/content`. The signed URL's `response-content-disposition` carries the real
+filename if you need it - read it from the URL, or from the `Content-Disposition` header
+on the download response.
 
 ## JavaScript / TypeScript
 
