@@ -54,6 +54,19 @@ try {
 package runs in browsers as well as Node and only the caller knows where the bytes
 belong. The five-minute signed-URL expiry is retried once internally.
 
+Masters are usually QuickTime (`.mov`), but the format depends on what the creator
+uploaded and is not returned by `content()`. For a filename, read `Content-Disposition`
+off the response:
+
+```ts
+// The quotes are optional in the header, so strip them if present.
+const name = response.headers
+  .get('content-disposition')
+  ?.match(/filename="?([^";]+)"?/)?.[1];
+```
+
+`Content-Type` is `binary/octet-stream` and will not tell you the format.
+
 ### Options
 
 ```ts
