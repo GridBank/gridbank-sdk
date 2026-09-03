@@ -59,10 +59,13 @@ uploaded and is not returned by `content()`. For a filename, read `Content-Dispo
 off the response:
 
 ```ts
+// The quotes are optional in the header, so strip them if present.
 const name = response.headers
   .get('content-disposition')
-  ?.match(/filename=([^;]+)/)?.[1];
+  ?.match(/filename="?([^";]+)"?/)?.[1];
 ```
+
+`Content-Type` is `binary/octet-stream` and will not tell you the format.
 
 ### Options
 
