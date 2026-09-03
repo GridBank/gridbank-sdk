@@ -72,11 +72,45 @@
   box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
 }
 
+/* The theme runs scheme: light, so the highlighter emits token colours meant
+   for a white background - dark greys and near-blacks. Against the dark block
+   above, comments, punctuation and operators came out invisible. Setting the
+   base `color` does not help: each token span carries its own colour and wins.
+
+   Material drives every token from a variable, so redefine the palette here
+   rather than chasing .c1 / .p / .o classes. Values are the theme's own slate
+   scheme, which is built for this background. */
+.md-content pre > code {
+  --md-code-fg-color: #e2e8f0;
+  --md-code-hl-comment-color: #9aa6b8;
+  --md-code-hl-punctuation-color: #c9d3e0;
+  --md-code-hl-operator-color: #c9d3e0;
+  --md-code-hl-keyword-color: #c792ea;
+  --md-code-hl-string-color: #86e1a3;
+  --md-code-hl-number-color: #f78c6c;
+  --md-code-hl-constant-color: #f78c6c;
+  --md-code-hl-special-color: #ff8b8b;
+  --md-code-hl-function-color: #82aaff;
+  --md-code-hl-name-color: #e2e8f0;
+  --md-code-hl-variable-color: #ffcb8b;
+  --md-code-hl-generic-color: #9aa6b8;
+}
+
 .md-content pre code {
   background: none;
   border: none;
-  color: #e2e8f0;
+  color: var(--md-code-fg-color);
   padding: 0;
+}
+
+/* Copy button sits on the dark block, so it needs light foreground too. */
+.md-content .md-clipboard {
+  color: #7b8794;
+}
+
+.md-content .md-clipboard:hover,
+.md-content .md-clipboard:focus {
+  color: #e2e8f0;
 }
 
 /* Links */
