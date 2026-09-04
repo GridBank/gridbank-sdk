@@ -265,7 +265,7 @@ class EnterpriseAPIError extends Error {
 
 ## Support
 
-Need help? Contact hello@gridbank.io with:
+Need help? Contact support@gridbank.io with:
 - Error code and message
 - API key prefix (apik_xxxx)
 - Request details (endpoint, parameters)
