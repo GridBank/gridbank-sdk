@@ -7,7 +7,7 @@ Read and download the videos your GridBank account has licensed, from your own t
 Create one from your account settings on gridbank.io. The secret
 is shown once, at creation. Store it in a secret manager, not in your repository.
 
-Any member of a team account can create their own key. An account holds one active
+Any member of a team account can create their own key. Each member can hold one active
 key at a time — revoke it, or rotate it, to get another.
 
 ## Authentication
