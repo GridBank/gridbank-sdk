@@ -7,8 +7,8 @@ Read and download the videos your GridBank account has licensed, from your own t
 Create one from your account settings on gridbank.io. The secret
 is shown once, at creation. Store it in a secret manager, not in your repository.
 
-On a team account, only the team owner can create keys. An account holds up to
-five active keys at a time — revoke one to create another.
+Any member of a team account can create their own key. An account holds one active
+key at a time — revoke it, or rotate it, to get another.
 
 ## Authentication
 
@@ -20,7 +20,26 @@ Authorization: Bearer apik_<id>.<secret>
 
 Base URL: `https://api2.gridbank.io/partner/v1`
 
-Keys do not expire. Revoke one from the same page and it stops working immediately.
+Keys do not expire, with one exception: rotating a key sets an expiry on the old one.
+Revoke a key from the same page and it stops working immediately.
+
+## Rotating a key
+
+Rotation issues a replacement key while the current one keeps working, so you can deploy
+the new secret without downtime.
+
+```
+POST /web/v1/api-keys/rotate
+```
+
+This is a gridbank.io endpoint, authenticated by your website session — the Rotate button
+on the API keys page calls it. A Partner API key cannot rotate itself.
+
+The response carries the new secret, shown once. The rotated key expires **24 hours**
+later and stops authenticating at that point, so deploy the replacement before then.
+
+Only one rotation can be in flight at a time. Rotating again before the replaced key has
+expired returns `409` with the code `api_key_rotation_in_flight`.
 
 ## What you can see
 
