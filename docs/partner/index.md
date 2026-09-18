@@ -4,11 +4,12 @@ Read and download the videos your GridBank account has licensed, from your own t
 
 ## Getting a key
 
-Create one from your account settings on gridbank.io. The secret
-is shown once, at creation. Store it in a secret manager, not in your repository.
+Create one from your account settings on gridbank.io. Every key takes a name, so
+give it one that says where it runs. The secret is shown once, at creation. Store
+it in a secret manager, not in your repository.
 
-Any member of a team account can create their own key. Each member can hold one active
-key at a time — revoke it, or rotate it, to get another.
+Any member of a team account can create their own key, up to **10** at a time — one
+per service or environment. Revoke a key to free the slot.
 
 ## Authentication
 
@@ -20,26 +21,19 @@ Authorization: Bearer apik_<id>.<secret>
 
 Base URL: `https://api2.gridbank.io/partner/v1`
 
-Keys do not expire, with one exception: rotating a key sets an expiry on the old one.
-Revoke a key from the same page and it stops working immediately.
+Keys do not expire. Revoke one from the same page and it stops working immediately.
 
-## Rotating a key
+## Replacing a key
 
-Rotation issues a replacement key while the current one keeps working, so you can deploy
-the new secret without downtime.
+There is no rotate endpoint. Because you can hold several keys at once, replace one
+without downtime by overlapping them:
 
-```
-POST /web/v1/api-keys/rotate
-```
+1. Create a new key from your account settings.
+2. Deploy the new secret.
+3. Revoke the old key once nothing uses it.
 
-This is a gridbank.io endpoint, authenticated by your website session — the Rotate button
-on the API keys page calls it. A Partner API key cannot rotate itself.
-
-The response carries the new secret, shown once. The rotated key expires **24 hours**
-later and stops authenticating at that point, so deploy the replacement before then.
-
-Only one rotation can be in flight at a time. Rotating again before the replaced key has
-expired returns `409` with the code `api_key_rotation_in_flight`.
+The old key keeps working until you revoke it, so there is no deadline to race and no
+window where both are unusable.
 
 ## What you can see
 
@@ -195,12 +189,13 @@ licensed, so retrying or minting a new key will not help. Get in touch with us i
 
 ## Rate limits
 
-300 requests per minute, counted per API key. Over that, requests are rejected
+300 requests per minute, counted per account. Over that, requests are rejected
 with `429` and a `Retry-After` header giving the seconds to wait. Both clients
 retry `429` for you and honour that header — see `max_retries` / `maxRetries`.
 
-Because the limit is per key, splitting work across keys does not raise your
-total: budget the account, not the key.
+The limit follows the account, not the key, so splitting work across keys does not
+raise your total: budget the account. Keys exist to separate and revoke credentials
+per service, not to buy throughput.
 
 ## Machine-to-machine traffic
 
