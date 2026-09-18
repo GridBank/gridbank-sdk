@@ -35,6 +35,11 @@ without downtime by overlapping them:
 The old key keeps working until you revoke it, so there is no deadline to race and no
 window where both are unusable.
 
+If you are already holding all 10, revoke a key you are not using to free a slot first.
+Should every slot be genuinely in use, revoke the one you are replacing and create its
+replacement straight after — that service is down for the seconds in between, which is
+why it is worth keeping a slot spare.
+
 ## What you can see
 
 The videos your account has licensed, plus those licensed by your team owner. A video you
