@@ -1,6 +1,7 @@
 # Partner API
 
-Read and download the videos your GridBank account has licensed, from your own tools.
+Search the GridBank catalog, and read and download the videos your GridBank account has
+licensed, from your own tools.
 
 ## Getting a key
 
@@ -47,6 +48,10 @@ have **not** licensed returns `403`, even though it exists on GridBank.
 
 Listing and downloading agree: if a clip appears in your content list, you can download it.
 
+Search is different: it covers the whole catalog, with the same results and ranking as
+gridbank.io, including videos you have not licensed. A search hit is a watermarked preview,
+not a licence — downloading one you have not licensed still returns `403`.
+
 ## Endpoints
 
 ### List licensed content
@@ -78,6 +83,70 @@ Newest purchase first. Pass `next_cursor` back as `cursor` for the next page; no
 Treat the cursor as opaque — pass it back unchanged. Its encoding is an implementation
 detail and may change.
 
+### Search the catalog
+
+```
+POST /partner/v1/search
+Content-Type: application/json
+```
+
+```json
+{
+  "query": "aerial coastline",
+  "page": 0,
+  "items": 50,
+  "sort": "relevant",
+  "location": "Lisbon, Lisboa, PRT",
+  "duration_gte": 4,
+  "duration_lte": 30
+}
+```
+
+Only `query` is required: 1–200 characters, surrounding whitespace trimmed. The rest:
+
+| Field | Values | Default |
+|---|---|---|
+| `page` | 0–199, zero-based | `0` |
+| `items` | 1–50 | `50` |
+| `sort` | `relevant`, `popular` or `recent` | ranking as on gridbank.io |
+| `location` | up to 200 characters, see below | no filter |
+| `duration_gte` | seconds, 4–30 | `4` |
+| `duration_lte` | seconds, 4–30, not below `duration_gte` | `30` |
+
+Leave a field out to get its default — `null` is not accepted for the durations, and
+unknown fields are rejected with `422`.
+
+`location` is comma-separated, e.g. `"Lisbon, Lisboa, PRT"`, `"Lisbon"` or `"PRT"`. A 2- or
+3-letter ISO country code matches the video's country exactly, so write the code, not the
+name: `"PRT"`, not `"Portugal"`. Any other part matches the video's city or region as a
+case-insensitive substring. A video matches if any part matches. Blank means no filter.
+
+```json
+{
+  "videos": [
+    {
+      "video_key": "video_019b12...",
+      "title": "Aerial coastline",
+      "duration_seconds": 12.4,
+      "width_pixels": 1080,
+      "height_pixels": 1920,
+      "preview_url": "https://.../watermarked.mp4",
+      "thumbnail_url": "https://.../watermarked.jpg",
+      "creator": { "id": "crea_9", "username": "jdoe", "name": "J. Doe" }
+    }
+  ],
+  "has_more": true,
+  "search_id": "6f1d2c..."
+}
+```
+
+Request the next `page` while `has_more` is true. A page can hold fewer than `items`
+results without being the last, so page on `has_more`, not on a short page. `has_more` is
+false on page 199, the last one available.
+
+There is no `purchased_at` and no download URL on a hit. `search_id` identifies the
+search; quote it if you contact us about a result.
+
 ### Get a download URL
 
 ```
@@ -104,7 +173,7 @@ as often as you like. There is no charge for re-issuing.
 | `403` | You have not licensed this video |
 | `404` | No video with that key |
 | `400` | Malformed cursor — restart paging from the beginning |
-| `422` | Invalid parameter, e.g. `per_page` above 100 |
+| `422` | Invalid parameter, e.g. `per_page` above 100, or an unknown search field |
 | `429` | Rate limited — retry after the `Retry-After` header |
 
 ## SDK field names
@@ -118,10 +187,15 @@ different names than the JSON above:
 | `duration_seconds` | `video.duration` |
 | `preview_url` | `video.url` |
 | `thumbnail_url` | `video.thumbnail` |
+| `width_pixels` | `video.width` |
+| `height_pixels` | `video.height` |
 | `purchased_at` | `video.purchased_at` (Python) / `video.purchasedAt` (JS) |
 
-`Video` carries other fields the Partner API does not return - `description`, `width`,
-`height`, `location`, `keywords` - which are always unset here.
+Search hits leave `purchased_at` unset, and listed content leaves `width` and `height`
+unset. `Video` carries other fields the Partner API does not return - `description`,
+`location`, `keywords` - which are always unset here.
+
+Both SDKs page search for you and yield videos only; `search_id` is not exposed.
 
 ## Python
 
@@ -137,6 +211,10 @@ client = PartnerClient(api_key="apik_...")
 # Pages are fetched as you consume them.
 for video in client.content():
     print(video.id, video.title)
+
+# Searches the whole catalog, licensed or not; pages until has_more is false.
+for video in client.search("aerial coastline", location="Lisbon, PRT", duration_lte=15):
+    print(video.id, video.url)  # a watermarked preview
 
 # Handles the five-minute expiry for you, and streams to disk.
 try:
@@ -169,6 +247,14 @@ const client = new PartnerClient({ apiKey: "apik_..." });
 // Pages are fetched as you consume them.
 for await (const video of client.content()) {
   console.log(video.id, video.title);
+}
+
+// Searches the whole catalog, licensed or not; pages until has_more is false.
+for await (const video of client.search("aerial coastline", {
+  location: "Lisbon, PRT",
+  durationLte: 15,
+})) {
+  console.log(video.id, video.url); // a watermarked preview
 }
 
 try {

@@ -20,15 +20,15 @@ import from `gridbank_api`.
 
 | Client | Product | Serves | Credential |
 |--------|---------|--------|------------|
-| `PartnerClient` | Partner API | the videos **your own account has licensed** | member API key |
+| `PartnerClient` | Partner API | catalog search, and the videos **your own account has licensed** | member API key |
 | `EnterpriseClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
 
-Reaching your own library from your own tools → `PartnerClient`.
+Searching the catalog or reaching your own library from your own tools → `PartnerClient`.
 On an enterprise contract, searching leased collections → `EnterpriseClient`.
 
 ---
 
-## `PartnerClient` — your licensed library
+## `PartnerClient` — catalog search and your licensed library
 
 ```python
 from gridbank_api import PartnerClient, NotLicensed
@@ -49,6 +49,30 @@ except NotLicensed:
 `download()` writes to a temporary file and moves it into place, so an interrupted
 transfer never leaves a truncated file that looks complete. It accepts a path or any
 open binary file.
+
+### Search
+
+```python
+for video in client.search(
+    "aerial coastline",
+    location="Lisbon, Lisboa, PRT",
+    sort="popular",  # "relevant", "popular" or "recent"
+    duration_gte=4,  # seconds, 4-30
+    duration_lte=15,
+):
+    print(video.id, video.url, video.width, video.height)
+```
+
+Searches the whole catalog, with the same results and ranking as gridbank.io, including
+videos this account has not licensed. Hits are watermarked previews: downloading one you
+have not licensed raises `NotLicensed`. Leave a filter out to get the server default.
+
+`location` is comma-separated. A 2- or 3-letter ISO country code matches the video's
+country exactly (`"PRT"`, not `"Portugal"`); any other part matches city or region as a
+case-insensitive substring, and a video matches if any part does.
+
+Pages are fetched lazily until `has_more` is false. A page can hold fewer than `per_page`
+(1-50, default 50) videos without being the last, and paging ends at page 199.
 
 ### Options
 
