@@ -14,6 +14,7 @@ from ._content import (
     NotAuthenticated,
     NotLicensed,
     AccessRevoked,
+    PartnerApiNotIncluded,
     ContentError,
     VideoNotFound,
 )

@@ -145,6 +145,19 @@ export class AccessRevoked extends ContentError {
 }
 
 /**
+ * This account's plan does not include the Partner API.
+ *
+ * The key is valid, but no request will succeed until the plan changes, and no
+ * video is involved: worth catching separately from `NotLicensed`.
+ */
+export class PartnerApiNotIncluded extends ContentError {
+  constructor(statusCode: number, message: string, details?: unknown) {
+    super(statusCode, message, details);
+    this.name = "PartnerApiNotIncluded";
+  }
+}
+
+/**
  * A 403 from the edge is a bare `{"message": "Forbidden"}` with no error
  * envelope, and has nothing to do with licensing. Only the API's own 403 means
  * the caller has not licensed the video.
@@ -156,9 +169,9 @@ function hasErrorEnvelope(body: unknown): boolean {
 }
 
 /**
- * The API sends two different 403s. Only the code tells them apart, and reading
- * the status alone reports a blocked account as a licensing problem the caller
- * could fix by buying the video.
+ * The API sends several 403s. Only the code tells them apart, and reading the
+ * status alone reports a blocked account or a plan without the Partner API as a
+ * licensing problem the caller could fix by buying the video.
  */
 function errorCodeOf(body: unknown): string | null {
   if (!body || typeof body !== "object" || !("detail" in body)) return null;
@@ -172,9 +185,9 @@ function errorCodeOf(body: unknown): string | null {
 
 function errorFor(status: number, message: string, body: unknown): ContentError {
   if (status === 401) return new NotAuthenticated(status, message, body);
-  if (errorCodeOf(body) === "partner_access_revoked") {
-    return new AccessRevoked(status, message, body);
-  }
+  const code = errorCodeOf(body);
+  if (code === "partner_access_revoked") return new AccessRevoked(status, message, body);
+  if (code === "partner_api_not_included") return new PartnerApiNotIncluded(status, message, body);
   if (status === 403 && hasErrorEnvelope(body)) return new NotLicensed(status, message, body);
   if (status === 404) return new VideoNotFound(status, message, body);
   return new ContentError(status, message, body);

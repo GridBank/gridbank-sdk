@@ -7,6 +7,7 @@ from gridbank_api import (
     NotAuthenticated,
     NotLicensed,
     AccessRevoked,
+    PartnerApiNotIncluded,
     PartnerClient,
     ContentError,
     VideoNotFound,
@@ -409,3 +410,28 @@ class TestDownload:
 
         with pytest.raises(NotLicensed):
             client.download("v1", tmp_path / "clip.mp4")
+
+
+class TestPlanWithoutPartnerApi:
+    def test_search_reports_the_plan_not_a_licence(self, respx_mock, client):
+        """Search has no video to license, so this 403 must not read as NotLicensed."""
+        respx_mock.post(f"{BASE}/search").mock(
+            return_value=httpx.Response(
+                403,
+                json={
+                    "detail": {
+                        "error": {
+                            "code": "partner_api_not_included",
+                            "message": "Your plan does not include Partner API access",
+                            "details": None,
+                        }
+                    }
+                },
+            )
+        )
+
+        with pytest.raises(PartnerApiNotIncluded) as e:
+            list(client.search("surfing"))
+        assert not isinstance(e.value, NotLicensed)
+        assert isinstance(e.value, ContentError)
+        assert e.value.status_code == 403

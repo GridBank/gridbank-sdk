@@ -170,7 +170,7 @@ as often as you like. There is no charge for re-issuing.
 | Status | Meaning |
 |---|---|
 | `401` | Key missing, malformed, or revoked |
-| `403` | You have not licensed this video |
+| `403` | You have not licensed this video, your plan does not include the Partner API (`partner_api_not_included`), or your access was revoked (`partner_access_revoked`) |
 | `404` | No video with that key |
 | `400` | Malformed cursor — restart paging from the beginning |
 | `422` | Invalid parameter, e.g. `per_page` above 100, or an unknown search field |
@@ -277,6 +277,10 @@ GridBank can withdraw an account's Partner API access. When that happens every r
 returns `403` with the code `partner_access_revoked`, and both clients raise
 `AccessRevoked` rather than `NotLicensed` — the key is valid and the videos are still
 licensed, so retrying or minting a new key will not help. Get in touch with us instead.
+
+An account whose plan does not include the Partner API gets `403` with the code
+`partner_api_not_included` on every request, search included, and both clients raise
+`PartnerApiNotIncluded`. Change the plan on gridbank.io to get access.
 
 ## Rate limits
 

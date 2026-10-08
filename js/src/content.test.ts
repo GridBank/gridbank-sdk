@@ -2,6 +2,7 @@ import {
   NotAuthenticated,
   NotLicensed,
   AccessRevoked,
+  PartnerApiNotIncluded,
   PartnerClient,
   ContentError,
   VideoNotFound,
@@ -409,5 +410,37 @@ describe("fetchDownload", () => {
     await client().downloadUrl("a/b");
 
     expect(String(fetchMock.mock.calls[0][0])).toContain("a%2Fb");
+  });
+});
+
+describe("plan without the Partner API", () => {
+  it("reports the plan, not a licence, from search", async () => {
+    // Search has no video to license, so this 403 must not read as NotLicensed.
+    jest.spyOn(global, "fetch").mockImplementation(async () =>
+      json(
+        {
+          detail: {
+            error: {
+              code: "partner_api_not_included",
+              message: "Your plan does not include Partner API access",
+              details: null,
+            },
+          },
+        },
+        403,
+      ),
+    );
+
+    const iterate = async () => {
+      for await (const _ of client().search("surfing")) {
+        // search should throw before yielding anything
+      }
+    };
+
+    const error = await iterate().catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(PartnerApiNotIncluded);
+    expect(error).not.toBeInstanceOf(NotLicensed);
+    expect(error).toBeInstanceOf(ContentError);
+    expect((error as ContentError).statusCode).toBe(403);
   });
 });

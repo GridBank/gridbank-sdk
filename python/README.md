@@ -96,6 +96,7 @@ All inherit from `ContentError`, which carries `status_code`, `message`, and `de
 | `VideoNotFound` | no video with that key |
 | `NotAuthenticated` | the API key is missing, malformed, or revoked |
 | `AccessRevoked` | GridBank has withdrawn this account's Partner API access |
+| `PartnerApiNotIncluded` | this account's plan does not include the Partner API |
 
 ---
 

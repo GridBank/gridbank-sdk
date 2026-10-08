@@ -223,6 +223,7 @@ export {
   NotAuthenticated,
   NotLicensed,
   AccessRevoked,
+  PartnerApiNotIncluded,
   ContentError,
   VideoNotFound,
 } from "./content";

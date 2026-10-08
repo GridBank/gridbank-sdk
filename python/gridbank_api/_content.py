@@ -73,6 +73,14 @@ class AccessRevoked(ContentError):
     """
 
 
+class PartnerApiNotIncluded(ContentError):
+    """This account's plan does not include the Partner API.
+
+    The key is valid, but no request will succeed until the plan changes, and
+    no video is involved: worth catching separately from :class:`NotLicensed`.
+    """
+
+
 def _video(data: dict) -> Video:
     creator = data.get("creator") or {}
     return Video(
@@ -174,11 +182,17 @@ class PartnerClient:
         by_status = {401: NotAuthenticated, 403: NotLicensed, 404: VideoNotFound}
         kind = by_status.get(response.status_code, ContentError)
 
-        # The API sends two different 403s. Only the code tells them apart, and
-        # reading the status alone reports a blocked account as a licensing
-        # problem the caller could fix by buying the video.
-        if isinstance(error, dict) and error.get("code") == "partner_access_revoked":
-            return AccessRevoked(response.status_code, message, body)
+        # The API sends several 403s. Only the code tells them apart, and
+        # reading the status alone reports a blocked account or a plan without
+        # the Partner API as a licensing problem the caller could fix by buying
+        # the video.
+        code = error.get("code") if isinstance(error, dict) else None
+        by_code = {
+            "partner_access_revoked": AccessRevoked,
+            "partner_api_not_included": PartnerApiNotIncluded,
+        }
+        if code in by_code:
+            return by_code[code](response.status_code, message, body)
 
         # A 403 from the edge is a bare {"message": "Forbidden"} with no error
         # envelope, and has nothing to do with licensing. Only the API's own 403
@@ -326,6 +340,8 @@ __all__ = [
     "PartnerClient",
     "NotAuthenticated",
     "NotLicensed",
+    "AccessRevoked",
+    "PartnerApiNotIncluded",
     "ContentError",
     "VideoNotFound",
 ]
