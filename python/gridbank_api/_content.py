@@ -234,7 +234,7 @@ class PartnerClient:
         duration_lte: Optional[int] = None,
         per_page: int = _DEFAULT_PER_PAGE,
     ) -> Iterator[Video]:
-        """Search the whole catalog, with the same results and ranking as gridbank.io.
+        """Search the whole catalog with gridbank.io's search and ranking, for clips of 4-30 s.
 
         Results include videos this account has not licensed, and carry
         watermarked previews only: downloading one of those raises

@@ -80,13 +80,13 @@ for await (const video of client.search('aerial coastline', {
 }
 ```
 
-Searches the whole catalog, with the same results and ranking as gridbank.io, including
-videos this account has not licensed. Hits are watermarked previews: downloading one you
+Searches the whole catalog with the same search and ranking as gridbank.io, limited to
+clips of 4 to 30 seconds, including videos this account has not licensed. Hits are watermarked previews: downloading one you
 have not licensed throws `NotLicensed`. Leave an option out to get the server default.
 
-`location` is comma-separated. A 2- or 3-letter ISO country code matches the video's
-country exactly (`'PRT'`, not `'Portugal'`); any other part matches city or region as a
-case-insensitive substring, and a video matches if any part does.
+`location` is comma-separated, and a video must match every part. A 2- or 3-letter ISO
+country code matches the video's country (`'PRT'`, not `'Portugal'`); any other part must
+equal the city or region, ignoring case, or appear in the location description.
 
 Pages are fetched lazily until `has_more` is false. A page can hold fewer than `perPage`
 (1-50, default 50) videos without being the last, and paging ends at page 199.

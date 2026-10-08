@@ -48,8 +48,8 @@ have **not** licensed returns `403`, even though it exists on GridBank.
 
 Listing and downloading agree: if a clip appears in your content list, you can download it.
 
-Search is different: it covers the whole catalog, with the same results and ranking as
-gridbank.io, including videos you have not licensed. A search hit is a watermarked preview,
+Search is different: it covers the whole catalog with the same search and ranking as
+gridbank.io, limited to clips of 4 to 30 seconds, including videos you have not licensed. A search hit is a watermarked preview,
 not a licence — downloading one you have not licensed still returns `403`.
 
 ## Endpoints
@@ -116,10 +116,12 @@ Only `query` is required: 1–200 characters, surrounding whitespace trimmed. Th
 Leave a field out to get its default — `null` is not accepted for the durations, and
 unknown fields are rejected with `422`.
 
-`location` is comma-separated, e.g. `"Lisbon, Lisboa, PRT"`, `"Lisbon"` or `"PRT"`. A 2- or
-3-letter ISO country code matches the video's country exactly, so write the code, not the
-name: `"PRT"`, not `"Portugal"`. Any other part matches the video's city or region as a
-case-insensitive substring. A video matches if any part matches. Blank means no filter.
+`location` is comma-separated, e.g. `"Lisbon, Lisboa, PRT"`, `"Lisbon"` or `"PRT"`, and a
+video must match every part. A 2- or 3-letter ISO country code matches the video's country,
+so write the code, not the name: `"PRT"`, not `"Portugal"`. Any other part must equal the
+video's city or region, ignoring case, or appear in its location description. So
+`"Lisbon, Lisboa, PRT"` keeps videos from Lisbon, in the Lisboa region, in Portugal. Blank
+means no filter.
 
 ```json
 {

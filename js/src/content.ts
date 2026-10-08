@@ -316,7 +316,7 @@ export class PartnerClient {
   }
 
   /**
-   * Search the whole catalog, with the same results and ranking as gridbank.io.
+   * Search the whole catalog with gridbank.io's search and ranking, for clips of 4-30 s.
    *
    * Results include videos this account has not licensed, and carry
    * watermarked previews only: downloading one of those throws `NotLicensed`.
