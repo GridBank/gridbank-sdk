@@ -177,6 +177,12 @@ function messageFrom(body: unknown, fallback: string): string {
 
 type Params = Record<string, string | number | null | undefined>;
 
+interface RequestOptions {
+  params?: Params;
+  /** Sent as JSON, which makes the request a POST. */
+  body?: unknown;
+}
+
 export class PartnerClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
@@ -202,11 +208,14 @@ export class PartnerClient {
     return headers;
   }
 
-  private async request<T>(path: string, params?: Params): Promise<T> {
+  private async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const url = new URL(this.baseUrl + path);
-    for (const [key, value] of Object.entries(params ?? {})) {
+    for (const [key, value] of Object.entries(options.params ?? {})) {
       if (value != null) url.searchParams.set(key, String(value));
     }
+
+    const headers = this.headers();
+    if (options.body !== undefined) headers["Content-Type"] = "application/json";
 
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
       const controller = new AbortController();
@@ -215,7 +224,9 @@ export class PartnerClient {
       let response: Response;
       try {
         response = await fetch(url.toString(), {
-          headers: this.headers(),
+          method: options.body === undefined ? "GET" : "POST",
+          headers,
+          body: options.body === undefined ? undefined : JSON.stringify(options.body),
           signal: controller.signal,
         });
       } catch (err) {
@@ -262,8 +273,7 @@ export class PartnerClient {
 
     for (;;) {
       const page = await this.request<ContentPage>("/content", {
-        per_page: perPage,
-        cursor,
+        params: { per_page: perPage, cursor },
       });
 
       for (const video of page.videos ?? []) yield toVideo(video);

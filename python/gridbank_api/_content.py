@@ -129,12 +129,19 @@ class PartnerClient:
 
     # -- requests ---------------------------------------------------------
 
-    def _get(self, path: str, params: Optional[dict] = None) -> Any:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: Optional[dict] = None,
+        json: Optional[dict] = None,
+    ) -> Any:
         query = {k: v for k, v in (params or {}).items() if v is not None}
 
         for attempt in range(self._max_retries):
             try:
-                response = self._http.get(path, params=query)
+                response = self._http.request(method, path, params=query, json=json)
             except httpx.RequestError as exc:
                 raise ContentError(0, str(exc)) from exc
 
@@ -189,7 +196,9 @@ class PartnerClient:
         cursor: Optional[str] = None
 
         while True:
-            page = self._get("/content", {"per_page": per_page, "cursor": cursor})
+            page = self._request(
+                "GET", "/content", params={"per_page": per_page, "cursor": cursor}
+            )
 
             for item in page.get("videos", []):
                 yield _video(item)
@@ -204,7 +213,7 @@ class PartnerClient:
         Prefer :meth:`download` unless you need the URL itself; it handles the
         expiry for you.
         """
-        return self._get(f"/videos/{video_key}/download")["url"]
+        return self._request("GET", f"/videos/{video_key}/download")["url"]
 
     def download(
         self,
