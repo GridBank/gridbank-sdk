@@ -1,9 +1,9 @@
 /**
  * Client for the GridBank Partner API.
  *
- * Reads and downloads the videos your account has licensed. Separate from
- * `EnterpriseClient`, which serves leased collections to enterprise contracts:
- * different credential, different contract.
+ * Searches the GridBank catalog, and reads and downloads the videos your account
+ * has licensed. Separate from `EnterpriseClient`, which serves leased collections
+ * to enterprise contracts: different credential, different contract.
  *
  * Create a key from your account settings on gridbank.io.
  *
@@ -31,6 +31,8 @@ interface VideoPayload {
   creator?: { id?: string; username?: string | null; name?: string | null } | null;
   title?: string | null;
   duration_seconds?: number | null;
+  width_pixels?: number | null;
+  height_pixels?: number | null;
   purchased_at?: number | null;
   preview_url?: string | null;
   thumbnail_url?: string | null;
@@ -43,6 +45,8 @@ function toVideo(data: VideoPayload): Video {
     creator: { id: creator.id ?? "", username: creator.username ?? "", name: creator.name },
     title: data.title,
     duration: data.duration_seconds,
+    width: data.width_pixels,
+    height: data.height_pixels,
     url: data.preview_url,
     thumbnail: data.thumbnail_url,
     purchasedAt: data.purchased_at,
@@ -52,6 +56,21 @@ function toVideo(data: VideoPayload): Video {
 export interface ContentPage {
   videos: VideoPayload[];
   next_cursor?: string | null;
+}
+
+export interface SearchPage {
+  videos: VideoPayload[];
+  has_more: boolean;
+  search_id: string;
+}
+
+export interface SearchOptions {
+  /** Comma-separated, e.g. "Lisbon, Lisboa, PRT". Countries as ISO codes, not names. */
+  location?: string;
+  sort?: "relevant" | "popular" | "recent";
+  durationGte?: number;
+  durationLte?: number;
+  perPage?: number;
 }
 
 export interface ContentDownload {
@@ -280,6 +299,33 @@ export class PartnerClient {
 
       cursor = page.next_cursor;
       if (!cursor) return;
+    }
+  }
+
+  /**
+   * Search the whole catalog, with the same results and ranking as gridbank.io.
+   *
+   * Results include videos this account has not licensed, and carry
+   * watermarked previews only: downloading one of those throws `NotLicensed`.
+   * Pages are fetched as they are consumed, and a page may hold fewer than
+   * `perPage` videos without being the last.
+   */
+  async *search(query: string, options: SearchOptions = {}): AsyncGenerator<Video> {
+    const body = {
+      query,
+      items: options.perPage ?? DEFAULT_PER_PAGE,
+      location: options.location,
+      sort: options.sort,
+      duration_gte: options.durationGte,
+      duration_lte: options.durationLte,
+    };
+
+    for (let page = 0; ; page++) {
+      const result = await this.request<SearchPage>("/search", { body: { ...body, page } });
+
+      for (const video of result.videos ?? []) yield toVideo(video);
+
+      if (!result.has_more) return;
     }
   }
 

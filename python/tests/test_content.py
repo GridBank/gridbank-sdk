@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -24,6 +26,30 @@ def video(key: str) -> dict:
         "thumbnail_url": "https://cdn.example/t.jpg",
         "creator": {"id": "crea_1", "username": "jdoe", "name": "J Doe"},
     }
+
+
+def search_hit(key: str) -> dict:
+    return {
+        "video_key": key,
+        "title": f"Clip {key}",
+        "duration_seconds": 8.0,
+        "width_pixels": 1080,
+        "height_pixels": 1920,
+        "preview_url": "https://cdn.example/p.mp4",
+        "thumbnail_url": "https://cdn.example/t.jpg",
+        "creator": {"id": "crea_1", "username": "jdoe", "name": "J Doe"},
+    }
+
+
+def search_page(keys: list, has_more: bool) -> httpx.Response:
+    return httpx.Response(
+        200,
+        json={"videos": [search_hit(k) for k in keys], "has_more": has_more, "search_id": "s1"},
+    )
+
+
+def sent_body(route, call: int = 0) -> dict:
+    return json.loads(route.calls[call].request.content)
 
 
 def error_body(message: str) -> dict:
@@ -98,6 +124,103 @@ class TestContentIteration:
         assert first.purchased_at == 1756200000
         assert first.creator.id == "crea_1"
         assert first.creator.username == "jdoe"
+
+
+class TestSearch:
+    def test_it_sends_the_query_and_filters(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search").mock(return_value=search_page([], False))
+
+        list(
+            client.search(
+                "surf",
+                location="Lisbon, PRT",
+                sort="recent",
+                duration_gte=5,
+                duration_lte=20,
+                per_page=10,
+            )
+        )
+
+        assert sent_body(route) == {
+            "query": "surf",
+            "location": "Lisbon, PRT",
+            "sort": "recent",
+            "duration_gte": 5,
+            "duration_lte": 20,
+            "items": 10,
+            "page": 0,
+        }
+
+    def test_unset_filters_are_left_to_the_server(self, respx_mock, client):
+        """The API rejects null durations, so an omitted filter must not be sent at all."""
+        route = respx_mock.post(f"{BASE}/search").mock(return_value=search_page([], False))
+
+        list(client.search("surf"))
+
+        assert sent_body(route) == {"query": "surf", "items": 50, "page": 0}
+
+    def test_it_pages_while_there_is_more(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search").mock(
+            side_effect=[search_page(["a", "b"], True), search_page(["c"], False)]
+        )
+
+        assert [v.id for v in client.search("surf")] == ["a", "b", "c"]
+        assert [sent_body(route, i)["page"] for i in range(2)] == [0, 1]
+
+    def test_a_short_page_is_not_the_end(self, respx_mock, client):
+        """Only has_more ends the search; a page can come back under-filled."""
+        respx_mock.post(f"{BASE}/search").mock(
+            side_effect=[search_page(["a"], True), search_page(["b"], False)]
+        )
+
+        assert [v.id for v in client.search("surf", per_page=10)] == ["a", "b"]
+
+    def test_it_does_not_fetch_pages_the_caller_never_asks_for(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search").mock(return_value=search_page(["a", "b"], True))
+
+        assert next(client.search("surf")).id == "a"
+        assert route.call_count == 1
+
+    def test_it_parses_the_hit(self, respx_mock, client):
+        respx_mock.post(f"{BASE}/search").mock(return_value=search_page(["a"], False))
+
+        first = next(client.search("surf"))
+
+        assert first.id == "a"
+        assert first.title == "Clip a"
+        assert first.duration == 8.0
+        assert first.width == 1080
+        assert first.height == 1920
+        assert first.url == "https://cdn.example/p.mp4"
+        assert first.thumbnail == "https://cdn.example/t.jpg"
+        assert first.purchased_at is None
+        assert first.creator.username == "jdoe"
+
+    def test_a_validation_error_is_a_content_error(self, respx_mock, client):
+        respx_mock.post(f"{BASE}/search").mock(
+            return_value=httpx.Response(
+                422, json={"detail": [{"loc": ["body", "query"], "msg": "too short"}]}
+            )
+        )
+
+        with pytest.raises(ContentError) as e:
+            list(client.search(" "))
+        assert e.value.status_code == 422
+
+    def test_a_rate_limited_search_is_retried(self, respx_mock, client, monkeypatch):
+        slept = []
+        monkeypatch.setattr("gridbank_api._content.time.sleep", slept.append)
+        route = respx_mock.post(f"{BASE}/search").mock(
+            side_effect=[
+                httpx.Response(429, headers={"Retry-After": "7"}),
+                search_page(["a"], False),
+            ]
+        )
+
+        assert [v.id for v in client.search("surf")] == ["a"]
+        assert slept == [7.0]
+        assert route.call_count == 2
+        assert sent_body(route, 1) == sent_body(route, 0)
 
 
 class TestErrorMapping:

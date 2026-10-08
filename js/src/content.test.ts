@@ -23,6 +23,27 @@ function video(key: string) {
   };
 }
 
+function searchHit(key: string) {
+  return {
+    video_key: key,
+    title: `Clip ${key}`,
+    duration_seconds: 8,
+    width_pixels: 1080,
+    height_pixels: 1920,
+    preview_url: "https://cdn.example/p.mp4",
+    thumbnail_url: "https://cdn.example/t.jpg",
+    creator: { id: "crea_1", username: "jdoe", name: "J Doe" },
+  };
+}
+
+function searchPage(keys: string[], hasMore: boolean): Response {
+  return json({ videos: keys.map(searchHit), has_more: hasMore, search_id: "s1" });
+}
+
+function sentBody(fetchMock: jest.SpyInstance, call = 0): unknown {
+  return JSON.parse(String(fetchMock.mock.calls[call][1].body));
+}
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -128,6 +149,124 @@ describe("content iteration", () => {
     await collect(client().content({ perPage: 10 }));
 
     expect(String(fetchMock.mock.calls[0][0])).toContain("per_page=10");
+  });
+});
+
+describe("search", () => {
+  it("posts the query and filters", async () => {
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(searchPage([], false));
+
+    await collect(
+      client().search("surf", {
+        location: "Lisbon, PRT",
+        sort: "recent",
+        durationGte: 5,
+        durationLte: 20,
+        perPage: 10,
+      })
+    );
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE}/search`);
+    expect(fetchMock.mock.calls[0][1]?.method).toBe("POST");
+    expect(sentBody(fetchMock)).toEqual({
+      query: "surf",
+      location: "Lisbon, PRT",
+      sort: "recent",
+      duration_gte: 5,
+      duration_lte: 20,
+      items: 10,
+      page: 0,
+    });
+  });
+
+  it("leaves unset filters to the server", async () => {
+    // The API rejects null durations, so an omitted filter must not be sent at all.
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(searchPage([], false));
+
+    await collect(client().search("surf"));
+
+    expect(sentBody(fetchMock)).toStrictEqual({ query: "surf", items: 50, page: 0 });
+  });
+
+  it("pages while there is more", async () => {
+    const fetchMock = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(searchPage(["a", "b"], true))
+      .mockResolvedValueOnce(searchPage(["c"], false));
+
+    expect(await collect(client().search("surf"))).toEqual(["a", "b", "c"]);
+    expect([0, 1].map(i => (sentBody(fetchMock, i) as { page: number }).page)).toEqual([0, 1]);
+  });
+
+  it("does not treat a short page as the end", async () => {
+    // Only has_more ends the search; a page can come back under-filled.
+    jest
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(searchPage(["a"], true))
+      .mockResolvedValueOnce(searchPage(["b"], false));
+
+    expect(await collect(client().search("surf", { perPage: 10 }))).toEqual(["a", "b"]);
+  });
+
+  it("does not fetch pages the caller never asks for", async () => {
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(searchPage(["a", "b"], true));
+
+    for await (const first of client().search("surf")) {
+      expect(first.id).toBe("a");
+      break;
+    }
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("maps the wire fields onto Video", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(searchPage(["a"], false));
+
+    let first: Video | undefined;
+    for await (const video of client().search("surf")) first = video;
+
+    expect(first).toEqual({
+      id: "a",
+      title: "Clip a",
+      duration: 8,
+      width: 1080,
+      height: 1920,
+      url: "https://cdn.example/p.mp4",
+      thumbnail: "https://cdn.example/t.jpg",
+      creator: { id: "crea_1", username: "jdoe", name: "J Doe" },
+    });
+  });
+
+  it("maps a validation error to ContentError", async () => {
+    jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue(json({ detail: [{ loc: ["body", "query"], msg: "too short" }] }, 422));
+
+    const error = await collect(client().search(" ")).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ContentError);
+    expect((error as ContentError).statusCode).toBe(422);
+  });
+
+  it("retries a rate-limited search after Retry-After", async () => {
+    jest.useFakeTimers();
+    try {
+      const fetchMock = jest
+        .spyOn(global, "fetch")
+        .mockResolvedValueOnce(new Response(null, { status: 429, headers: { "Retry-After": "7" } }))
+        .mockResolvedValueOnce(searchPage(["a"], false));
+
+      const keys = collect(client().search("surf"));
+      await jest.advanceTimersByTimeAsync(6_999);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      await jest.advanceTimersByTimeAsync(1);
+
+      expect(await keys).toEqual(["a"]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(sentBody(fetchMock, 1)).toEqual(sentBody(fetchMock, 0));
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 

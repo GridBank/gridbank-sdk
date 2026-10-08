@@ -1,8 +1,9 @@
 """Client for the GridBank Partner API.
 
-Reads and downloads the videos your account has licensed. Separate from
-:class:`gridbank_api.EnterpriseClient`, which serves leased collections to
-enterprise contracts: different credential, different contract.
+Searches the GridBank catalog, and reads and downloads the videos your account
+has licensed. Separate from :class:`gridbank_api.EnterpriseClient`, which serves
+leased collections to enterprise contracts: different credential, different
+contract.
 
 Create a key from your account settings on gridbank.io.
 
@@ -83,6 +84,8 @@ def _video(data: dict) -> Video:
         ),
         title=data.get("title"),
         duration=data.get("duration_seconds"),
+        width=data.get("width_pixels"),
+        height=data.get("height_pixels"),
         url=data.get("preview_url"),
         thumbnail=data.get("thumbnail_url"),
         purchased_at=data.get("purchased_at"),
@@ -206,6 +209,44 @@ class PartnerClient:
             cursor = page.get("next_cursor")
             if not cursor:
                 return
+
+    def search(
+        self,
+        query: str,
+        *,
+        location: Optional[str] = None,
+        sort: Optional[str] = None,
+        duration_gte: Optional[int] = None,
+        duration_lte: Optional[int] = None,
+        per_page: int = _DEFAULT_PER_PAGE,
+    ) -> Iterator[Video]:
+        """Search the whole catalog, with the same results and ranking as gridbank.io.
+
+        Results include videos this account has not licensed, and carry
+        watermarked previews only: downloading one of those raises
+        :class:`NotLicensed`. Pages are fetched as they are consumed, and a
+        page may hold fewer than ``per_page`` videos without being the last.
+        """
+        body = {
+            "query": query,
+            "items": per_page,
+            "location": location,
+            "sort": sort,
+            "duration_gte": duration_gte,
+            "duration_lte": duration_lte,
+        }
+        body = {k: v for k, v in body.items() if v is not None}
+        page_number = 0
+
+        while True:
+            page = self._request("POST", "/search", json={**body, "page": page_number})
+
+            for item in page.get("videos", []):
+                yield _video(item)
+
+            if not page.get("has_more"):
+                return
+            page_number += 1
 
     def download_url(self, video_key: str) -> str:
         """A URL for the master file, valid for about five minutes.

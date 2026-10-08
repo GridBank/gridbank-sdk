@@ -226,7 +226,13 @@ export {
   ContentError,
   VideoNotFound,
 } from "./content";
-export type { PartnerClientOptions, ContentPage, ContentDownload } from "./content";
+export type {
+  PartnerClientOptions,
+  ContentPage,
+  ContentDownload,
+  SearchOptions,
+  SearchPage,
+} from "./content";
 
 /** @deprecated Use `EnterpriseClient`. Removed in 1.0. */
 export { EnterpriseClient as GridbankClient };
