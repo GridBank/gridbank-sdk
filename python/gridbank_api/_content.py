@@ -26,7 +26,7 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import IO, Any, Iterator, Literal, Optional, Union
 
 import httpx
 
@@ -229,7 +229,7 @@ class PartnerClient:
         query: str,
         *,
         location: Optional[str] = None,
-        sort: Optional[str] = None,
+        sort: Optional[Literal["relevant", "popular", "recent"]] = None,
         duration_gte: Optional[int] = None,
         duration_lte: Optional[int] = None,
         per_page: int = _DEFAULT_PER_PAGE,
