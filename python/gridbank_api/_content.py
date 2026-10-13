@@ -1,8 +1,9 @@
 """Client for the GridBank Partner API.
 
-Reads and downloads the videos your account has licensed. Separate from
-:class:`gridbank_api.EnterpriseClient`, which serves leased collections to
-enterprise contracts: different credential, different contract.
+Searches the GridBank catalog, and reads and downloads the videos your account
+has licensed. Separate from :class:`gridbank_api.EnterpriseClient`, which serves
+leased collections to enterprise contracts: different credential, different
+contract.
 
 Create a key from your account settings on gridbank.io.
 
@@ -25,7 +26,7 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import IO, Any, Iterator, Literal, Optional, Union
 
 import httpx
 
@@ -72,6 +73,14 @@ class AccessRevoked(ContentError):
     """
 
 
+class PartnerApiNotIncluded(ContentError):
+    """This account's plan does not include the Partner API.
+
+    The key is valid, but no request will succeed until the plan changes, and
+    no video is involved: worth catching separately from :class:`NotLicensed`.
+    """
+
+
 def _video(data: dict) -> Video:
     creator = data.get("creator") or {}
     return Video(
@@ -83,6 +92,8 @@ def _video(data: dict) -> Video:
         ),
         title=data.get("title"),
         duration=data.get("duration_seconds"),
+        width=data.get("width_pixels"),
+        height=data.get("height_pixels"),
         url=data.get("preview_url"),
         thumbnail=data.get("thumbnail_url"),
         purchased_at=data.get("purchased_at"),
@@ -129,12 +140,19 @@ class PartnerClient:
 
     # -- requests ---------------------------------------------------------
 
-    def _get(self, path: str, params: Optional[dict] = None) -> Any:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: Optional[dict] = None,
+        json: Optional[dict] = None,
+    ) -> Any:
         query = {k: v for k, v in (params or {}).items() if v is not None}
 
         for attempt in range(self._max_retries):
             try:
-                response = self._http.get(path, params=query)
+                response = self._http.request(method, path, params=query, json=json)
             except httpx.RequestError as exc:
                 raise ContentError(0, str(exc)) from exc
 
@@ -164,11 +182,17 @@ class PartnerClient:
         by_status = {401: NotAuthenticated, 403: NotLicensed, 404: VideoNotFound}
         kind = by_status.get(response.status_code, ContentError)
 
-        # The API sends two different 403s. Only the code tells them apart, and
-        # reading the status alone reports a blocked account as a licensing
-        # problem the caller could fix by buying the video.
-        if isinstance(error, dict) and error.get("code") == "partner_access_revoked":
-            return AccessRevoked(response.status_code, message, body)
+        # The API sends several 403s. Only the code tells them apart, and
+        # reading the status alone reports a blocked account or a plan without
+        # the Partner API as a licensing problem the caller could fix by buying
+        # the video.
+        code = error.get("code") if isinstance(error, dict) else None
+        by_code = {
+            "partner_access_revoked": AccessRevoked,
+            "partner_api_not_included": PartnerApiNotIncluded,
+        }
+        if code in by_code:
+            return by_code[code](response.status_code, message, body)
 
         # A 403 from the edge is a bare {"message": "Forbidden"} with no error
         # envelope, and has nothing to do with licensing. Only the API's own 403
@@ -189,7 +213,9 @@ class PartnerClient:
         cursor: Optional[str] = None
 
         while True:
-            page = self._get("/content", {"per_page": per_page, "cursor": cursor})
+            page = self._request(
+                "GET", "/content", params={"per_page": per_page, "cursor": cursor}
+            )
 
             for item in page.get("videos", []):
                 yield _video(item)
@@ -198,13 +224,51 @@ class PartnerClient:
             if not cursor:
                 return
 
+    def search(
+        self,
+        query: str,
+        *,
+        location: Optional[str] = None,
+        sort: Optional[Literal["relevant", "popular", "recent"]] = None,
+        duration_gte: Optional[int] = None,
+        duration_lte: Optional[int] = None,
+        per_page: int = _DEFAULT_PER_PAGE,
+    ) -> Iterator[Video]:
+        """Search the whole catalog with gridbank.io's search and ranking, for clips of 4-30 s.
+
+        Results include videos this account has not licensed, and carry
+        watermarked previews only: downloading one of those raises
+        :class:`NotLicensed`. Pages are fetched as they are consumed, and a
+        page may hold fewer than ``per_page`` videos without being the last.
+        """
+        body = {
+            "query": query,
+            "items": per_page,
+            "location": location,
+            "sort": sort,
+            "duration_gte": duration_gte,
+            "duration_lte": duration_lte,
+        }
+        body = {k: v for k, v in body.items() if v is not None}
+        page_number = 0
+
+        while True:
+            page = self._request("POST", "/search", json={**body, "page": page_number})
+
+            for item in page.get("videos", []):
+                yield _video(item)
+
+            if not page.get("has_more"):
+                return
+            page_number += 1
+
     def download_url(self, video_key: str) -> str:
         """A URL for the master file, valid for about five minutes.
 
         Prefer :meth:`download` unless you need the URL itself; it handles the
         expiry for you.
         """
-        return self._get(f"/videos/{video_key}/download")["url"]
+        return self._request("GET", f"/videos/{video_key}/download")["url"]
 
     def download(
         self,
@@ -276,6 +340,8 @@ __all__ = [
     "PartnerClient",
     "NotAuthenticated",
     "NotLicensed",
+    "AccessRevoked",
+    "PartnerApiNotIncluded",
     "ContentError",
     "VideoNotFound",
 ]

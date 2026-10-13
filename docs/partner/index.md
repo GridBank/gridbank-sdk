@@ -1,6 +1,7 @@
 # Partner API
 
-Read and download the videos your GridBank account has licensed, from your own tools.
+Search the GridBank catalog, and read and download the videos your GridBank account has
+licensed, from your own tools.
 
 ## Getting a key
 
@@ -47,6 +48,10 @@ have **not** licensed returns `403`, even though it exists on GridBank.
 
 Listing and downloading agree: if a clip appears in your content list, you can download it.
 
+Search is different: it covers the whole catalog with the same search and ranking as
+gridbank.io, limited to clips of 4 to 30 seconds, including videos you have not licensed. A search hit is a watermarked preview,
+not a licence — downloading one you have not licensed still returns `403`.
+
 ## Endpoints
 
 ### List licensed content
@@ -78,6 +83,72 @@ Newest purchase first. Pass `next_cursor` back as `cursor` for the next page; no
 Treat the cursor as opaque — pass it back unchanged. Its encoding is an implementation
 detail and may change.
 
+### Search the catalog
+
+```
+POST /partner/v1/search
+Content-Type: application/json
+```
+
+```json
+{
+  "query": "aerial coastline",
+  "page": 0,
+  "items": 50,
+  "sort": "relevant",
+  "location": "Lisbon, Lisboa, PRT",
+  "duration_gte": 4,
+  "duration_lte": 30
+}
+```
+
+Only `query` is required: 1–200 characters, surrounding whitespace trimmed. The rest:
+
+| Field | Values | Default |
+|---|---|---|
+| `page` | 0–199, zero-based | `0` |
+| `items` | 1–50 | `50` |
+| `sort` | `relevant`, `popular` or `recent` | ranking as on gridbank.io |
+| `location` | up to 200 characters, see below | no filter |
+| `duration_gte` | seconds, 4–30 | `4` |
+| `duration_lte` | seconds, 4–30, not below `duration_gte` | `30` |
+
+Leave a field out to get its default — `null` is not accepted for the durations, and
+unknown fields are rejected with `422`.
+
+`location` is comma-separated, e.g. `"Lisbon, Lisboa, PRT"`, `"Lisbon"` or `"PRT"`, and a
+video must match every part. A 2- or 3-letter ISO country code matches the video's country,
+so write the code, not the name: `"PRT"`, not `"Portugal"`. Any other part must equal the
+video's city or region, ignoring case, or appear in its location description. So
+`"Lisbon, Lisboa, PRT"` keeps videos from Lisbon, in the Lisboa region, in Portugal. Blank
+means no filter.
+
+```json
+{
+  "videos": [
+    {
+      "video_key": "video_019b12...",
+      "title": "Aerial coastline",
+      "duration_seconds": 12.4,
+      "width_pixels": 1080,
+      "height_pixels": 1920,
+      "preview_url": "https://.../watermarked.mp4",
+      "thumbnail_url": "https://.../watermarked.jpg",
+      "creator": { "id": "crea_9", "username": "jdoe", "name": "J. Doe" }
+    }
+  ],
+  "has_more": true,
+  "search_id": "3f0c9a52-7d1e-4b8a-9c6e-2a4f1d8b7e10"
+}
+```
+
+Request the next `page` while `has_more` is true. A page can hold fewer than `items`
+results without being the last, so page on `has_more`, not on a short page. `has_more` is
+false on page 199, the last one available.
+
+There is no `purchased_at` and no download URL on a hit. `search_id` identifies the
+search; quote it if you contact us about a result.
+
 ### Get a download URL
 
 ```
@@ -101,10 +172,10 @@ as often as you like. There is no charge for re-issuing.
 | Status | Meaning |
 |---|---|
 | `401` | Key missing, malformed, or revoked |
-| `403` | You have not licensed this video |
+| `403` | You have not licensed this video, your plan does not include the Partner API (`partner_api_not_included`), or your access was revoked (`partner_access_revoked`) |
 | `404` | No video with that key |
 | `400` | Malformed cursor — restart paging from the beginning |
-| `422` | Invalid parameter, e.g. `per_page` above 100 |
+| `422` | Invalid parameter, e.g. `per_page` above 100, or an unknown search field |
 | `429` | Rate limited — retry after the `Retry-After` header |
 
 ## SDK field names
@@ -118,10 +189,15 @@ different names than the JSON above:
 | `duration_seconds` | `video.duration` |
 | `preview_url` | `video.url` |
 | `thumbnail_url` | `video.thumbnail` |
+| `width_pixels` | `video.width` |
+| `height_pixels` | `video.height` |
 | `purchased_at` | `video.purchased_at` (Python) / `video.purchasedAt` (JS) |
 
-`Video` carries other fields the Partner API does not return - `description`, `width`,
-`height`, `location`, `keywords` - which are always unset here.
+Search hits leave `purchased_at` unset, and listed content leaves `width` and `height`
+unset. `Video` carries other fields the Partner API does not return - `description`,
+`location`, `keywords` - which are always unset here.
+
+Both SDKs page search for you and yield videos only; `search_id` is not exposed.
 
 ## Python
 
@@ -137,6 +213,10 @@ client = PartnerClient(api_key="apik_...")
 # Pages are fetched as you consume them.
 for video in client.content():
     print(video.id, video.title)
+
+# Searches the whole catalog, licensed or not; pages until has_more is false.
+for video in client.search("aerial coastline", location="Lisbon, PRT", duration_lte=15):
+    print(video.id, video.url)  # a watermarked preview
 
 # Handles the five-minute expiry for you, and streams to disk.
 try:
@@ -171,6 +251,14 @@ for await (const video of client.content()) {
   console.log(video.id, video.title);
 }
 
+// Searches the whole catalog, licensed or not; pages until has_more is false.
+for await (const video of client.search("aerial coastline", {
+  location: "Lisbon, PRT",
+  durationLte: 15,
+})) {
+  console.log(video.id, video.url); // a watermarked preview
+}
+
 try {
   const response = await client.fetchDownload("video_019b12...");
   // Node: pipe response.body to a file. Browser: await response.blob().
@@ -191,6 +279,10 @@ GridBank can withdraw an account's Partner API access. When that happens every r
 returns `403` with the code `partner_access_revoked`, and both clients raise
 `AccessRevoked` rather than `NotLicensed` — the key is valid and the videos are still
 licensed, so retrying or minting a new key will not help. Get in touch with us instead.
+
+An account whose plan does not include the Partner API gets `403` with the code
+`partner_api_not_included` on every request, search included, and both clients raise
+`PartnerApiNotIncluded`. Change the plan on gridbank.io to get access.
 
 ## Rate limits
 

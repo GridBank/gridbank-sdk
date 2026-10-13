@@ -1,9 +1,9 @@
 /**
  * Client for the GridBank Partner API.
  *
- * Reads and downloads the videos your account has licensed. Separate from
- * `EnterpriseClient`, which serves leased collections to enterprise contracts:
- * different credential, different contract.
+ * Searches the GridBank catalog, and reads and downloads the videos your account
+ * has licensed. Separate from `EnterpriseClient`, which serves leased collections
+ * to enterprise contracts: different credential, different contract.
  *
  * Create a key from your account settings on gridbank.io.
  *
@@ -31,6 +31,8 @@ interface VideoPayload {
   creator?: { id?: string; username?: string | null; name?: string | null } | null;
   title?: string | null;
   duration_seconds?: number | null;
+  width_pixels?: number | null;
+  height_pixels?: number | null;
   purchased_at?: number | null;
   preview_url?: string | null;
   thumbnail_url?: string | null;
@@ -43,6 +45,8 @@ function toVideo(data: VideoPayload): Video {
     creator: { id: creator.id ?? "", username: creator.username ?? "", name: creator.name },
     title: data.title,
     duration: data.duration_seconds,
+    width: data.width_pixels,
+    height: data.height_pixels,
     url: data.preview_url,
     thumbnail: data.thumbnail_url,
     purchasedAt: data.purchased_at,
@@ -52,6 +56,21 @@ function toVideo(data: VideoPayload): Video {
 export interface ContentPage {
   videos: VideoPayload[];
   next_cursor?: string | null;
+}
+
+export interface SearchPage {
+  videos: VideoPayload[];
+  has_more: boolean;
+  search_id: string;
+}
+
+export interface SearchOptions {
+  /** Comma-separated, e.g. "Lisbon, Lisboa, PRT". Countries as ISO codes, not names. */
+  location?: string;
+  sort?: "relevant" | "popular" | "recent";
+  durationGte?: number;
+  durationLte?: number;
+  perPage?: number;
 }
 
 export interface ContentDownload {
@@ -126,6 +145,19 @@ export class AccessRevoked extends ContentError {
 }
 
 /**
+ * This account's plan does not include the Partner API.
+ *
+ * The key is valid, but no request will succeed until the plan changes, and no
+ * video is involved: worth catching separately from `NotLicensed`.
+ */
+export class PartnerApiNotIncluded extends ContentError {
+  constructor(statusCode: number, message: string, details?: unknown) {
+    super(statusCode, message, details);
+    this.name = "PartnerApiNotIncluded";
+  }
+}
+
+/**
  * A 403 from the edge is a bare `{"message": "Forbidden"}` with no error
  * envelope, and has nothing to do with licensing. Only the API's own 403 means
  * the caller has not licensed the video.
@@ -137,9 +169,9 @@ function hasErrorEnvelope(body: unknown): boolean {
 }
 
 /**
- * The API sends two different 403s. Only the code tells them apart, and reading
- * the status alone reports a blocked account as a licensing problem the caller
- * could fix by buying the video.
+ * The API sends several 403s. Only the code tells them apart, and reading the
+ * status alone reports a blocked account or a plan without the Partner API as a
+ * licensing problem the caller could fix by buying the video.
  */
 function errorCodeOf(body: unknown): string | null {
   if (!body || typeof body !== "object" || !("detail" in body)) return null;
@@ -153,9 +185,9 @@ function errorCodeOf(body: unknown): string | null {
 
 function errorFor(status: number, message: string, body: unknown): ContentError {
   if (status === 401) return new NotAuthenticated(status, message, body);
-  if (errorCodeOf(body) === "partner_access_revoked") {
-    return new AccessRevoked(status, message, body);
-  }
+  const code = errorCodeOf(body);
+  if (code === "partner_access_revoked") return new AccessRevoked(status, message, body);
+  if (code === "partner_api_not_included") return new PartnerApiNotIncluded(status, message, body);
   if (status === 403 && hasErrorEnvelope(body)) return new NotLicensed(status, message, body);
   if (status === 404) return new VideoNotFound(status, message, body);
   return new ContentError(status, message, body);
@@ -176,6 +208,12 @@ function messageFrom(body: unknown, fallback: string): string {
 }
 
 type Params = Record<string, string | number | null | undefined>;
+
+interface RequestOptions {
+  params?: Params;
+  /** Sent as JSON, which makes the request a POST. */
+  body?: unknown;
+}
 
 export class PartnerClient {
   private readonly apiKey: string;
@@ -202,11 +240,14 @@ export class PartnerClient {
     return headers;
   }
 
-  private async request<T>(path: string, params?: Params): Promise<T> {
+  private async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const url = new URL(this.baseUrl + path);
-    for (const [key, value] of Object.entries(params ?? {})) {
+    for (const [key, value] of Object.entries(options.params ?? {})) {
       if (value != null) url.searchParams.set(key, String(value));
     }
+
+    const headers = this.headers();
+    if (options.body !== undefined) headers["Content-Type"] = "application/json";
 
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
       const controller = new AbortController();
@@ -215,7 +256,9 @@ export class PartnerClient {
       let response: Response;
       try {
         response = await fetch(url.toString(), {
-          headers: this.headers(),
+          method: options.body === undefined ? "GET" : "POST",
+          headers,
+          body: options.body === undefined ? undefined : JSON.stringify(options.body),
           signal: controller.signal,
         });
       } catch (err) {
@@ -262,14 +305,40 @@ export class PartnerClient {
 
     for (;;) {
       const page = await this.request<ContentPage>("/content", {
-        per_page: perPage,
-        cursor,
+        params: { per_page: perPage, cursor },
       });
 
       for (const video of page.videos ?? []) yield toVideo(video);
 
       cursor = page.next_cursor;
       if (!cursor) return;
+    }
+  }
+
+  /**
+   * Search the whole catalog with gridbank.io's search and ranking, for clips of 4-30 s.
+   *
+   * Results include videos this account has not licensed, and carry
+   * watermarked previews only: downloading one of those throws `NotLicensed`.
+   * Pages are fetched as they are consumed, and a page may hold fewer than
+   * `perPage` videos without being the last.
+   */
+  async *search(query: string, options: SearchOptions = {}): AsyncGenerator<Video> {
+    const body = {
+      query,
+      items: options.perPage ?? DEFAULT_PER_PAGE,
+      location: options.location,
+      sort: options.sort,
+      duration_gte: options.durationGte,
+      duration_lte: options.durationLte,
+    };
+
+    for (let page = 0; ; page++) {
+      const result = await this.request<SearchPage>("/search", { body: { ...body, page } });
+
+      for (const video of result.videos ?? []) yield toVideo(video);
+
+      if (!result.has_more) return;
     }
   }
 

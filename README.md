@@ -17,7 +17,7 @@ Each package ships two clients for two separate products. Neither is built on th
 
 | Client | Product | Serves | Credential |
 |--------|---------|--------|------------|
-| `PartnerClient` | Partner API | the videos an account has **licensed** | member API key |
+| `PartnerClient` | Partner API | catalog search, and the videos an account has **licensed** | member API key |
 | `EnterpriseClient` | Enterprise API (B2B) | leased collections on an **enterprise contract** | customer API key |
 
 ## Quick Start
@@ -33,6 +33,9 @@ client = PartnerClient(api_key="apik_...", user_agent="your-app/1.0")
 
 for video in client.content():
     client.download(video.id, f"{video.id}.mov")
+
+for video in client.search("aerial coastline", location="PRT"):
+    print(video.id, video.url)  # watermarked preview
 ```
 
 **JavaScript**
@@ -46,6 +49,10 @@ const client = new PartnerClient({ apiKey: 'apik_...', userAgent: 'your-app/1.0'
 
 for await (const video of client.content()) {
   console.log(video.id, video.title);
+}
+
+for await (const video of client.search('aerial coastline', { location: 'PRT' })) {
+  console.log(video.id, video.url); // watermarked preview
 }
 ```
 
