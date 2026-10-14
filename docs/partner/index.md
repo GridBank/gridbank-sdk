@@ -204,8 +204,7 @@ be changed through the API.
           "width_pixels": 1080,
           "height_pixels": 1920,
           "preview_url": "https://.../watermarked.mp4",
-          "thumbnail_url": "https://.../watermarked.jpg",
-          "creator": { "id": "crea_9", "username": "jdoe", "name": "J. Doe" }
+          "thumbnail_url": "https://.../watermarked.jpg"
         }
       ]
     }
@@ -216,7 +215,7 @@ be changed through the API.
 ```
 
 `videos` is a selection of the creator's clips, as watermarked previews in the same shape
-as catalog search hits. Request the next `page` while `has_more` is true; it is false on
+as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true; it is false on
 page 20, the last one available.
 
 ### Get a download URL

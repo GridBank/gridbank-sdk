@@ -110,18 +110,20 @@ export interface CreatorSearchOptions {
 }
 
 function toCreatorResult(data: CreatorPayload): CreatorResult {
+  const creator: Creator = {
+    id: data.id,
+    username: data.username ?? "",
+    name: data.name,
+    bio: data.bio,
+    profile_image: data.image_url,
+  };
   return {
-    creator: {
-      id: data.id,
-      username: data.username ?? "",
-      name: data.name,
-      bio: data.bio,
-      profile_image: data.image_url,
-    },
+    creator,
     isTopCreator: data.is_top_creator ?? false,
     clipsCount: data.clips_count ?? 0,
     isFavorited: data.is_favorited ?? false,
-    videos: (data.videos ?? []).map(toVideo),
+    // The API leaves creator off each video here, since it is the result's own.
+    videos: (data.videos ?? []).map(video => ({ ...toVideo(video), creator })),
   };
 }
 

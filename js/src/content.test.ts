@@ -170,7 +170,7 @@ function creatorPage(ids: string[], hasMore: boolean): Response {
       is_top_creator: true,
       clips_count: 42,
       is_favorited: true,
-      videos: [searchHit("v1")],
+      videos: [{ ...searchHit("v1"), creator: undefined }],
     })),
     has_more: hasMore,
     total_items: 9,
@@ -246,6 +246,7 @@ describe("searchCreators", () => {
     expect(first.clipsCount).toBe(42);
     expect(first.isFavorited).toBe(true);
     expect(first.videos.map(v => v.id)).toEqual(["v1"]);
+    expect(first.videos[0].creator).toEqual(first.creator);
   });
 });
 

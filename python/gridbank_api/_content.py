@@ -25,6 +25,7 @@ import os
 import shutil
 import tempfile
 import time
+from dataclasses import replace
 from pathlib import Path
 from typing import IO, Any, Iterator, Literal, Optional, Union
 
@@ -101,18 +102,21 @@ def _video(data: dict) -> Video:
 
 
 def _creator_result(data: dict) -> CreatorResult:
+    creator = Creator(
+        id=data["id"],
+        username=data.get("username") or "",
+        name=data.get("name"),
+        bio=data.get("bio"),
+        profile_image=data.get("image_url"),
+    )
+    # The API leaves creator off each video here, since it is the result's own.
+    videos = [replace(_video(v), creator=creator) for v in data.get("videos", [])]
     return CreatorResult(
-        creator=Creator(
-            id=data["id"],
-            username=data.get("username") or "",
-            name=data.get("name"),
-            bio=data.get("bio"),
-            profile_image=data.get("image_url"),
-        ),
+        creator=creator,
         is_top_creator=data.get("is_top_creator", False),
         clips_count=data.get("clips_count", 0),
         is_favorited=data.get("is_favorited", False),
-        videos=[_video(v) for v in data.get("videos", [])],
+        videos=videos,
     )
 
 

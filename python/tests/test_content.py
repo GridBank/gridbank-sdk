@@ -59,7 +59,7 @@ def creator_hit(creator_id: str) -> dict:
         "is_top_creator": True,
         "clips_count": 42,
         "is_favorited": True,
-        "videos": [search_hit("v1")],
+        "videos": [{k: v for k, v in search_hit("v1").items() if k != "creator"}],
     }
 
 
@@ -214,6 +214,7 @@ class TestSearchCreators:
         assert first.is_favorited is True
         assert [v.id for v in first.videos] == ["v1"]
         assert first.videos[0].url == "https://cdn.example/p.mp4"
+        assert first.videos[0].creator is first.creator
 
 
 class TestSearch:
