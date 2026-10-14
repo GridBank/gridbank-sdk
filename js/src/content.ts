@@ -73,6 +73,60 @@ export interface SearchOptions {
   perPage?: number;
 }
 
+interface CreatorPayload {
+  id: string;
+  username?: string | null;
+  name?: string | null;
+  image_url?: string | null;
+  bio?: string | null;
+  is_top_creator?: boolean;
+  clips_count?: number;
+  is_favorited?: boolean;
+  videos?: VideoPayload[];
+}
+
+export interface CreatorSearchPage {
+  creators: CreatorPayload[];
+  has_more: boolean;
+  total_items: number;
+}
+
+/** A creator from creator search, with a selection of their videos. */
+export interface CreatorResult {
+  creator: Creator;
+  isTopCreator: boolean;
+  clipsCount: number;
+  isFavorited: boolean;
+  videos: Video[];
+}
+
+export interface CreatorSearchOptions {
+  location?: string;
+  topOnly?: boolean;
+  featuredOnly?: boolean;
+  /** Only creators this account has favourited on gridbank.io. */
+  favoritesOnly?: boolean;
+  perPage?: number;
+}
+
+function toCreatorResult(data: CreatorPayload): CreatorResult {
+  const creator: Creator = {
+    id: data.id,
+    username: data.username ?? "",
+    name: data.name,
+    bio: data.bio,
+    profile_image: data.image_url,
+  };
+  return {
+    creator,
+    isTopCreator: data.is_top_creator ?? false,
+    clipsCount: data.clips_count ?? 0,
+    isFavorited: data.is_favorited ?? false,
+    // The API leaves creator off each video here, since it is the result's own.
+    videos: (data.videos ?? []).map(video => ({ ...toVideo(video), creator })),
+  };
+}
+
 export interface ContentDownload {
   video_key: string;
   url: string;
@@ -337,6 +391,37 @@ export class PartnerClient {
       const result = await this.request<SearchPage>("/search", { body: { ...body, page } });
 
       for (const video of result.videos ?? []) yield toVideo(video);
+
+      if (!result.has_more) return;
+    }
+  }
+
+  /**
+   * Search or browse creators with gridbank.io's creator search.
+   *
+   * An empty query lists every creator. Each result carries a selection of the
+   * creator's videos as watermarked previews. Pages are fetched as they are
+   * consumed, up to page 20.
+   */
+  async *searchCreators(
+    query = "",
+    options: CreatorSearchOptions = {}
+  ): AsyncGenerator<CreatorResult> {
+    const body = {
+      query,
+      items: options.perPage ?? DEFAULT_PER_PAGE,
+      location: options.location,
+      top_only: options.topOnly ?? false,
+      featured_only: options.featuredOnly ?? false,
+      favorites_only: options.favoritesOnly ?? false,
+    };
+
+    for (let page = 0; ; page++) {
+      const result = await this.request<CreatorSearchPage>("/search/creators", {
+        body: { ...body, page },
+      });
+
+      for (const creator of result.creators ?? []) yield toCreatorResult(creator);
 
       if (!result.has_more) return;
     }

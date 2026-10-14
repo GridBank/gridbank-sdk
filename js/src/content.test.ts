@@ -80,6 +80,12 @@ async function collect(iterator: AsyncGenerator<Video>): Promise<string[]> {
   return keys;
 }
 
+async function collectAll<T>(iterator: AsyncGenerator<T>): Promise<T[]> {
+  const items: T[] = [];
+  for await (const item of iterator) items.push(item);
+  return items;
+}
+
 describe("construction", () => {
   it("rejects an empty key up front", () => {
     expect(() => new PartnerClient({ apiKey: "" })).toThrow("apiKey is required");
@@ -150,6 +156,97 @@ describe("content iteration", () => {
     await collect(client().content({ perPage: 10 }));
 
     expect(String(fetchMock.mock.calls[0][0])).toContain("per_page=10");
+  });
+});
+
+function creatorPage(ids: string[], hasMore: boolean): Response {
+  return json({
+    creators: ids.map(id => ({
+      id,
+      username: `user_${id}`,
+      name: "J Doe",
+      image_url: "https://cdn.example/me.jpg",
+      bio: "Drone pilot",
+      is_top_creator: true,
+      clips_count: 42,
+      is_favorited: true,
+      videos: [{ ...searchHit("v1"), creator: undefined }],
+    })),
+    has_more: hasMore,
+    total_items: 9,
+  });
+}
+
+describe("searchCreators", () => {
+  it("posts the query and filters", async () => {
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(creatorPage([], false));
+
+    await collectAll(
+      client().searchCreators("jdoe", {
+        location: "PRT",
+        topOnly: true,
+        featuredOnly: true,
+        favoritesOnly: true,
+        perPage: 10,
+      })
+    );
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE}/search/creators`);
+    expect(sentBody(fetchMock)).toEqual({
+      query: "jdoe",
+      location: "PRT",
+      top_only: true,
+      featured_only: true,
+      favorites_only: true,
+      items: 10,
+      page: 0,
+    });
+  });
+
+  it("browses every creator with no query", async () => {
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(creatorPage([], false));
+
+    await collectAll(client().searchCreators());
+
+    expect(sentBody(fetchMock)).toStrictEqual({
+      query: "",
+      items: 50,
+      top_only: false,
+      featured_only: false,
+      favorites_only: false,
+      page: 0,
+    });
+  });
+
+  it("pages while there is more", async () => {
+    const fetchMock = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(creatorPage(["a", "b"], true))
+      .mockResolvedValueOnce(creatorPage(["c"], false));
+
+    const results = await collectAll(client().searchCreators());
+
+    expect(results.map(r => r.creator.id)).toEqual(["a", "b", "c"]);
+    expect([0, 1].map(i => (sentBody(fetchMock, i) as { page: number }).page)).toEqual([0, 1]);
+  });
+
+  it("maps the wire fields onto CreatorResult", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(creatorPage(["a"], false));
+
+    const [first] = await collectAll(client().searchCreators());
+
+    expect(first.creator).toEqual({
+      id: "a",
+      username: "user_a",
+      name: "J Doe",
+      bio: "Drone pilot",
+      profile_image: "https://cdn.example/me.jpg",
+    });
+    expect(first.isTopCreator).toBe(true);
+    expect(first.clipsCount).toBe(42);
+    expect(first.isFavorited).toBe(true);
+    expect(first.videos.map(v => v.id)).toEqual(["v1"]);
+    expect(first.videos[0].creator).toEqual(first.creator);
   });
 });
 

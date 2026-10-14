@@ -25,12 +25,13 @@ import os
 import shutil
 import tempfile
 import time
+from dataclasses import replace
 from pathlib import Path
 from typing import IO, Any, Iterator, Literal, Optional, Union
 
 import httpx
 
-from ._models import Creator, Video
+from ._models import Creator, CreatorResult, Video
 
 _BASE_URL = "https://api2.gridbank.io"
 _PARTNER_PREFIX = "/partner/v1"
@@ -97,6 +98,25 @@ def _video(data: dict) -> Video:
         url=data.get("preview_url"),
         thumbnail=data.get("thumbnail_url"),
         purchased_at=data.get("purchased_at"),
+    )
+
+
+def _creator_result(data: dict) -> CreatorResult:
+    creator = Creator(
+        id=data["id"],
+        username=data.get("username") or "",
+        name=data.get("name"),
+        bio=data.get("bio"),
+        profile_image=data.get("image_url"),
+    )
+    # The API leaves creator off each video here, since it is the result's own.
+    videos = [replace(_video(v), creator=creator) for v in data.get("videos", [])]
+    return CreatorResult(
+        creator=creator,
+        is_top_creator=data.get("is_top_creator", False),
+        clips_count=data.get("clips_count", 0),
+        is_favorited=data.get("is_favorited", False),
+        videos=videos,
     )
 
 
@@ -257,6 +277,44 @@ class PartnerClient:
 
             for item in page.get("videos", []):
                 yield _video(item)
+
+            if not page.get("has_more"):
+                return
+            page_number += 1
+
+    def search_creators(
+        self,
+        query: str = "",
+        *,
+        location: Optional[str] = None,
+        top_only: bool = False,
+        featured_only: bool = False,
+        favorites_only: bool = False,
+        per_page: int = _DEFAULT_PER_PAGE,
+    ) -> Iterator[CreatorResult]:
+        """Search or browse creators with gridbank.io's creator search.
+
+        An empty query lists every creator. Each result carries a selection of
+        the creator's videos as watermarked previews. ``favorites_only`` keeps
+        creators this account has favourited on gridbank.io. Pages are fetched
+        as they are consumed, up to page 20.
+        """
+        body = {
+            "query": query,
+            "items": per_page,
+            "location": location,
+            "top_only": top_only,
+            "featured_only": featured_only,
+            "favorites_only": favorites_only,
+        }
+        body = {k: v for k, v in body.items() if v is not None}
+        page_number = 0
+
+        while True:
+            page = self._request("POST", "/search/creators", json={**body, "page": page_number})
+
+            for item in page.get("creators", []):
+                yield _creator_result(item)
 
             if not page.get("has_more"):
                 return

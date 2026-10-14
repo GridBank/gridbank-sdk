@@ -149,6 +149,75 @@ false on page 199, the last one available.
 There is no `purchased_at` and no download URL on a hit. `search_id` identifies the
 search; quote it if you contact us about a result.
 
+### Search creators
+
+```
+POST /partner/v1/search/creators
+Content-Type: application/json
+```
+
+```json
+{
+  "query": "",
+  "location": null,
+  "top_only": false,
+  "featured_only": false,
+  "favorites_only": false,
+  "page": 0,
+  "items": 50
+}
+```
+
+Every field is optional. An empty `query` lists every creator; otherwise it matches a
+creator's name or username, up to 200 characters.
+
+| Field | Values | Default |
+|---|---|---|
+| `query` | up to 200 characters | `""`, every creator |
+| `location` | up to 200 characters | no filter |
+| `top_only` | only top creators | `false` |
+| `featured_only` | only curated featured creators | `false` |
+| `favorites_only` | only creators you have favourited on gridbank.io | `false` |
+| `page` | 0–20, zero-based | `0` |
+| `items` | 1–50 | `50` |
+
+Unknown fields are rejected with `422`. Favourites are managed on gridbank.io and cannot
+be changed through the API.
+
+```json
+{
+  "creators": [
+    {
+      "id": "crea_9",
+      "username": "jdoe",
+      "name": "J. Doe",
+      "image_url": "https://.../profile.jpg",
+      "bio": "Drone pilot, Lisbon",
+      "is_top_creator": true,
+      "clips_count": 42,
+      "is_favorited": false,
+      "videos": [
+        {
+          "video_key": "video_019b12...",
+          "title": "Aerial coastline",
+          "duration_seconds": 12.4,
+          "width_pixels": 1080,
+          "height_pixels": 1920,
+          "preview_url": "https://.../watermarked.mp4",
+          "thumbnail_url": "https://.../watermarked.jpg"
+        }
+      ]
+    }
+  ],
+  "has_more": true,
+  "total_items": 318
+}
+```
+
+`videos` is a selection of the creator's clips, as watermarked previews in the same shape
+as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true; it is false on
+page 20, the last one available.
+
 ### Get a download URL
 
 ```
