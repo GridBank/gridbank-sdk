@@ -49,6 +49,27 @@ def search_page(keys: list, has_more: bool) -> httpx.Response:
     )
 
 
+def creator_hit(creator_id: str) -> dict:
+    return {
+        "id": creator_id,
+        "username": f"user_{creator_id}",
+        "name": "J Doe",
+        "image_url": "https://cdn.example/me.jpg",
+        "bio": "Drone pilot",
+        "is_top_creator": True,
+        "clips_count": 42,
+        "is_favorited": True,
+        "videos": [search_hit("v1")],
+    }
+
+
+def creator_page(ids: list, has_more: bool) -> httpx.Response:
+    return httpx.Response(
+        200,
+        json={"creators": [creator_hit(i) for i in ids], "has_more": has_more, "total_items": 9},
+    )
+
+
 def sent_body(route, call: int = 0) -> dict:
     return json.loads(route.calls[call].request.content)
 
@@ -125,6 +146,74 @@ class TestContentIteration:
         assert first.purchased_at == 1756200000
         assert first.creator.id == "crea_1"
         assert first.creator.username == "jdoe"
+
+
+class TestSearchCreators:
+    def test_it_sends_the_query_and_filters(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search/creators").mock(
+            return_value=creator_page([], False)
+        )
+
+        list(
+            client.search_creators(
+                "jdoe",
+                location="PRT",
+                top_only=True,
+                featured_only=True,
+                favorites_only=True,
+                per_page=10,
+            )
+        )
+
+        assert sent_body(route) == {
+            "query": "jdoe",
+            "location": "PRT",
+            "top_only": True,
+            "featured_only": True,
+            "favorites_only": True,
+            "items": 10,
+            "page": 0,
+        }
+
+    def test_no_query_browses_every_creator(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search/creators").mock(
+            return_value=creator_page([], False)
+        )
+
+        list(client.search_creators())
+
+        assert sent_body(route) == {
+            "query": "",
+            "top_only": False,
+            "featured_only": False,
+            "favorites_only": False,
+            "items": 50,
+            "page": 0,
+        }
+
+    def test_it_pages_while_there_is_more(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search/creators").mock(
+            side_effect=[creator_page(["a", "b"], True), creator_page(["c"], False)]
+        )
+
+        assert [r.creator.id for r in client.search_creators()] == ["a", "b", "c"]
+        assert [sent_body(route, i)["page"] for i in range(2)] == [0, 1]
+
+    def test_it_parses_the_creator_and_videos(self, respx_mock, client):
+        respx_mock.post(f"{BASE}/search/creators").mock(return_value=creator_page(["a"], False))
+
+        first = next(client.search_creators())
+
+        assert first.creator.id == "a"
+        assert first.creator.username == "user_a"
+        assert first.creator.name == "J Doe"
+        assert first.creator.bio == "Drone pilot"
+        assert first.creator.profile_image == "https://cdn.example/me.jpg"
+        assert first.is_top_creator is True
+        assert first.clips_count == 42
+        assert first.is_favorited is True
+        assert [v.id for v in first.videos] == ["v1"]
+        assert first.videos[0].url == "https://cdn.example/p.mp4"
 
 
 class TestSearch:

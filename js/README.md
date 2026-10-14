@@ -91,6 +91,19 @@ equal the city or region, ignoring case, or appear in the location description.
 Pages are fetched lazily until `has_more` is false. A page can hold fewer than `perPage`
 (1-50, default 50) videos without being the last, and paging ends at page 199.
 
+### Search creators
+
+```ts
+for await (const result of client.searchCreators('jdoe', { topOnly: true })) {
+  console.log(result.creator.username, result.clipsCount, result.videos.map(v => v.id));
+}
+```
+
+An empty query lists every creator. `location`, `topOnly`, `featuredOnly` and
+`favoritesOnly` (creators this account has favourited on gridbank.io) narrow the listing.
+Each result carries a selection of the creator's videos as watermarked previews. Pages are
+fetched lazily until `has_more` is false, up to page 20.
+
 ### Options
 
 ```ts

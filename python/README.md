@@ -74,6 +74,18 @@ equal the city or region, ignoring case, or appear in the location description.
 Pages are fetched lazily until `has_more` is false. A page can hold fewer than `per_page`
 (1-50, default 50) videos without being the last, and paging ends at page 199.
 
+### Search creators
+
+```python
+for result in client.search_creators("jdoe", top_only=True):
+    print(result.creator.username, result.clips_count, [v.id for v in result.videos])
+```
+
+An empty query lists every creator. `location`, `top_only`, `featured_only` and
+`favorites_only` (creators this account has favourited on gridbank.io) narrow the listing.
+Each result carries a selection of the creator's videos as watermarked previews. Pages are
+fetched lazily until `has_more` is false, up to page 20.
+
 ### Options
 
 ```python

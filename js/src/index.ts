@@ -233,6 +233,9 @@ export type {
   ContentDownload,
   SearchOptions,
   SearchPage,
+  CreatorResult,
+  CreatorSearchOptions,
+  CreatorSearchPage,
 } from "./content";
 
 /** @deprecated Use `EnterpriseClient`. Removed in 1.0. */
