@@ -8,13 +8,15 @@ from typing import Any, List, Optional
 
 import httpx
 
-from ._models import Creator, CreatorResult, Location, Video
+from ._models import Creator, CreatorResult, License, Location, Video
 from ._content import (
     PartnerClient,
     NotAuthenticated,
     NotLicensed,
     AccessRevoked,
     PartnerApiNotIncluded,
+    ReadOnlyKey,
+    LicenseRefused,
     ContentError,
     VideoNotFound,
 )
