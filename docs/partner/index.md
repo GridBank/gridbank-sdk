@@ -339,12 +339,13 @@ for video in client.content():
 for video in client.search("aerial coastline", location="Lisbon, PRT", duration_lte=15):
     print(video.id, video.url)  # a watermarked preview
 
-# Needs a key with license access; uses one download unless already held.
-try:
-    result = client.license(video.id, search_id=video.search_id)
-    print(result.downloads_remaining)
-except LicenseRefused as err:
-    print("cannot license:", err.code)  # e.g. no_downloads_remaining
+    # Needs a key with license access; uses one download unless already held.
+    try:
+        result = client.license(video.id, search_id=video.search_id)
+        print(result.downloads_remaining)
+    except LicenseRefused as err:
+        print("cannot license:", err.code)  # e.g. no_downloads_remaining
+    break
 
 # Handles the five-minute expiry for you, and streams to disk.
 try:
@@ -392,7 +393,8 @@ try {
   const result = await client.license("video_019b12...", { searchId: "srch_01a1..." });
   console.log(result.downloadsRemaining);
 } catch (err) {
-  if (err instanceof LicenseRefused) console.log("cannot license:", err.code);
+  if (!(err instanceof LicenseRefused)) throw err;
+  console.log("cannot license:", err.code);
 }
 
 try {

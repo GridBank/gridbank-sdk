@@ -114,7 +114,8 @@ for await (const video of client.search('aerial coastline')) {
     const result = await client.license(video.id, { searchId: video.searchId });
     console.log(result.alreadyLicensed, result.downloadsRemaining);
   } catch (error) {
-    if (error instanceof LicenseRefused) console.log('cannot license:', error.code);
+    if (!(error instanceof LicenseRefused)) throw error;
+    console.log('cannot license:', error.code);
   }
   break;
 }
