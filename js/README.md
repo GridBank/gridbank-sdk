@@ -104,6 +104,27 @@ An empty query lists every creator. `location`, `topOnly`, `featuredOnly` and
 Each result carries a selection of the creator's videos as watermarked previews. Pages are
 fetched lazily until `has_more` is false, up to page 20.
 
+### License
+
+```ts
+import { LicenseRefused } from '@gridbank/api-js';
+
+for await (const video of client.search('aerial coastline')) {
+  try {
+    const result = await client.license(video.id, { searchId: video.searchId });
+    console.log(result.alreadyLicensed, result.downloadsRemaining);
+  } catch (error) {
+    if (error instanceof LicenseRefused) console.log('cannot license:', error.code);
+  }
+  break;
+}
+```
+
+Uses one download from this account's plan, exactly as downloading on gridbank.io would,
+and needs a key created with license access (`ReadOnlyKey` otherwise). A video the account
+already holds is not charged again: `alreadyLicensed` is true, so it is safe to retry.
+`downloadsRemaining` is `null` on unlimited plans.
+
 ### Options
 
 ```ts
@@ -118,7 +139,8 @@ const client = new PartnerClient({
 
 ### Errors
 
-All extend `ContentError`, which carries `statusCode`, `message`, and `details`.
+All extend `ContentError`, which carries `statusCode`, `message`, `details`, and the API's
+error `code` when it sent one.
 
 | Error | Meaning |
 |-------|---------|
@@ -127,6 +149,8 @@ All extend `ContentError`, which carries `statusCode`, `message`, and `details`.
 | `NotAuthenticated` | the API key is missing, malformed, or revoked |
 | `AccessRevoked` | GridBank has withdrawn this account's Partner API access |
 | `PartnerApiNotIncluded` | this account's plan does not include the Partner API |
+| `ReadOnlyKey` | the key was created with read access, so it cannot license |
+| `LicenseRefused` | the plan cannot license this video right now; `code` says why |
 
 ---
 

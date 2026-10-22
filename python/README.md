@@ -86,6 +86,27 @@ An empty query lists every creator. `location`, `top_only`, `featured_only` and
 Each result carries a selection of the creator's videos as watermarked previews. Pages are
 fetched lazily until `has_more` is false, up to page 20.
 
+### License
+
+```python
+from gridbank_api import LicenseRefused
+
+for video in client.search("aerial coastline"):
+    try:
+        result = client.license(video.id, search_id=video.search_id)
+    except LicenseRefused as err:
+        print("cannot license:", err.code)  # e.g. no_downloads_remaining
+        break
+    print(result.already_licensed, result.downloads_remaining)
+    client.download(video.id, f"{video.id}.mov")
+    break
+```
+
+Uses one download from this account's plan, exactly as downloading on gridbank.io would,
+and needs a key created with license access (`ReadOnlyKey` otherwise). A video the account
+already holds is not charged again: `already_licensed` is true, so it is safe to retry.
+`downloads_remaining` is `None` on unlimited plans.
+
 ### Options
 
 ```python
@@ -100,7 +121,8 @@ client = PartnerClient(
 
 ### Errors
 
-All inherit from `ContentError`, which carries `status_code`, `message`, and `details`.
+All inherit from `ContentError`, which carries `status_code`, `message`, `details`, and the
+API's error `code` when it sent one.
 
 | Exception | Meaning |
 |-----------|---------|
@@ -109,6 +131,8 @@ All inherit from `ContentError`, which carries `status_code`, `message`, and `de
 | `NotAuthenticated` | the API key is missing, malformed, or revoked |
 | `AccessRevoked` | GridBank has withdrawn this account's Partner API access |
 | `PartnerApiNotIncluded` | this account's plan does not include the Partner API |
+| `ReadOnlyKey` | the key was created with read access, so it cannot license |
+| `LicenseRefused` | the plan cannot license this video right now; `code` says why |
 
 ---
 
