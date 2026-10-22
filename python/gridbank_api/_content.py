@@ -31,7 +31,7 @@ from typing import IO, Any, Iterator, Literal, Optional, Union
 
 import httpx
 
-from ._models import Creator, CreatorResult, Video
+from ._models import Creator, CreatorResult, License, Video
 
 _BASE_URL = "https://api2.gridbank.io"
 _PARTNER_PREFIX = "/partner/v1"
@@ -39,13 +39,23 @@ _DEFAULT_PER_PAGE = 50
 
 
 class ContentError(Exception):
-    """Any non-success response from the Partner API."""
+    """Any non-success response from the Partner API.
 
-    def __init__(self, status_code: int, message: str, details: Optional[Any] = None) -> None:
+    ``code`` is the API's machine-readable error code, when it sent one.
+    """
+
+    def __init__(
+        self,
+        status_code: int,
+        message: str,
+        details: Optional[Any] = None,
+        code: Optional[str] = None,
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.message = message
         self.details = details
+        self.code = code
 
 
 class NotLicensed(ContentError):
@@ -82,7 +92,34 @@ class PartnerApiNotIncluded(ContentError):
     """
 
 
-def _video(data: dict) -> Video:
+class ReadOnlyKey(ContentError):
+    """This key was created with read access, so it cannot license videos.
+
+    Create a key with license access on gridbank.io to license from code.
+    """
+
+
+class LicenseRefused(ContentError):
+    """The account cannot license this video right now. ``code`` says why:
+
+    ``no_downloads_remaining``, ``subscription_paused``, ``subscription_expired``,
+    ``no_subscription``, ``unsupported_subscription``, ``plan_excludes_content``
+    or ``inactive_team``.
+    """
+
+
+_LICENSE_REFUSAL_CODES = (
+    "no_downloads_remaining",
+    "subscription_paused",
+    "subscription_expired",
+    "no_subscription",
+    "unsupported_subscription",
+    "plan_excludes_content",
+    "inactive_team",
+)
+
+
+def _video(data: dict, search_id: Optional[str] = None) -> Video:
     creator = data.get("creator") or {}
     return Video(
         id=data["video_key"],
@@ -98,6 +135,7 @@ def _video(data: dict) -> Video:
         url=data.get("preview_url"),
         thumbnail=data.get("thumbnail_url"),
         purchased_at=data.get("purchased_at"),
+        search_id=search_id,
     )
 
 
@@ -210,9 +248,11 @@ class PartnerClient:
         by_code = {
             "partner_access_revoked": AccessRevoked,
             "partner_api_not_included": PartnerApiNotIncluded,
+            "api_key_read_only": ReadOnlyKey,
+            **{refusal: LicenseRefused for refusal in _LICENSE_REFUSAL_CODES},
         }
         if code in by_code:
-            return by_code[code](response.status_code, message, body)
+            return by_code[code](response.status_code, message, body, code)
 
         # A 403 from the edge is a bare {"message": "Forbidden"} with no error
         # envelope, and has nothing to do with licensing. Only the API's own 403
@@ -220,7 +260,7 @@ class PartnerClient:
         if kind is NotLicensed and not (isinstance(detail, dict) and detail.get("error")):
             kind = ContentError
 
-        return kind(response.status_code, message, body)
+        return kind(response.status_code, message, body, code)
 
     # -- content ----------------------------------------------------------
 
@@ -276,7 +316,7 @@ class PartnerClient:
             page = self._request("POST", "/search", json={**body, "page": page_number})
 
             for item in page.get("videos", []):
-                yield _video(item)
+                yield _video(item, page.get("search_id"))
 
             if not page.get("has_more"):
                 return
@@ -319,6 +359,26 @@ class PartnerClient:
             if not page.get("has_more"):
                 return
             page_number += 1
+
+    def license(self, video_key: str, *, search_id: Optional[str] = None) -> License:
+        """License a catalog video, using one download from this account's plan.
+
+        Needs a key created with license access. A video the account already
+        holds is not charged again and comes back with ``already_licensed``
+        true, so this is safe to retry. Pass the ``search_id`` of the search
+        that found the video, if any: ``video.search_id`` from :meth:`search`.
+
+        Raises:
+            ReadOnlyKey: the key was created with read access.
+            LicenseRefused: the plan cannot license this video right now; see ``code``.
+            VideoNotFound: no video with that key, or it is not available to license.
+        """
+        data = self._request("POST", f"/videos/{video_key}/license", json={"search_id": search_id})
+        return License(
+            video_id=data["video_key"],
+            already_licensed=data["already_licensed"],
+            downloads_remaining=data.get("downloads_remaining"),
+        )
 
     def download_url(self, video_key: str) -> str:
         """A URL for the master file, valid for about five minutes.
@@ -400,6 +460,8 @@ __all__ = [
     "NotLicensed",
     "AccessRevoked",
     "PartnerApiNotIncluded",
+    "ReadOnlyKey",
+    "LicenseRefused",
     "ContentError",
     "VideoNotFound",
 ]

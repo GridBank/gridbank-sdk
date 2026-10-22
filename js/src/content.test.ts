@@ -4,6 +4,8 @@ import {
   AccessRevoked,
   PartnerApiNotIncluded,
   PartnerClient,
+  ReadOnlyKey,
+  LicenseRefused,
   ContentError,
   VideoNotFound,
 } from "./content";
@@ -325,6 +327,7 @@ describe("search", () => {
 
     expect(first).toEqual({
       id: "a",
+      searchId: "s1",
       title: "Clip a",
       duration: 8,
       width: 1080,
@@ -539,5 +542,81 @@ describe("plan without the Partner API", () => {
     expect(error).not.toBeInstanceOf(NotLicensed);
     expect(error).toBeInstanceOf(ContentError);
     expect((error as ContentError).statusCode).toBe(403);
+  });
+});
+
+describe("license", () => {
+  function codedError(code: string) {
+    return { detail: { error: { code, message: "nope", details: {} } } };
+  }
+
+  it("licenses and reports the allowance", async () => {
+    const fetchMock = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue(json({ video_key: "v1", already_licensed: false, downloads_remaining: 74 }));
+
+    const result = await client().license("v1", { searchId: "s1" });
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/videos/v1/license`);
+    expect(fetchMock.mock.calls[0][1]?.method).toBe("POST");
+    expect(sentBody(fetchMock)).toEqual({ search_id: "s1" });
+    expect(result).toEqual({ videoId: "v1", alreadyLicensed: false, downloadsRemaining: 74 });
+  });
+
+  it("does not treat an already held video as an error", async () => {
+    jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue(json({ video_key: "v1", already_licensed: true, downloads_remaining: null }));
+
+    const result = await client().license("v1");
+
+    expect(result.alreadyLicensed).toBe(true);
+    expect(result.downloadsRemaining).toBeNull();
+  });
+
+  it("hands back the search id from search", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(searchPage(["v1"], false));
+
+    const first = await client().search("surf").next();
+
+    expect((first.value as Video).searchId).toBe("s1");
+  });
+
+  it("does not treat a read-only key as a licensing error", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(json(codedError("api_key_read_only"), 403));
+
+    const error = await client().license("v1").catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ReadOnlyKey);
+    expect(error).not.toBeInstanceOf(NotLicensed);
+    expect((error as ContentError).code).toBe("api_key_read_only");
+  });
+
+  it.each([
+    [400, "no_downloads_remaining"],
+    [400, "subscription_paused"],
+    [400, "subscription_expired"],
+    [400, "no_subscription"],
+    [400, "unsupported_subscription"],
+    [403, "plan_excludes_content"],
+    [403, "inactive_team"],
+  ])("reports a %i %s as LicenseRefused with its code", async (status, code) => {
+    jest.spyOn(global, "fetch").mockResolvedValue(json(codedError(code), status));
+
+    const error = await client().license("v1").catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(LicenseRefused);
+    expect(error).not.toBeInstanceOf(NotLicensed);
+    expect((error as ContentError).code).toBe(code);
+    expect((error as ContentError).statusCode).toBe(status);
+  });
+
+  it("reports an unavailable video as not found", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(json(codedError("video_not_available"), 404));
+
+    const error = await client().license("v1").catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(VideoNotFound);
+    expect((error as ContentError).code).toBe("video_not_available");
   });
 });

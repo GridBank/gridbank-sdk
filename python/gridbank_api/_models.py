@@ -36,6 +36,16 @@ class Video:
     location: Optional[Location] = None
     keywords: Optional[List[str]] = None
     purchased_at: Optional[int] = None
+    search_id: Optional[str] = None
+
+
+@dataclass
+class License:
+    """The licence state of a video after a Partner API license request."""
+
+    video_id: str
+    already_licensed: bool
+    downloads_remaining: Optional[int] = None
 
 
 @dataclass
