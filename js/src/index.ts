@@ -32,6 +32,8 @@ export interface Video {
   keywords?: string[] | null;
   /** Unix timestamp of the licence purchase. Partner API only. */
   purchasedAt?: number | null;
+  /** The search that returned this video; pass it to `license`. Partner API search only. */
+  searchId?: string;
 }
 
 export interface VideoListResponse {
@@ -224,11 +226,14 @@ export {
   NotLicensed,
   AccessRevoked,
   PartnerApiNotIncluded,
+  ReadOnlyKey,
+  LicenseRefused,
   ContentError,
   VideoNotFound,
 } from "./content";
 export type {
   PartnerClientOptions,
+  License,
   ContentPage,
   ContentDownload,
   SearchOptions,

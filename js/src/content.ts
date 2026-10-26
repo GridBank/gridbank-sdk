@@ -38,7 +38,7 @@ interface VideoPayload {
   thumbnail_url?: string | null;
 }
 
-function toVideo(data: VideoPayload): Video {
+function toVideo(data: VideoPayload, searchId?: string): Video {
   const creator = data.creator ?? {};
   return {
     id: data.video_key,
@@ -50,6 +50,7 @@ function toVideo(data: VideoPayload): Video {
     url: data.preview_url,
     thumbnail: data.thumbnail_url,
     purchasedAt: data.purchased_at,
+    searchId,
   };
 }
 
@@ -133,6 +134,21 @@ export interface ContentDownload {
   expires_at: number;
 }
 
+interface LicensePayload {
+  video_key: string;
+  already_licensed: boolean;
+  downloads_remaining: number | null;
+}
+
+/** The licence state of a video after a license request. */
+export interface License {
+  videoId: string;
+  /** True when the account already held the licence, so no download was used. */
+  alreadyLicensed: boolean;
+  /** Downloads left in the current period; null on unlimited plans. */
+  downloadsRemaining: number | null;
+}
+
 export interface PartnerClientOptions {
   apiKey: string;
   baseUrl?: string;
@@ -151,6 +167,11 @@ export class ContentError extends Error {
     this.name = "ContentError";
     this.statusCode = statusCode;
     this.details = details;
+  }
+
+  /** The API's machine-readable error code, when it sent one. */
+  get code(): string | null {
+    return errorCodeOf(this.details);
   }
 }
 
@@ -212,6 +233,41 @@ export class PartnerApiNotIncluded extends ContentError {
 }
 
 /**
+ * This key was created with read access, so it cannot license videos.
+ *
+ * Create a key with license access on gridbank.io to license from code.
+ */
+export class ReadOnlyKey extends ContentError {
+  constructor(statusCode: number, message: string, details?: unknown) {
+    super(statusCode, message, details);
+    this.name = "ReadOnlyKey";
+  }
+}
+
+/**
+ * The account cannot license this video right now. `code` says why:
+ * `no_downloads_remaining`, `subscription_paused`, `subscription_expired`,
+ * `no_subscription`, `unsupported_subscription`, `plan_excludes_content` or
+ * `inactive_team`.
+ */
+export class LicenseRefused extends ContentError {
+  constructor(statusCode: number, message: string, details?: unknown) {
+    super(statusCode, message, details);
+    this.name = "LicenseRefused";
+  }
+}
+
+const LICENSE_REFUSAL_CODES = new Set([
+  "no_downloads_remaining",
+  "subscription_paused",
+  "subscription_expired",
+  "no_subscription",
+  "unsupported_subscription",
+  "plan_excludes_content",
+  "inactive_team",
+]);
+
+/**
  * A 403 from the edge is a bare `{"message": "Forbidden"}` with no error
  * envelope, and has nothing to do with licensing. Only the API's own 403 means
  * the caller has not licensed the video.
@@ -242,6 +298,8 @@ function errorFor(status: number, message: string, body: unknown): ContentError 
   const code = errorCodeOf(body);
   if (code === "partner_access_revoked") return new AccessRevoked(status, message, body);
   if (code === "partner_api_not_included") return new PartnerApiNotIncluded(status, message, body);
+  if (code === "api_key_read_only") return new ReadOnlyKey(status, message, body);
+  if (code && LICENSE_REFUSAL_CODES.has(code)) return new LicenseRefused(status, message, body);
   if (status === 403 && hasErrorEnvelope(body)) return new NotLicensed(status, message, body);
   if (status === 404) return new VideoNotFound(status, message, body);
   return new ContentError(status, message, body);
@@ -390,7 +448,7 @@ export class PartnerClient {
     for (let page = 0; ; page++) {
       const result = await this.request<SearchPage>("/search", { body: { ...body, page } });
 
-      for (const video of result.videos ?? []) yield toVideo(video);
+      for (const video of result.videos ?? []) yield toVideo(video, result.search_id);
 
       if (!result.has_more) return;
     }
@@ -425,6 +483,30 @@ export class PartnerClient {
 
       if (!result.has_more) return;
     }
+  }
+
+  /**
+   * License a catalog video, using one download from this account's plan.
+   *
+   * Needs a key created with license access. A video the account already holds
+   * is not charged again and comes back with `alreadyLicensed` true, so this is
+   * safe to retry. Pass the `searchId` of the search that found the video, if
+   * any: `video.searchId` from {@link search}.
+   *
+   * @throws {ReadOnlyKey} the key was created with read access
+   * @throws {LicenseRefused} the plan cannot license this video right now; see `code`
+   * @throws {VideoNotFound} no video with that key, or it is not available to license
+   */
+  async license(videoKey: string, options: { searchId?: string } = {}): Promise<License> {
+    const result = await this.request<LicensePayload>(
+      `/videos/${encodeURIComponent(videoKey)}/license`,
+      { body: { search_id: options.searchId ?? null } }
+    );
+    return {
+      videoId: result.video_key,
+      alreadyLicensed: result.already_licensed,
+      downloadsRemaining: result.downloads_remaining,
+    };
   }
 
   /**

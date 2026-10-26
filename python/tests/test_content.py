@@ -9,6 +9,9 @@ from gridbank_api import (
     AccessRevoked,
     PartnerApiNotIncluded,
     PartnerClient,
+    License,
+    LicenseRefused,
+    ReadOnlyKey,
     ContentError,
     VideoNotFound,
 )
@@ -525,3 +528,83 @@ class TestPlanWithoutPartnerApi:
         assert not isinstance(e.value, NotLicensed)
         assert isinstance(e.value, ContentError)
         assert e.value.status_code == 403
+
+
+def coded_error(code: str, message: str = "nope") -> dict:
+    return {"detail": {"error": {"code": code, "message": message, "details": {}}}}
+
+
+class TestLicense:
+    def test_it_licenses_and_reports_the_allowance(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/videos/v1/license").mock(
+            return_value=httpx.Response(
+                200,
+                json={"video_key": "v1", "already_licensed": False, "downloads_remaining": 74},
+            )
+        )
+
+        result = client.license("v1", search_id="s1")
+
+        assert sent_body(route) == {"search_id": "s1"}
+        assert result == License(video_id="v1", already_licensed=False, downloads_remaining=74)
+
+    def test_an_already_held_video_is_not_an_error(self, respx_mock, client):
+        respx_mock.post(f"{BASE}/videos/v1/license").mock(
+            return_value=httpx.Response(
+                200,
+                json={"video_key": "v1", "already_licensed": True, "downloads_remaining": None},
+            )
+        )
+
+        result = client.license("v1")
+
+        assert result.already_licensed is True
+        assert result.downloads_remaining is None
+
+    def test_search_hands_back_its_search_id(self, respx_mock, client):
+        respx_mock.post(f"{BASE}/search").mock(return_value=search_page(["v1"], has_more=False))
+
+        assert next(client.search("surf")).search_id == "s1"
+
+    def test_a_read_only_key_is_not_a_licensing_error(self, respx_mock, client):
+        """A 403 with an envelope, but buying the video is not the fix: a new key is."""
+        respx_mock.post(f"{BASE}/videos/v1/license").mock(
+            return_value=httpx.Response(403, json=coded_error("api_key_read_only"))
+        )
+
+        with pytest.raises(ReadOnlyKey) as e:
+            client.license("v1")
+        assert not isinstance(e.value, NotLicensed)
+        assert e.value.code == "api_key_read_only"
+
+    @pytest.mark.parametrize(
+        "status,code",
+        [
+            (400, "no_downloads_remaining"),
+            (400, "subscription_paused"),
+            (400, "subscription_expired"),
+            (400, "no_subscription"),
+            (400, "unsupported_subscription"),
+            (403, "plan_excludes_content"),
+            (403, "inactive_team"),
+        ],
+    )
+    def test_a_plan_refusal_carries_its_code(self, respx_mock, client, status, code):
+        respx_mock.post(f"{BASE}/videos/v1/license").mock(
+            return_value=httpx.Response(status, json=coded_error(code))
+        )
+
+        with pytest.raises(LicenseRefused) as e:
+            client.license("v1")
+        assert not isinstance(e.value, NotLicensed)
+        assert e.value.code == code
+        assert e.value.status_code == status
+
+    def test_an_unavailable_video_is_not_found(self, respx_mock, client):
+        respx_mock.post(f"{BASE}/videos/v1/license").mock(
+            return_value=httpx.Response(404, json=coded_error("video_not_available"))
+        )
+
+        with pytest.raises(VideoNotFound) as e:
+            client.license("v1")
+        assert e.value.code == "video_not_available"

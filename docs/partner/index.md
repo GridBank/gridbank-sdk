@@ -1,7 +1,7 @@
 # Partner API
 
-Search the GridBank catalog, and read and download the videos your GridBank account has
-licensed, from your own tools.
+Search the GridBank catalog, license videos, and read and download the videos your
+GridBank account has licensed, from your own tools.
 
 ## Getting a key
 
@@ -11,6 +11,15 @@ it in a secret manager, not in your repository.
 
 Any member of a team account can create their own key, up to **10** at a time — one
 per service or environment. Revoke a key to free the slot.
+
+Choose the key's access when you create it:
+
+| Access | Can |
+|---|---|
+| Read only (default) | Search, list and download videos your account has licensed |
+| Read & license | All of the above, and license new videos — each uses one download from your plan |
+
+A key handed to a read-only integration can never spend downloads.
 
 ## Authentication
 
@@ -50,7 +59,8 @@ Listing and downloading agree: if a clip appears in your content list, you can d
 
 Search is different: it covers the whole catalog with the same search and ranking as
 gridbank.io, limited to clips of 4 to 30 seconds, including videos you have not licensed. A search hit is a watermarked preview,
-not a licence — downloading one you have not licensed still returns `403`.
+not a licence — downloading one you have not licensed still returns `403`. License it
+first with a key that has license access.
 
 ## Endpoints
 
@@ -218,6 +228,32 @@ be changed through the API.
 as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true; it is false on
 page 20, the last one available.
 
+### License a video
+
+```
+POST /partner/v1/videos/{video_key}/license
+```
+
+```json
+{ "search_id": "srch_01a1..." }
+```
+
+The body is optional: pass the `search_id` of the search that found the video, if any.
+
+```json
+{
+  "video_key": "video_019b12...",
+  "already_licensed": false,
+  "downloads_remaining": 74
+}
+```
+
+Licenses a catalog video with one download from your plan, exactly as downloading it on
+gridbank.io would. Needs a key with license access. On a team account the download comes
+from the team owner's plan. A video your account already holds is never charged again:
+`already_licensed` is `true` and nothing changes, so the call is safe to retry.
+`downloads_remaining` is what is left this period, `null` on unlimited plans.
+
 ### Get a download URL
 
 ```
@@ -241,11 +277,25 @@ as often as you like. There is no charge for re-issuing.
 | Status | Meaning |
 |---|---|
 | `401` | Key missing, malformed, or revoked |
-| `403` | You have not licensed this video, your plan does not include the Partner API (`partner_api_not_included`), or your access was revoked (`partner_access_revoked`) |
-| `404` | No video with that key |
+| `403` | You have not licensed this video (`video_not_licensed`), your plan does not include the Partner API (`partner_api_not_included`), or your access was revoked (`partner_access_revoked`) |
+| `404` | No video with that key (`video_not_found`) |
 | `400` | Malformed cursor — restart paging from the beginning |
 | `422` | Invalid parameter, e.g. `per_page` above 100, or an unknown search field |
 | `429` | Rate limited — retry after the `Retry-After` header |
+
+Errors carry a machine-readable code in `detail.error.code`. Licensing adds these:
+
+| Status | Code | Meaning |
+|---|---|---|
+| `400` | `no_downloads_remaining` | This period's allowance is used up |
+| `400` | `subscription_paused` | The subscription is paused or its payment is overdue |
+| `400` | `subscription_expired` | The billing period has ended |
+| `400` | `no_subscription` | The account has no subscription |
+| `400` | `unsupported_subscription` | The account's plan cannot license videos |
+| `403` | `api_key_read_only` | The key was not created with license access |
+| `403` | `plan_excludes_content` | The video is above your plan's content tier |
+| `403` | `inactive_team` | Your team is inactive |
+| `404` | `video_not_available` | The video is not approved for licensing |
 
 ## SDK field names
 
@@ -261,12 +311,14 @@ different names than the JSON above:
 | `width_pixels` | `video.width` |
 | `height_pixels` | `video.height` |
 | `purchased_at` | `video.purchased_at` (Python) / `video.purchasedAt` (JS) |
+| `search_id` (search page) | `video.search_id` (Python) / `video.searchId` (JS) |
 
 Search hits leave `purchased_at` unset, and listed content leaves `width` and `height`
 unset. `Video` carries other fields the Partner API does not return - `description`,
 `location`, `keywords` - which are always unset here.
 
-Both SDKs page search for you and yield videos only; `search_id` is not exposed.
+Both SDKs page search for you and yield videos only, each carrying its page's
+`search_id` so you can pass it to `license`.
 
 ## Python
 
@@ -275,7 +327,7 @@ pip install gridbank-api
 ```
 
 ```python
-from gridbank_api import PartnerClient, NotLicensed
+from gridbank_api import PartnerClient, LicenseRefused, NotLicensed
 
 client = PartnerClient(api_key="apik_...")
 
@@ -286,6 +338,14 @@ for video in client.content():
 # Searches the whole catalog, licensed or not; pages until has_more is false.
 for video in client.search("aerial coastline", location="Lisbon, PRT", duration_lte=15):
     print(video.id, video.url)  # a watermarked preview
+
+    # Needs a key with license access; uses one download unless already held.
+    try:
+        result = client.license(video.id, search_id=video.search_id)
+        print(result.downloads_remaining)
+    except LicenseRefused as err:
+        print("cannot license:", err.code)  # e.g. no_downloads_remaining
+    break
 
 # Handles the five-minute expiry for you, and streams to disk.
 try:
@@ -311,7 +371,7 @@ npm install @gridbank/api-js
 ```
 
 ```ts
-import { PartnerClient, NotLicensed } from "@gridbank/api-js";
+import { PartnerClient, LicenseRefused, NotLicensed } from "@gridbank/api-js";
 
 const client = new PartnerClient({ apiKey: "apik_..." });
 
@@ -326,6 +386,15 @@ for await (const video of client.search("aerial coastline", {
   durationLte: 15,
 })) {
   console.log(video.id, video.url); // a watermarked preview
+}
+
+// Needs a key with license access; uses one download unless already held.
+try {
+  const result = await client.license("video_019b12...", { searchId: "srch_01a1..." });
+  console.log(result.downloadsRemaining);
+} catch (err) {
+  if (!(err instanceof LicenseRefused)) throw err;
+  console.log("cannot license:", err.code);
 }
 
 try {
