@@ -234,6 +234,8 @@ export {
 export type {
   PartnerClientOptions,
   License,
+  PartnerUsage,
+  ClientUsage,
   ContentPage,
   ContentDownload,
   SearchOptions,

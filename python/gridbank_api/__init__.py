@@ -8,7 +8,7 @@ from typing import Any, List, Optional
 
 import httpx
 
-from ._models import Creator, CreatorResult, License, Location, Video
+from ._models import ClientUsage, Creator, CreatorResult, License, Location, PartnerUsage, Video
 from ._content import (
     PartnerClient,
     NotAuthenticated,

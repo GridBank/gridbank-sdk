@@ -629,3 +629,50 @@ describe("license", () => {
     expect((error as ContentError).code).toBe("video_not_available");
   });
 });
+
+describe("usageSummary", () => {
+  const usage = {
+    plan: "Pro",
+    unlimited: false,
+    downloads_used: 26,
+    downloads_included: 100,
+    downloads_remaining: 74,
+    downloads_reset_at: 1766000000,
+    period_start: 1756000000,
+    period_end: 1787000000,
+    subscription_status: "active",
+    clients: [{ client_id: "acme", downloads_used: 4 }],
+  };
+
+  it("reads the usage", async () => {
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(json(usage));
+
+    const result = await client().usageSummary();
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/usage_summary`);
+    expect(fetchMock.mock.calls[0][1]?.method).toBe("GET");
+    expect(result).toEqual({
+      plan: "Pro",
+      unlimited: false,
+      downloadsUsed: 26,
+      downloadsIncluded: 100,
+      downloadsRemaining: 74,
+      downloadsResetAt: 1766000000,
+      periodStart: 1756000000,
+      periodEnd: 1787000000,
+      subscriptionStatus: "active",
+      clients: [{ clientId: "acme", downloadsUsed: 4 }],
+    });
+  });
+
+  it("reports no subscription with its code", async () => {
+    jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue(json({ detail: { error: { code: "no_subscription", message: "nope" } } }, 400));
+
+    const error = await client().usageSummary().catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(LicenseRefused);
+    expect((error as ContentError).code).toBe("no_subscription");
+  });
+});

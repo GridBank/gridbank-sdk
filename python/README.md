@@ -111,6 +111,21 @@ With a key bound to a client ID, licences are per client: the same video is char
 for each client, `content()` lists only that client's videos, and downloading a video not
 licensed for the client raises `NotLicensed` with code `video_not_licensed_for_client`.
 
+### Usage
+
+```python
+usage = client.usage_summary()
+print(usage.plan, usage.downloads_remaining, usage.subscription_status)
+for c in usage.clients:
+    print(c.client_id, c.downloads_used)
+```
+
+The same numbers gridbank.io shows; on a team account, the team owner's plan. Download
+counts are `None` on unlimited plans, and the counts can reset before the billing period
+ends on annual plans with monthly downloads. `clients` splits the downloads licensed per
+client; a client-bound key sees only its own. With no plan to report on it raises
+`LicenseRefused` with code `no_subscription` or `unsupported_subscription`.
+
 ### Options
 
 ```python

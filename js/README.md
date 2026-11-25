@@ -130,6 +130,20 @@ With a key bound to a client ID, licences are per client: the same video is char
 for each client, `content()` lists only that client's videos, and downloading a video not
 licensed for the client throws `NotLicensed` with code `video_not_licensed_for_client`.
 
+### Usage
+
+```ts
+const usage = await client.usageSummary();
+console.log(usage.plan, usage.downloadsRemaining, usage.subscriptionStatus);
+for (const c of usage.clients) console.log(c.clientId, c.downloadsUsed);
+```
+
+The same numbers gridbank.io shows; on a team account, the team owner's plan. Download
+counts are `null` on unlimited plans, and the counts can reset before the billing period
+ends on annual plans with monthly downloads. `clients` splits the downloads licensed per
+client; a client-bound key sees only its own. With no plan to report on it raises
+`LicenseRefused` with code `no_subscription` or `unsupported_subscription`.
+
 ### Options
 
 ```ts

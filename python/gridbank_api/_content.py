@@ -31,7 +31,7 @@ from typing import IO, Any, Iterator, Literal, Optional, Union
 
 import httpx
 
-from ._models import Creator, CreatorResult, License, Video
+from ._models import ClientUsage, Creator, CreatorResult, License, PartnerUsage, Video
 
 _BASE_URL = "https://api2.gridbank.io"
 _PARTNER_PREFIX = "/partner/v1"
@@ -379,6 +379,33 @@ class PartnerClient:
             video_id=data["video_key"],
             already_licensed=data["already_licensed"],
             downloads_remaining=data.get("downloads_remaining"),
+        )
+
+    def usage_summary(self) -> PartnerUsage:
+        """Downloads used and left this billing cycle, the same numbers gridbank.io shows.
+
+        On a team account this is the team owner's plan. ``clients`` splits the
+        downloads licensed per client; a client-bound key sees only its own.
+
+        Raises:
+            LicenseRefused: ``no_subscription`` or ``unsupported_subscription``,
+                there is no plan to report on.
+        """
+        data = self._request("GET", "/usage_summary")
+        return PartnerUsage(
+            plan=data["plan"],
+            unlimited=data["unlimited"],
+            downloads_used=data.get("downloads_used"),
+            downloads_included=data.get("downloads_included"),
+            downloads_remaining=data.get("downloads_remaining"),
+            downloads_reset_at=data.get("downloads_reset_at"),
+            period_start=data["period_start"],
+            period_end=data["period_end"],
+            subscription_status=data["subscription_status"],
+            clients=[
+                ClientUsage(client_id=c["client_id"], downloads_used=c["downloads_used"])
+                for c in data.get("clients", [])
+            ],
         )
 
     def download_url(self, video_key: str) -> str:

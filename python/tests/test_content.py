@@ -9,6 +9,8 @@ from gridbank_api import (
     AccessRevoked,
     PartnerApiNotIncluded,
     PartnerClient,
+    PartnerUsage,
+    ClientUsage,
     License,
     LicenseRefused,
     ReadOnlyKey,
@@ -618,3 +620,59 @@ class TestLicense:
         with pytest.raises(VideoNotFound) as e:
             client.license("v1")
         assert e.value.code == "video_not_available"
+
+
+USAGE = {
+    "plan": "Pro",
+    "unlimited": False,
+    "downloads_used": 26,
+    "downloads_included": 100,
+    "downloads_remaining": 74,
+    "downloads_reset_at": 1766000000,
+    "period_start": 1756000000,
+    "period_end": 1787000000,
+    "subscription_status": "active",
+    "clients": [{"client_id": "acme", "downloads_used": 4}],
+}
+
+
+class TestUsageSummary:
+    def test_it_reads_the_usage(self, respx_mock, client):
+        respx_mock.get(f"{BASE}/usage_summary").mock(
+            return_value=httpx.Response(200, json=USAGE)
+        )
+
+        assert client.usage_summary() == PartnerUsage(
+            plan="Pro",
+            unlimited=False,
+            downloads_used=26,
+            downloads_included=100,
+            downloads_remaining=74,
+            downloads_reset_at=1766000000,
+            period_start=1756000000,
+            period_end=1787000000,
+            subscription_status="active",
+            clients=[ClientUsage(client_id="acme", downloads_used=4)],
+        )
+
+    def test_unlimited_plans_have_no_counts(self, respx_mock, client):
+        counts = dict.fromkeys(
+            ["downloads_used", "downloads_included", "downloads_remaining", "downloads_reset_at"]
+        )
+        respx_mock.get(f"{BASE}/usage_summary").mock(
+            return_value=httpx.Response(200, json={**USAGE, "unlimited": True, **counts})
+        )
+
+        usage = client.usage_summary()
+
+        assert usage.unlimited is True
+        assert usage.downloads_remaining is None
+
+    def test_no_subscription_carries_its_code(self, respx_mock, client):
+        respx_mock.get(f"{BASE}/usage_summary").mock(
+            return_value=httpx.Response(400, json=coded_error("no_subscription"))
+        )
+
+        with pytest.raises(LicenseRefused) as e:
+            client.usage_summary()
+        assert e.value.code == "no_subscription"
