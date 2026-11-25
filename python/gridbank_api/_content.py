@@ -59,7 +59,8 @@ class ContentError(Exception):
 
 
 class NotLicensed(ContentError):
-    """The video exists on GridBank, but this account has not licensed it.
+    """The video exists on GridBank, but this account has not licensed it, or,
+    with a client key, not for that client (``code`` is ``video_not_licensed_for_client``).
 
     Distinct from :class:`VideoNotFound` on purpose: this one is fixable by
     licensing the video, so it is worth catching separately from a bad key.

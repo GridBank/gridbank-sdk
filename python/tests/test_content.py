@@ -600,6 +600,16 @@ class TestLicense:
         assert e.value.code == code
         assert e.value.status_code == status
 
+    def test_a_client_key_without_the_clients_licence_is_not_licensed(self, respx_mock, client):
+        """Fixable by licensing the video for this key's client, so NotLicensed fits."""
+        respx_mock.get(f"{BASE}/videos/v1/download").mock(
+            return_value=httpx.Response(403, json=coded_error("video_not_licensed_for_client"))
+        )
+
+        with pytest.raises(NotLicensed) as e:
+            client.download_url("v1")
+        assert e.value.code == "video_not_licensed_for_client"
+
     def test_an_unavailable_video_is_not_found(self, respx_mock, client):
         respx_mock.post(f"{BASE}/videos/v1/license").mock(
             return_value=httpx.Response(404, json=coded_error("video_not_available"))
