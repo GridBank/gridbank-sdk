@@ -297,7 +297,7 @@ as often as you like. There is no charge for re-issuing.
 | `422` | Invalid parameter, e.g. `per_page` above 100, or an unknown search field |
 | `429` | Rate limited — retry after the `Retry-After` header |
 
-Errors carry a machine-readable code in `detail.error.code`. Licensing adds these:
+Errors carry a machine-readable code in `detail.error.code`. Licensing and client keys add these:
 
 | Status | Code | Meaning |
 |---|---|---|
