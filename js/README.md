@@ -126,6 +126,10 @@ and needs a key created with license access (`ReadOnlyKey` otherwise). A video t
 already holds is not charged again: `alreadyLicensed` is true, so it is safe to retry.
 `downloadsRemaining` is `null` on unlimited plans.
 
+With a key bound to a client ID, licences are per client: the same video is charged once
+for each client, `content()` lists only that client's videos, and downloading a video not
+licensed for the client throws `NotLicensed` with code `video_not_licensed_for_client`.
+
 ### Options
 
 ```ts
