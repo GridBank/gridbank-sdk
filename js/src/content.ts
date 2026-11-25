@@ -216,7 +216,8 @@ export class ContentError extends Error {
 }
 
 /**
- * The video exists on GridBank, but this account has not licensed it.
+ * The video exists on GridBank, but this account has not licensed it, or, with a
+ * client key, not for that client (`code` is `video_not_licensed_for_client`).
  *
  * Distinct from `VideoNotFound` on purpose: this one is resolved by licensing
  * the video, so it is worth catching separately from a bad key or a typo.

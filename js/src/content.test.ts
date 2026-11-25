@@ -611,6 +611,15 @@ describe("license", () => {
     expect((error as ContentError).statusCode).toBe(status);
   });
 
+  it("reports a client key without the client's licence as not licensed", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue(json(codedError("video_not_licensed_for_client"), 403));
+
+    const error = await client().downloadUrl("v1").catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(NotLicensed);
+    expect((error as ContentError).code).toBe("video_not_licensed_for_client");
+  });
+
   it("reports an unavailable video as not found", async () => {
     jest.spyOn(global, "fetch").mockResolvedValue(json(codedError("video_not_available"), 404));
 

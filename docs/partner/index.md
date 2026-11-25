@@ -21,6 +21,20 @@ Choose the key's access when you create it:
 
 A key handed to a read-only integration can never spend downloads.
 
+### Client keys
+
+If you license on behalf of your own clients, give a read & license key a **client ID**
+(letters, digits, `-` and `_`, up to 64 characters) when you create it. Everything that key
+does is then scoped to that client:
+
+- Licences it buys are tagged with the client, and are per client: the same video is
+  charged once for each client, and licensing it again for the same client is free.
+- `GET /content` lists only the videos licensed for that client, dated by that client's purchase.
+- Downloading needs the video licensed for that client, otherwise `403`
+  `video_not_licensed_for_client`.
+
+Client keys sit outside the 10-key cap, up to **500** per member — one per end client.
+
 ## Authentication
 
 Every request carries the key as a bearer token.
@@ -313,7 +327,7 @@ as often as you like. There is no charge for re-issuing.
 | `422` | Invalid parameter, e.g. `per_page` above 100, or an unknown search field |
 | `429` | Rate limited — retry after the `Retry-After` header |
 
-Errors carry a machine-readable code in `detail.error.code`. Licensing adds these:
+Errors carry a machine-readable code in `detail.error.code`. Licensing and client keys add these:
 
 | Status | Code | Meaning |
 |---|---|---|
@@ -325,6 +339,7 @@ Errors carry a machine-readable code in `detail.error.code`. Licensing adds thes
 | `403` | `api_key_read_only` | The key was not created with license access |
 | `403` | `plan_excludes_content` | The video is above your plan's content tier |
 | `403` | `inactive_team` | Your team is inactive |
+| `403` | `video_not_licensed_for_client` | A client key downloading a video not licensed for its client |
 | `404` | `video_not_available` | The video is not approved for licensing |
 
 ## SDK field names
