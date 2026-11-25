@@ -254,6 +254,36 @@ from the team owner's plan. A video your account already holds is never charged 
 `already_licensed` is `true` and nothing changes, so the call is safe to retry.
 `downloads_remaining` is what is left this period, `null` on unlimited plans.
 
+### Get usage
+
+```
+GET /partner/v1/usage_summary
+```
+
+```json
+{
+  "plan": "Pro",
+  "unlimited": false,
+  "downloads_used": 26,
+  "downloads_included": 100,
+  "downloads_remaining": 74,
+  "downloads_reset_at": 1766000000,
+  "period_start": 1756000000,
+  "period_end": 1787000000,
+  "subscription_status": "active",
+  "clients": [{ "client_id": "acme", "downloads_used": 4 }]
+}
+```
+
+The same numbers gridbank.io shows; on a team account, the team owner's plan. The download
+counts and `downloads_reset_at` are `null` on unlimited plans. `downloads_included` counts
+top-ups. `downloads_reset_at` is when the counts reset, which on some annual plans is
+monthly, so it can come before `period_end`. `subscription_status` is `active`, `paused`
+(paused or payment overdue) or `expired` (the billing period has ended). `clients` lists
+the downloads licensed for each client this period, already counted in `downloads_used`;
+a client-bound key sees only its own client. Times are unix seconds. Returns `400`
+`no_subscription` or `unsupported_subscription` when there is no plan to report on.
+
 ### Get a download URL
 
 ```
@@ -347,6 +377,9 @@ for video in client.search("aerial coastline", location="Lisbon, PRT", duration_
         print("cannot license:", err.code)  # e.g. no_downloads_remaining
     break
 
+usage = client.usage_summary()
+print(usage.downloads_remaining, usage.subscription_status)
+
 # Handles the five-minute expiry for you, and streams to disk.
 try:
     client.download("video_019b12...", "clip.mov")
@@ -396,6 +429,9 @@ try {
   if (!(err instanceof LicenseRefused)) throw err;
   console.log("cannot license:", err.code);
 }
+
+const usage = await client.usageSummary();
+console.log(usage.downloadsRemaining, usage.subscriptionStatus);
 
 try {
   const response = await client.fetchDownload("video_019b12...");

@@ -149,6 +149,46 @@ export interface License {
   downloadsRemaining: number | null;
 }
 
+interface UsagePayload {
+  plan: string;
+  unlimited: boolean;
+  downloads_used: number | null;
+  downloads_included: number | null;
+  downloads_remaining: number | null;
+  downloads_reset_at: number | null;
+  period_start: number;
+  period_end: number;
+  subscription_status: "active" | "paused" | "expired";
+  clients: { client_id: string; downloads_used: number }[];
+}
+
+/** Downloads licensed for one client in the current period. */
+export interface ClientUsage {
+  clientId: string;
+  downloadsUsed: number;
+}
+
+/**
+ * Subscription usage for the current billing cycle. Download counts are null on
+ * unlimited plans. Timestamps are unix seconds.
+ */
+export interface PartnerUsage {
+  plan: string;
+  unlimited: boolean;
+  downloadsUsed: number | null;
+  /** Downloads available this period, including top-ups. */
+  downloadsIncluded: number | null;
+  downloadsRemaining: number | null;
+  /** When the counts reset; monthly on some annual plans, so it can come before `periodEnd`. */
+  downloadsResetAt: number | null;
+  periodStart: number;
+  periodEnd: number;
+  /** `paused` covers paused or payment-overdue subscriptions; `expired` means the period has ended. */
+  subscriptionStatus: "active" | "paused" | "expired";
+  /** Downloads per client, already counted in `downloadsUsed`. A client-bound key sees only its own. */
+  clients: ClientUsage[];
+}
+
 export interface PartnerClientOptions {
   apiKey: string;
   baseUrl?: string;
@@ -506,6 +546,29 @@ export class PartnerClient {
       videoId: result.video_key,
       alreadyLicensed: result.already_licensed,
       downloadsRemaining: result.downloads_remaining,
+    };
+  }
+
+  /**
+   * Downloads used and left this billing cycle, the same numbers gridbank.io shows.
+   *
+   * On a team account this is the team owner's plan.
+   *
+   * @throws {LicenseRefused} `no_subscription` or `unsupported_subscription`: there is no plan to report on
+   */
+  async usageSummary(): Promise<PartnerUsage> {
+    const r = await this.request<UsagePayload>("/usage_summary");
+    return {
+      plan: r.plan,
+      unlimited: r.unlimited,
+      downloadsUsed: r.downloads_used,
+      downloadsIncluded: r.downloads_included,
+      downloadsRemaining: r.downloads_remaining,
+      downloadsResetAt: r.downloads_reset_at,
+      periodStart: r.period_start,
+      periodEnd: r.period_end,
+      subscriptionStatus: r.subscription_status,
+      clients: (r.clients ?? []).map(c => ({ clientId: c.client_id, downloadsUsed: c.downloads_used })),
     };
   }
 

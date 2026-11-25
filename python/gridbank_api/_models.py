@@ -57,3 +57,32 @@ class CreatorResult:
     clips_count: int = 0
     is_favorited: bool = False
     videos: List[Video] = field(default_factory=list)
+
+
+@dataclass
+class ClientUsage:
+    """Downloads licensed for one client in the current period."""
+
+    client_id: str
+    downloads_used: int
+
+
+@dataclass
+class PartnerUsage:
+    """Subscription usage for the current billing cycle, from the Partner API.
+
+    The download counts are ``None`` on unlimited plans. ``downloads_reset_at``
+    can come before ``period_end``: some annual plans reset downloads monthly.
+    Timestamps are unix seconds.
+    """
+
+    plan: str
+    unlimited: bool
+    downloads_used: Optional[int]
+    downloads_included: Optional[int]
+    downloads_remaining: Optional[int]
+    downloads_reset_at: Optional[int]
+    period_start: int
+    period_end: int
+    subscription_status: str
+    clients: List[ClientUsage] = field(default_factory=list)

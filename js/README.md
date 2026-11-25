@@ -126,6 +126,20 @@ and needs a key created with license access (`ReadOnlyKey` otherwise). A video t
 already holds is not charged again: `alreadyLicensed` is true, so it is safe to retry.
 `downloadsRemaining` is `null` on unlimited plans.
 
+### Usage
+
+```ts
+const usage = await client.usageSummary();
+console.log(usage.plan, usage.downloadsRemaining, usage.subscriptionStatus);
+for (const c of usage.clients) console.log(c.clientId, c.downloadsUsed);
+```
+
+The same numbers gridbank.io shows; on a team account, the team owner's plan. Download
+counts are `null` on unlimited plans, and the counts can reset before the billing period
+ends on annual plans with monthly downloads. `clients` splits the downloads licensed per
+client; a client-bound key sees only its own. With no plan to report on it raises
+`LicenseRefused` with code `no_subscription` or `unsupported_subscription`.
+
 ### Options
 
 ```ts
