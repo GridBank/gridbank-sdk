@@ -368,6 +368,11 @@ per service, not to buy throughput.
 Requests are made by servers, not browsers. Send a `User-Agent` identifying your
 application — GridBank's edge protection classifies unidentified automated traffic.
 
+## Use it from AI assistants
+
+You can also search, browse and license from Claude or any other MCP client, signing in
+with your gridbank.io account instead of a key. See [Use GridBank with AI assistants](mcp.md).
+
 ## Interactive reference
 
 The full OpenAPI specification is served from the API itself and always matches what is
