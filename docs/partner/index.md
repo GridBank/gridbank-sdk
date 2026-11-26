@@ -215,9 +215,10 @@ be changed through the API.
 ```
 
 `videos` is a selection of the creator's clips, as watermarked previews in the same shape
-as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true. Paging reaches the first 1,050 creators
-at any page size: with `items` of 50 the last page is 20, with 7 it is 149. `has_more` is
-false on that last page.
+as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true.
+The last page is the highest one where `(page + 1) × items` is at most 1,050: page 20 with
+`items` of 50, page 149 with 7. When `items` doesn't divide 1,050, the last page ends short
+of it. With 40, page 25 ends at creator 1,040. `has_more` is false on the last page.
 
 ### Get a download URL
 
