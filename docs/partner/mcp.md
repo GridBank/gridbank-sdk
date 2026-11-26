@@ -22,8 +22,9 @@ see [Other MCP clients](#other-mcp-clients).
     ```
 
 3. Choose **Connect**. A gridbank.io window opens. Sign in with your GridBank account.
-4. Review the access Claude is asking for and approve it. You return to Claude, and
-   GridBank shows as connected.
+4. Review the access Claude is asking for. To let it license videos, tick **Also allow
+   licensing videos**, then choose **Allow**. You return to Claude, and GridBank shows as
+   connected.
 
 On a Team or Enterprise Claude plan, an owner may have to add the connector for the
 organisation first. Each member then connects it with their own GridBank account.
@@ -55,7 +56,13 @@ Everything else on this page works the same way, with one difference:
 | Read only | Search the catalog, search creators, list the videos your account has licensed |
 | Licensing | All of the above, and license new videos. Each licence uses one download from your plan |
 
-<!-- TODO: confirm where read-only vs licensing access is chosen (consent screen?) and say so here. -->
+You choose the access on the gridbank.io screen that opens when you connect. Read-only
+access (**Search and read**) is always granted. Licensing is granted only if you tick
+**Also allow licensing videos** before you choose **Allow**. The box starts unticked, and
+appears only when the assistant asks for licensing.
+
+To change the access later, revoke the connection (see [Revoke access](#revoke-access)),
+then connect again and make a different choice.
 
 You see what your account sees through the Partner API: your own licences and those of
 your team owner. Search covers the whole catalog, but a search result is a watermarked
@@ -109,7 +116,7 @@ gridbank.io too if you want the access ended on GridBank's side.
 | `partner_api_not_included` | Your plan does not include the Partner API | Change your plan on gridbank.io |
 | `partner_access_revoked` | GridBank withdrew your Partner API access | Contact us. Reconnecting will not help |
 | `video_not_licensed` | The video is a search preview, not a licence | Ask Claude to license it first |
-| Licensing refused for read-only access | The connection only has read-only access | Reconnect and grant licensing access |
+| Licensing refused for read-only access | The connection only has read-only access | Revoke the connection, connect again and tick **Also allow licensing videos** |
 | Licence still pending | The approval link was not approved | Open the link and approve on gridbank.io |
 | `no_downloads_remaining` | This period's allowance is used up | Wait for the next period or change your plan |
 | `subscription_paused`, `subscription_expired`, `no_subscription` | The subscription cannot license right now | Check your billing on gridbank.io |
@@ -117,4 +124,4 @@ gridbank.io too if you want the access ended on GridBank's side.
 | `video_not_available` | The video is not approved for licensing | Pick another video |
 | Rate limited | Over 300 requests per minute | Wait a moment and try again |
 
-The full list of error codes is under [Errors](index.md#errors).
+For Partner API HTTP errors, see [Errors](index.md#errors).
