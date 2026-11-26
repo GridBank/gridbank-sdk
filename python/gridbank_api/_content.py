@@ -297,7 +297,7 @@ class PartnerClient:
         An empty query lists every creator. Each result carries a selection of
         the creator's videos as watermarked previews. ``favorites_only`` keeps
         creators this account has favourited on gridbank.io. Pages are fetched
-        as they are consumed, up to page 20.
+        as they are consumed, up to the first 1,050 creators.
         """
         body = {
             "query": query,

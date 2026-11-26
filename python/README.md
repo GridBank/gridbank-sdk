@@ -84,7 +84,7 @@ for result in client.search_creators("jdoe", top_only=True):
 An empty query lists every creator. `location`, `top_only`, `featured_only` and
 `favorites_only` (creators this account has favourited on gridbank.io) narrow the listing.
 Each result carries a selection of the creator's videos as watermarked previews. Pages are
-fetched lazily until `has_more` is false, up to page 20.
+fetched lazily until `has_more` is false, up to the first 1,050 creators.
 
 ### Options
 

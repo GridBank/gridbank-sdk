@@ -178,7 +178,7 @@ creator's name or username, up to 200 characters.
 | `top_only` | only top creators | `false` |
 | `featured_only` | only curated featured creators | `false` |
 | `favorites_only` | only creators you have favourited on gridbank.io | `false` |
-| `page` | 0–20, zero-based | `0` |
+| `page` | zero-based; `(page + 1) × items` up to 1,050 | `0` |
 | `items` | 1–50 | `50` |
 
 Unknown fields are rejected with `422`. Favourites are managed on gridbank.io and cannot
@@ -215,8 +215,9 @@ be changed through the API.
 ```
 
 `videos` is a selection of the creator's clips, as watermarked previews in the same shape
-as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true; it is false on
-page 20, the last one available.
+as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true. Paging reaches the first 1,050 creators
+at any page size: with `items` of 50 the last page is 20, with 7 it is 149. `has_more` is
+false on that last page.
 
 ### Get a download URL
 
