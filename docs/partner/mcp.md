@@ -93,9 +93,10 @@ minute per account.
 
 ## Revoke access
 
-To disconnect an assistant, open your account settings on gridbank.io, find its
-connection and revoke it. It loses access straight away, in every chat.
-<!-- TODO: exact page and button name on gridbank.io. -->
+To disconnect an assistant, sign in to gridbank.io and open the **API keys** page in your
+account. Under **Connected apps**, find the assistant, choose **Disconnect** and confirm.
+It loses access straight away, in every chat. You can connect it again later by signing
+in from the assistant.
 
 Removing the connector in the assistant's own settings only removes it there. Revoke it on
 gridbank.io too if you want the access ended on GridBank's side.
