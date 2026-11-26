@@ -66,6 +66,8 @@ export interface SearchPage {
 }
 
 export interface SearchOptions {
+  /** Only this creator's videos: `creator.id` from a video or a creator search result. */
+  creatorId?: string;
   /** Comma-separated, e.g. "Lisbon, Lisboa, PRT". Countries as ISO codes, not names. */
   location?: string;
   sort?: "relevant" | "popular" | "recent";
@@ -474,11 +476,13 @@ export class PartnerClient {
    * Results include videos this account has not licensed, and carry
    * watermarked previews only: downloading one of those throws `NotLicensed`.
    * Pages are fetched as they are consumed, and a page may hold fewer than
-   * `perPage` videos without being the last.
+   * `perPage` videos without being the last. `creatorId` limits results to
+   * one creator; with an empty query it lists that creator's videos.
    */
-  async *search(query: string, options: SearchOptions = {}): AsyncGenerator<Video> {
+  async *search(query = "", options: SearchOptions = {}): AsyncGenerator<Video> {
     const body = {
       query,
+      creator_id: options.creatorId,
       items: options.perPage ?? DEFAULT_PER_PAGE,
       location: options.location,
       sort: options.sort,

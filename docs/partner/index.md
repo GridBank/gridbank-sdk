@@ -117,6 +117,7 @@ Content-Type: application/json
 ```json
 {
   "query": "aerial coastline",
+  "creator_id": "crea_9",
   "page": 0,
   "items": 50,
   "sort": "relevant",
@@ -126,10 +127,12 @@ Content-Type: application/json
 }
 ```
 
-Only `query` is required: 1–200 characters, surrounding whitespace trimmed. The rest:
+`query` is up to 200 characters, surrounding whitespace trimmed. It may be empty only with
+`creator_id`, to list that creator's videos; otherwise it is required. The rest:
 
 | Field | Values | Default |
 |---|---|---|
+| `creator_id` | a creator's `id`, from creator search or a video's `creator` | no filter |
 | `page` | 0–199, zero-based | `0` |
 | `items` | 1–50 | `50` |
 | `sort` | `relevant`, `popular` or `recent` | ranking as on gridbank.io |
@@ -146,6 +149,9 @@ so write the code, not the name: `"PRT"`, not `"Portugal"`. Any other part must 
 video's city or region, ignoring case, or appear in its location description. So
 `"Lisbon, Lisboa, PRT"` keeps videos from Lisbon, in the Lisboa region, in Portugal. Blank
 means no filter.
+
+`creator_id` keeps only that creator's videos and combines with every other filter. An
+unknown ID returns no videos, not an error.
 
 ```json
 {
