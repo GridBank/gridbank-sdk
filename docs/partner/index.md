@@ -202,7 +202,7 @@ creator's name or username, up to 200 characters.
 | `top_only` | only top creators | `false` |
 | `featured_only` | only curated featured creators | `false` |
 | `favorites_only` | only creators you have favourited on gridbank.io | `false` |
-| `page` | 0–20, zero-based | `0` |
+| `page` | zero-based; `(page + 1) × items` up to 1,050 | `0` |
 | `items` | 1–50 | `50` |
 
 Unknown fields are rejected with `422`. Favourites are managed on gridbank.io and cannot
@@ -239,8 +239,10 @@ be changed through the API.
 ```
 
 `videos` is a selection of the creator's clips, as watermarked previews in the same shape
-as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true; it is false on
-page 20, the last one available.
+as catalog search hits, minus `creator`. Request the next `page` while `has_more` is true.
+The last page is the highest one where `(page + 1) × items` is at most 1,050: page 20 with
+`items` of 50, page 149 with 7. When `items` doesn't divide 1,050, the last page ends short
+of it. With 40, page 25 ends at creator 1,040. `has_more` is false on the last page.
 
 ### License a video
 

@@ -500,7 +500,7 @@ export class PartnerClient {
    *
    * An empty query lists every creator. Each result carries a selection of the
    * creator's videos as watermarked previews. Pages are fetched as they are
-   * consumed, up to page 20.
+   * consumed, up to the first 1,050 creators.
    */
   async *searchCreators(
     query = "",

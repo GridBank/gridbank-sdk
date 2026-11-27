@@ -102,7 +102,7 @@ for await (const result of client.searchCreators('jdoe', { topOnly: true })) {
 An empty query lists every creator. `location`, `topOnly`, `featuredOnly` and
 `favoritesOnly` (creators this account has favourited on gridbank.io) narrow the listing.
 Each result carries a selection of the creator's videos as watermarked previews. Pages are
-fetched lazily until `has_more` is false, up to page 20.
+fetched lazily until `has_more` is false, up to the first 1,050 creators.
 
 ### License
 
