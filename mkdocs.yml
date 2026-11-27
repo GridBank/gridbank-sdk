@@ -32,6 +32,7 @@ nav:
   - Home: index.md
   - Partner API:
     - Overview: partner/index.md
+    - AI assistants (MCP): partner/mcp.md
   - Enterprise API:
     - Overview: enterprise/index.md
     - Getting Started: enterprise/getting-started.md
