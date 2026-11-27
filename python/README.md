@@ -67,6 +67,14 @@ Searches the whole catalog with the same search and ranking as gridbank.io, limi
 clips of 4 to 30 seconds, including videos this account has not licensed. Hits are watermarked previews: downloading one you
 have not licensed raises `NotLicensed`. Leave a filter out to get the server default.
 
+`creator_id` limits results to one creator. Leave the query empty to list every video by a
+creator, e.g. one found with `search_creators`:
+
+```python
+for video in client.search(creator_id=result.creator.id):
+    print(video.id, video.title)
+```
+
 `location` is comma-separated, and a video must match every part. A 2- or 3-letter ISO
 country code matches the video's country (`"PRT"`, not `"Portugal"`); any other part must
 equal the city or region, ignoring case, or appear in the location description.

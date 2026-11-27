@@ -288,6 +288,19 @@ describe("search", () => {
     expect(sentBody(fetchMock)).toStrictEqual({ query: "surf", items: 50, page: 0 });
   });
 
+  it("lists one creator's videos without a query", async () => {
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(searchPage([], false));
+
+    await collect(client().search(undefined, { creatorId: "crea_9" }));
+
+    expect(sentBody(fetchMock)).toStrictEqual({
+      query: "",
+      creator_id: "crea_9",
+      items: 50,
+      page: 0,
+    });
+  });
+
   it("pages while there is more", async () => {
     const fetchMock = jest
       .spyOn(global, "fetch")

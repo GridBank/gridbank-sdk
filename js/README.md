@@ -84,6 +84,15 @@ Searches the whole catalog with the same search and ranking as gridbank.io, limi
 clips of 4 to 30 seconds, including videos this account has not licensed. Hits are watermarked previews: downloading one you
 have not licensed throws `NotLicensed`. Leave an option out to get the server default.
 
+`creatorId` limits results to one creator. Pass an empty query to list every video by a
+creator, e.g. one found with `searchCreators`:
+
+```ts
+for await (const video of client.search('', { creatorId: result.creator.id })) {
+  console.log(video.id, video.title);
+}
+```
+
 `location` is comma-separated, and a video must match every part. A 2- or 3-letter ISO
 country code matches the video's country (`'PRT'`, not `'Portugal'`); any other part must
 equal the city or region, ignoring case, or appear in the location description.

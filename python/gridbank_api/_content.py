@@ -287,8 +287,9 @@ class PartnerClient:
 
     def search(
         self,
-        query: str,
+        query: str = "",
         *,
+        creator_id: Optional[str] = None,
         location: Optional[str] = None,
         sort: Optional[Literal["relevant", "popular", "recent"]] = None,
         duration_gte: Optional[int] = None,
@@ -301,9 +302,12 @@ class PartnerClient:
         watermarked previews only: downloading one of those raises
         :class:`NotLicensed`. Pages are fetched as they are consumed, and a
         page may hold fewer than ``per_page`` videos without being the last.
+        ``creator_id`` limits results to one creator; with an empty ``query``
+        it lists that creator's videos.
         """
         body = {
             "query": query,
+            "creator_id": creator_id,
             "items": per_page,
             "location": location,
             "sort": sort,

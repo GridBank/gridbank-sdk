@@ -255,6 +255,13 @@ class TestSearch:
 
         assert sent_body(route) == {"query": "surf", "items": 50, "page": 0}
 
+    def test_a_creator_id_without_a_query_lists_that_creator(self, respx_mock, client):
+        route = respx_mock.post(f"{BASE}/search").mock(return_value=search_page([], False))
+
+        list(client.search(creator_id="crea_9"))
+
+        assert sent_body(route) == {"query": "", "creator_id": "crea_9", "items": 50, "page": 0}
+
     def test_it_pages_while_there_is_more(self, respx_mock, client):
         route = respx_mock.post(f"{BASE}/search").mock(
             side_effect=[search_page(["a", "b"], True), search_page(["c"], False)]
